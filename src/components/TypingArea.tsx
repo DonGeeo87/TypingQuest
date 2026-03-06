@@ -11,7 +11,7 @@ interface TypingAreaProps {
 export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRemaining }: TypingAreaProps) {
   // Check if time is running low (less than 10 seconds)
   const isTimeLow = timeRemaining !== undefined && timeRemaining <= 10 && timeRemaining > 0
-  
+
   // Format time display
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -25,8 +25,8 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
       {timeRemaining !== undefined && (
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ 
-            scale: 1, 
+          animate={{
+            scale: 1,
             opacity: 1,
             ...(isTimeLow ? {
               animate: {
@@ -56,23 +56,59 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass-card p-8 min-h-[200px] flex flex-wrap content-start gap-1 text-2xl md:text-3xl font-mono leading-relaxed"
+        style={{ 
+          color: '#fafafa',
+          backgroundColor: 'rgba(39, 39, 42, 0.8)',
+          borderRadius: '12px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
       >
         {text.split('').map((char, index) => {
-          let charClass = 'char-pending transition-colors duration-100 px-1 rounded'
+          // Determine the style for each character
+          let charStyle: React.CSSProperties = {
+            transition: 'all 0.1s ease',
+            padding: '2px 4px',
+            borderRadius: '4px',
+          }
 
           if (index < typedChars.length) {
+            // Already typed character
             const typedChar = typedChars[index]
             if (typedChar === char) {
-              charClass = 'char-correct transition-colors duration-100 px-1 rounded'
+              // Correct character - green
+              charStyle = {
+                ...charStyle,
+                color: '#22c55e',
+                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+              }
             } else {
-              charClass = 'char-incorrect transition-colors duration-100 px-1 rounded'
+              // Incorrect character - red
+              charStyle = {
+                ...charStyle,
+                color: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                textDecoration: 'underline',
+              }
             }
           } else if (index === currentIndex && isPlaying) {
-            charClass = 'char-current animate-pulse px-1 rounded'
+            // Current character to type - highlighted cursor
+            charStyle = {
+              ...charStyle,
+              backgroundColor: '#6366f1',
+              color: '#ffffff',
+              animation: 'pulse 1s infinite',
+            }
+          } else {
+            // Pending character - visible but dimmed
+            charStyle = {
+              ...charStyle,
+              color: '#a1a1aa',
+              opacity: 0.8,
+            }
           }
 
           return (
-            <span key={index} className={charClass}>
+            <span key={index} style={charStyle}>
               {char === ' ' ? '\u00A0' : char}
             </span>
           )
