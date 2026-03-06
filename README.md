@@ -5,10 +5,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
 [![Vercel](https://img.shields.io/badge/Vercel-Deployed-success.svg)](https://vercel.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Powered-3ECF8E.svg)](https://supabase.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-DonGeeo87-blue?logo=github)](https://github.com/DonGeeo87/TypingQuest)
 
 **Un juego de mecanografía bilingüe (Inglés/Español) moderno con rankings en tiempo real, dificultad progresiva y efectos visuales impresionantes.**
 
-![TypingQuest Banner](./public/og-image.png)
+🌐 **Demo en Vivo**: [typing-quest-ochre.vercel.app](https://typing-quest-ochre.vercel.app)
 
 ---
 
@@ -19,22 +20,25 @@
 - **5 Niveles de Dificultad**: Desde palabras simples hasta párrafos complejos
 - **2 Idiomas**: Inglés 🇬🇧 y Español 🇪🇸
 - **Dificultad Progresiva**: Aumenta un 5% cada 5 palabras completadas
+- **7 Niveles de Dificultad**: Normal → Acelerado → Rápido → Veloz → Extremo → Imposible → Legendario
 
 ### 🏆 Sistema Competitivo
 - **Rankings por Duración**: Compite en tu categoría
 - **Score Estandarizado**: Fórmula justa que considera velocidad, precisión y errores
 - **Actualizaciones en Tiempo Real**: Ve quién supera tu récord al instante
 - **Mejores Marcas Personales**: Sigue tu progreso
+- **Notificaciones de Récords**: Alertas cuando alguien te supera
 
 ### 🎨 Experiencia Visual
-- **Confetti**: Celebra tus victorias con 150 partículas de colores
-- **Animaciones de Error**: Shake y partículas rojas al fallar
-- **Efectos de Completado**: Brillo y pop al terminar palabras
+- **Confetti**: 150 partículas de colores al completar exitosamente
+- **Error Shake + Partículas**: Vibración y explosión roja al fallar
+- **Text Complete**: Efecto de brillo/pop al terminar palabras
 - **Partículas de Fondo**: Ambiente dinámico durante el juego
+- **Área de Texto Optimizada**: Colores de alto contraste para máxima visibilidad
 
 ### 🔊 Sistema de Audio
 - **Sonidos Dinámicos**: Generados con Audio API (sin archivos externos)
-- **Feedback Auditivo**: Cada acción tiene su sonido
+- **5 Sonidos**: Key, error, complete, victory, time warning
 - **Controles Completos**: Volumen, mute, toggle
 - **Persistencia**: Tu configuración se guarda
 
@@ -42,7 +46,8 @@
 - **WPM en Tiempo Real**: Palabras por minuto
 - **Precisión**: Porcentaje de aciertos
 - **Combos**: Construye rachas para bonus
-- **Niveles de Dificultad**: 7 niveles desde Normal hasta Legendario
+- **Progreso de Palabras**: Contador de palabras completadas
+- **Perfil con Historial**: Todas tus partidas guardadas
 
 ---
 
@@ -72,8 +77,8 @@ npm install
 Crea un archivo `.env` en la raíz del proyecto:
 
 ```env
-VITE_SUPABASE_URL=tu_url_de_supabase
-VITE_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
+VITE_SUPABASE_URL=https://cqpqbwptqfvyqhpulrcx.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_RMYdOpkyGJVq1Ytmapq5aw_9om9JrMX
 ```
 
 4. **Configurar base de datos**
@@ -129,6 +134,7 @@ El juego estará disponible en `http://localhost:5173`
 - Las incorrectas en **rojo** (sin reiniciar)
 - Construye combos para aumentar tu score
 - La dificultad aumenta cada 5 palabras
+- El tiempo parpadea cuando quedan menos de 10 segundos
 
 ### 4. Resultados
 - Al finalizar, ve tu WPM, precisión y score
@@ -170,7 +176,7 @@ normalized = (WPM × precisión/100) / (duración/60)
 Información del usuario y estadísticas generales.
 
 #### `game_results`
-Resultados de cada partida con scores calculados.
+Resultados de cada partida con scores calculados automáticamente.
 
 #### `duration_rankings` (View)
 Rankings separados por duración de juego.
@@ -208,7 +214,7 @@ npm run type-check   # Verifica tipos TypeScript
 
 ## 🌐 Deploy en Vercel
 
-### Opción 1: Deploy Automático
+### Deploy Automático
 
 1. Conecta tu repositorio de GitHub a Vercel
 2. Configura las variables de entorno en Vercel:
@@ -216,7 +222,7 @@ npm run type-check   # Verifica tipos TypeScript
    - `VITE_SUPABASE_ANON_KEY`
 3. Vercel detectará automáticamente que es un proyecto Vite
 
-### Opción 2: CLI
+### Deploy con CLI
 
 ```bash
 # Instalar Vercel CLI
@@ -226,7 +232,7 @@ npm i -g vercel
 vercel login
 
 # Deploy
-vercel
+vercel --prod
 ```
 
 ### Variables de Entorno en Vercel
@@ -286,6 +292,7 @@ git push origin feature/tu-feature
 - [x] Animaciones y efectos
 - [x] Registro de usuarios
 - [x] Autenticación con Supabase
+- [x] Deploy en Vercel
 
 ### 🚧 En Progreso
 - [ ] Modo PvP en tiempo real
@@ -305,17 +312,10 @@ git push origin feature/tu-feature
 
 ## 📸 Capturas
 
-### Pantalla Principal
-![Home](./public/screenshots/home.png)
-
-### Juego
-![Game](./public/screenshots/game.png)
-
-### Rankings
-![Rankings](./public/screenshots/rankings.png)
-
-### Perfil
-![Profile](./public/screenshots/profile.png)
+### Características Visuales
+- **Área de Texto**: Alto contraste con colores explícitos para máxima visibilidad
+- **Animaciones**: Confetti, shake, partículas, efectos de completado
+- **UI Moderna**: Gradientes, glassmorphism, tailwindcss
 
 ---
 
@@ -337,8 +337,27 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 ## 📞 Contacto
 
-- **Repositorio**: [github.com/DonGeeo87/TypingQuest](https://github.com/DonGeeo87/TypingQuest)
-- **Demo**: [typing-quest-ochre.vercel.app](https://typing-quest-ochre.vercel.app) 🚀
+| Plataforma | Enlace |
+|------------|--------|
+| **Repositorio** | [github.com/DonGeeo87/TypingQuest](https://github.com/DonGeeo87/TypingQuest) |
+| **Demo** | [typing-quest-ochre.vercel.app](https://typing-quest-ochre.vercel.app) |
+| **Supabase** | [Dashboard del Proyecto](https://supabase.com/dashboard/project/cqpqbwptqfvyqhpulrcx) |
+| **Vercel** | [Dashboard del Proyecto](https://vercel.com/dongeeo87s-projects/typing-quest) |
+
+---
+
+## 📈 Estado del Proyecto
+
+| Métrica | Valor |
+|---------|-------|
+| **Versión** | 1.0.0 |
+| **Estado** | ✅ Production Ready |
+| **Última Actualización** | 2026-03-06 |
+| **Archivos** | 55+ |
+| **Líneas de Código** | 11,000+ |
+| **Componentes** | 16 |
+| **Pantallas** | 5 |
+| **Build Size** | ~565 KB |
 
 ---
 
