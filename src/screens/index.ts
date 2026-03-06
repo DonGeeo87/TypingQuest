@@ -1,0 +1,5 @@
+export { HomeScreen } from './HomeScreen'
+export { GameScreen } from './GameScreen'
+export { RankingScreen } from './RankingScreen'
+export { ProfileScreen } from './ProfileScreen'
+export { RegistrationScreen } from './RegistrationScreen'

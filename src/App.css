@@ -1,0 +1,8 @@
+# Just some starter styles to keep things clean
+# Main styles are in src/index.css with Tailwind
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
