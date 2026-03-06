@@ -4,18 +4,5 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "outputDirectory": "dist",
-  "dev": {
-    "port": 5173
-  },
-  "env": {
-    "VITE_SUPABASE_URL": {
-      "type": "encrypted",
-      "value": ""
-    },
-    "VITE_SUPABASE_ANON_KEY": {
-      "type": "encrypted",
-      "value": ""
-    }
-  }
+  "outputDirectory": "dist"
 }
