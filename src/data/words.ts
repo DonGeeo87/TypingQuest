@@ -322,6 +322,15 @@ export function getRandomParagraph(language: 'en' | 'es'): string {
 const recentTexts = new Set<string>()
 const MAX_RECENT = 10
 
+/**
+ * Obtiene palabras sueltas para un nivel (para modo TapTap)
+ */
+export function getWordsForLevel(language: 'en' | 'es', level: number): string[] {
+  const wordList = language === 'en' ? englishWords : spanishWords
+  const words = wordList[level] || wordList[1]
+  return words.map(w => w.word)
+}
+
 export function getTextForLevel(language: 'en' | 'es', level: number): string {
   let result = ''
   let attempts = 0

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { ParticleBackground, FloatingWords } from './components'
-import { HomeScreen, GameScreen, RankingScreen, ProfileScreen, RegistrationScreen } from './screens'
+import { HomeScreen, GameScreen, RankingScreen, ProfileScreen, RegistrationScreen, TapTapGame } from './screens'
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
 import type { Language, GameLevel } from './types'
 import './App.css'
 
-type Screen = 'home' | 'game' | 'ranking' | 'profile' | 'registration'
+type Screen = 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -38,6 +38,10 @@ function App() {
 
   const handleStartGame = () => {
     setCurrentScreen('game')
+  }
+
+  const handleStartTapTap = () => {
+    setCurrentScreen('taptap')
   }
 
   const handleGameEnd = () => {
@@ -103,6 +107,7 @@ function App() {
             onLevelChange={handleLevelChange}
             onGameDurationChange={handleGameDurationChange}
             onStartGame={handleStartGame}
+            onStartTapTap={handleStartTapTap}
             onNavigate={handleNavigate}
           />
         )}
@@ -127,6 +132,14 @@ function App() {
               setHasRegisteredUsername(true)
               setCurrentScreen('home')
             }}
+          />
+        )}
+
+        {currentScreen === 'taptap' && (
+          <TapTapGame
+            language={language}
+            level={level}
+            onBack={() => setCurrentScreen('home')}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { LanguageSelector, LevelSelector, TimeSelector, Button, Card, AudioToggle } from '../components'
 import { useAuthStore } from '../store/authStore'
+import { useMobile } from '../hooks/useMobile'
 import type { Language, GameLevel } from '../types'
 
 interface HomeScreenProps {
@@ -11,6 +12,7 @@ interface HomeScreenProps {
   onLevelChange: (level: GameLevel) => void
   onGameDurationChange: (duration: number) => void
   onStartGame: () => void
+  onStartTapTap: () => void
   onNavigate: (screen: string) => void
 }
 
@@ -22,9 +24,11 @@ export function HomeScreen({
   onLevelChange,
   onGameDurationChange,
   onStartGame,
+  onStartTapTap,
   onNavigate,
 }: HomeScreenProps) {
   const { profile } = useAuthStore()
+  const isMobile = useMobile()
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
@@ -148,17 +152,38 @@ export function HomeScreen({
           </div>
 
           {/* Start Button */}
-          <div className="flex justify-center pt-4">
+          <div className="space-y-4 pt-4">
+            {/* Botón TapTap para móviles */}
+            {isMobile && (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
+                <Button
+                  onClick={onStartTapTap}
+                  variant="accent"
+                  className="px-20 py-5 text-xl font-black w-full shadow-2xl shadow-amber-500/30 rounded-2xl relative overflow-hidden group bg-gradient-to-r from-amber-600 to-orange-600"
+                >
+                  <span className="relative z-10">👆 TapTap {language === 'en' ? 'English' : 'Español'}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </Button>
+              </motion.div>
+            )}
+
+            {/* Botón Clásico */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
               <Button
                 onClick={onStartGame}
                 variant="accent"
                 className="px-20 py-5 text-xl font-black w-full shadow-2xl shadow-indigo-500/30 rounded-2xl relative overflow-hidden group"
               >
-                <span className="relative z-10">🚀 ¡EMPEZAR A TIPEAR!</span>
+                <span className="relative z-10">⌨️ {isMobile ? 'Modo Clásico (Teclado)' : '¡EMPEZAR A TIPEAR!'}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Button>
             </motion.div>
+
+            {isMobile && (
+              <p className="text-center text-xs text-zinc-500">
+                💡 Tip: TapTap es más fácil de usar en móviles
+              </p>
+            )}
           </div>
         </Card>
 
