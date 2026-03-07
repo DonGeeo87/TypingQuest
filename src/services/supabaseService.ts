@@ -46,7 +46,7 @@ export function calculateStandardizedScore(
   const baseScore = wordsCompleted * 100
   const performanceScore = wpm * (accuracy / 100)
   const penaltyScore = errors * 10
-  
+
   return Math.round(baseScore + performanceScore - penaltyScore)
 }
 
@@ -61,12 +61,12 @@ export function calculateTimeNormalizedScore(
 ): number {
   // Factor de duración: normalizamos a 60 segundos como base
   const durationFactor = durationSeconds / 60
-  
+
   // Evitar división por cero
   if (durationFactor <= 0) return 0
-  
+
   const normalizedScore = (wpm * (accuracy / 100)) / durationFactor
-  
+
   return Math.round(normalizedScore * 100) // Multiplicamos por 100 para tener enteros
 }
 
@@ -75,6 +75,26 @@ export function calculateTimeNormalizedScore(
 // ============================================
 
 export async function getProfile(userId: string): Promise<Profile | null> {
+  // Si es usuario local, intentar obtener de localStorage
+  if (userId.startsWith('local_')) {
+    const localProfile = localStorage.getItem('typingquest-local-profile-' + userId)
+    if (localProfile) {
+      return JSON.parse(localProfile)
+    }
+    // Retornar perfil por defecto para usuario local
+    return {
+      id: userId,
+      username: '',
+      avatar_url: undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      total_games: 0,
+      total_wins: 0,
+      best_wpm: 0,
+      best_accuracy: 0,
+    }
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -86,6 +106,15 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 export async function updateProfile(userId: string, updates: Partial<Profile>): Promise<void> {
+  // Si es usuario local, guardar en localStorage
+  if (userId.startsWith('local_')) {
+    const currentProfile = await getProfile(userId)
+    const updatedProfile = { ...currentProfile, ...updates } as Profile
+    localStorage.setItem('typingquest-local-profile-' + userId, JSON.stringify(updatedProfile))
+    console.log('[Supabase] Perfil local actualizado:', updatedProfile)
+    return
+  }
+
   await supabase
     .from('profiles')
     .update(updates)
@@ -101,14 +130,31 @@ export async function incrementGamesPlayed(userId: string): Promise<void> {
 // ============================================
 
 export async function saveGameResult(result: Omit<GameResult, 'id' | 'created_at'>): Promise<GameResult | null> {
+  // Si es usuario local, guardar en localStorage
+  if (result.user_id?.startsWith('local_')) {
+    const localResults = localStorage.getItem('typingquest-local-games-' + result.user_id)
+    const games = localResults ? JSON.parse(localResults) : []
+
+    const newGame = {
+      ...result,
+      id: 'local_game_' + Date.now(),
+      created_at: new Date().toISOString(),
+    }
+
+    games.unshift(newGame) // Agregar al principio
+    localStorage.setItem('typingquest-local-games-' + result.user_id, JSON.stringify(games))
+    console.log('[Supabase] Juego local guardado:', newGame)
+    return newGame
+  }
+
   // Calcular standardized score si tenemos words_completed
-  const standardizedScore = result.words_completed 
+  const standardizedScore = result.words_completed
     ? calculateStandardizedScore(
-        result.words_completed,
-        result.wpm,
-        result.accuracy,
-        result.errors
-      )
+      result.words_completed,
+      result.wpm,
+      result.accuracy,
+      result.errors
+    )
     : undefined
 
   // Calcular time normalized score
@@ -126,11 +172,24 @@ export async function saveGameResult(result: Omit<GameResult, 'id' | 'created_at
     .select()
     .single()
 
-  if (error) return null
+  if (error) {
+    console.warn('Error al guardar resultado en Supabase:', error.message)
+    return null
+  }
   return data
 }
 
 export async function getUserGameResults(userId: string, limit = 10): Promise<GameResult[]> {
+  // Si es usuario local, obtener de localStorage
+  if (userId.startsWith('local_')) {
+    const localResults = localStorage.getItem('typingquest-local-games-' + userId)
+    if (localResults) {
+      const games = JSON.parse(localResults)
+      return games.slice(0, limit)
+    }
+    return []
+  }
+
   const { data } = await supabase
     .from('game_results')
     .select('*')
@@ -192,24 +251,63 @@ export async function getDurationRanking(
   duration: number,
   limit = 50
 ): Promise<RankedGame[]> {
-  const { data } = await supabase
-    .from('game_results')
-    .select(`
-      *,
-      profiles (
-        username,
-        avatar_url
-      )
-    `)
-    .eq('game_duration', duration)
-    .order('standardized_score', { ascending: false })
-    .limit(limit)
+  // Obtener juegos locales primero
+  const allLocalGames: any[] = []
+  const localKeys = Object.keys(localStorage).filter(k => k.startsWith('typingquest-local-games-'))
+  for (const key of localKeys) {
+    const games = localStorage.getItem(key)
+    if (games) {
+      const parsed = JSON.parse(games)
+      allLocalGames.push(...parsed)
+    }
+  }
 
-  return (data || []).map((game: any) => ({
-    ...game,
-    time_normalized_score: game.time_normalized_score || 0,
-    duration_category: getDurationCategory(game.game_duration)?.label || 'Unknown',
-  }))
+  // Filtrar y ordenar juegos locales
+  const localGames = allLocalGames
+    .filter(g => g.game_duration === duration)
+    .sort((a, b) => (b.standardized_score || 0) - (a.standardized_score || 0))
+    .slice(0, limit)
+    .map((game: any) => ({
+      ...game,
+      time_normalized_score: game.time_normalized_score || 0,
+      duration_category: getDurationCategory(game.game_duration)?.label || 'Unknown',
+    }))
+
+  // Intentar obtener juegos de Supabase
+  try {
+    const { data } = await supabase
+      .from('game_results')
+      .select(`
+        *,
+        profiles (
+          username,
+          avatar_url
+        )
+      `)
+      .eq('game_duration', duration)
+      .order('standardized_score', { ascending: false })
+      .limit(limit)
+
+    if (data && data.length > 0) {
+      const supabaseGames = data.map((game: any) => ({
+        ...game,
+        time_normalized_score: game.time_normalized_score || 0,
+        duration_category: getDurationCategory(game.game_duration)?.label || 'Unknown',
+      }))
+
+      // Combinar y ordenar todos los juegos
+      const allGames = [...localGames, ...supabaseGames]
+        .sort((a, b) => (b.standardized_score || 0) - (a.standardized_score || 0))
+        .slice(0, limit)
+
+      return allGames
+    }
+  } catch (error) {
+    console.warn('Error al obtener ranking de Supabase:', error)
+  }
+
+  // Si no hay datos de Supabase, retornar solo locales
+  return localGames
 }
 
 /**
@@ -217,11 +315,11 @@ export async function getDurationRanking(
  */
 export async function getAllDurationRankings(limit = 50): Promise<Record<number, RankedGame[]>> {
   const rankings: Record<number, RankedGame[]> = {}
-  
+
   for (const category of DURATION_CATEGORIES) {
     rankings[category.value] = await getDurationRanking(category.value, limit)
   }
-  
+
   return rankings
 }
 
@@ -229,6 +327,22 @@ export async function getAllDurationRankings(limit = 50): Promise<Record<number,
  * Obtiene el mejor resultado personal para cada categoría de duración
  */
 export async function getPersonalBests(userId: string): Promise<PersonalBest> {
+  // Si es usuario local, obtener de localStorage
+  if (userId.startsWith('local_')) {
+    const localResults = localStorage.getItem('typingquest-local-games-' + userId)
+    if (localResults) {
+      const data = JSON.parse(localResults)
+      return calculatePersonalBestsFromData(data)
+    }
+    return {
+      duration_30: null,
+      duration_60: null,
+      duration_90: null,
+      duration_120: null,
+      overall_best: null,
+    }
+  }
+
   const { data } = await supabase
     .from('game_results')
     .select('*')
@@ -245,6 +359,10 @@ export async function getPersonalBests(userId: string): Promise<PersonalBest> {
     }
   }
 
+  return calculatePersonalBestsFromData(data)
+}
+
+function calculatePersonalBestsFromData(data: any[]): PersonalBest {
   const personalBests: PersonalBest = {
     duration_30: null,
     duration_60: null,
@@ -287,6 +405,42 @@ export async function getUserDurationRank(
   userId: string,
   duration: number
 ): Promise<{ rank: number; total: number; personalBest: GameResult | null }> {
+  // Si es usuario local, calcular ranking localmente
+  if (userId.startsWith('local_')) {
+    const allLocalGames: any[] = []
+
+    // Obtener todos los juegos locales de todos los usuarios
+    const localKeys = Object.keys(localStorage).filter(k => k.startsWith('typingquest-local-games-'))
+    for (const key of localKeys) {
+      const games = localStorage.getItem(key)
+      if (games) {
+        const parsed = JSON.parse(games)
+        allLocalGames.push(...parsed)
+      }
+    }
+
+    // Filtrar juegos de esta duración
+    const gamesForDuration = allLocalGames.filter(g => g.game_duration === duration)
+    const userGames = gamesForDuration.filter(g => g.user_id === userId)
+
+    if (gamesForDuration.length === 0) {
+      return { rank: 0, total: 0, personalBest: userGames[0] || null }
+    }
+
+    // Ordenar por score
+    gamesForDuration.sort((a, b) => (b.standardized_score || 0) - (a.standardized_score || 0))
+
+    // Encontrar el rank del usuario
+    const userBestScore = userGames.length > 0 ? (userGames[0].standardized_score || 0) : 0
+    const rank = gamesForDuration.findIndex(g => g.user_id === userId && g.standardized_score === userBestScore) + 1
+
+    return {
+      rank: rank > 0 ? rank : gamesForDuration.length + 1,
+      total: gamesForDuration.length,
+      personalBest: userGames[0] || null,
+    }
+  }
+
   // Obtener todos los juegos de esta duración
   const { data: allGames, count } = await supabase
     .from('game_results')
@@ -338,7 +492,7 @@ export function subscribeToGlobalRanking(
       },
       async (payload) => {
         const newGame = payload.new as GameResult
-        
+
         // Obtener información del perfil
         const { data: profile } = await supabase
           .from('profiles')
@@ -384,7 +538,7 @@ export function subscribeToDurationRanking(
       },
       async (payload) => {
         const newGame = payload.new as GameResult
-        
+
         // Obtener información del perfil
         const { data: profile } = await supabase
           .from('profiles')
@@ -419,6 +573,21 @@ export async function checkNewPersonalRecord(
   duration: number,
   newScore: number
 ): Promise<boolean> {
+  // Si es usuario local, verificar en localStorage
+  if (userId.startsWith('local_')) {
+    const localResults = localStorage.getItem('typingquest-local-games-' + userId)
+    if (localResults) {
+      const games = JSON.parse(localResults)
+      const gamesForDuration = games.filter((g: any) => g.game_duration === duration)
+      if (gamesForDuration.length === 0) {
+        return true // Primer récord en esta duración
+      }
+      const currentBest = Math.max(...gamesForDuration.map((g: any) => g.standardized_score || 0))
+      return newScore > currentBest
+    }
+    return true // Primer récord
+  }
+
   const { data } = await supabase
     .from('game_results')
     .select('standardized_score')
@@ -458,7 +627,7 @@ export function subscribeToRecordNotifications(
         },
         async (payload) => {
           const newGame = payload.new as GameResult
-          
+
           // Verificar si este score supera el récord del usuario
           const { data: userBest } = await supabase
             .from('game_results')
@@ -681,11 +850,23 @@ export async function unlockAchievement(userId: string, achievementId: string): 
  * Verifica si un nombre de usuario está disponible
  */
 export async function checkUsernameAvailable(username: string): Promise<boolean> {
+  // Verificar en perfiles locales primero
+  const localKeys = Object.keys(localStorage).filter(k => k.startsWith('typingquest-local-profile-'))
+  for (const key of localKeys) {
+    const localProfile = localStorage.getItem(key)
+    if (localProfile) {
+      const profile = JSON.parse(localProfile)
+      if (profile?.username?.toLowerCase() === username.trim().toLowerCase()) {
+        return false // Username ya está en uso localmente
+      }
+    }
+  }
+
   const { data } = await supabase
     .from('profiles')
     .select('id')
     .ilike('username', username.trim())
-    .single()
+    .maybeSingle()
 
   // Si no hay datos, el username está disponible
   return !data
@@ -699,7 +880,7 @@ export async function getUserByUsername(username: string): Promise<Profile | nul
     .from('profiles')
     .select('*')
     .ilike('username', username.trim())
-    .single()
+    .maybeSingle()
 
   if (!data) return null
   return data
@@ -711,7 +892,7 @@ export async function getUserByUsername(username: string): Promise<Profile | nul
 export async function updateUsername(userId: string, username: string): Promise<void> {
   await supabase
     .from('profiles')
-    .update({ 
+    .update({
       username: username.trim(),
       updated_at: new Date().toISOString()
     })
@@ -722,13 +903,28 @@ export async function updateUsername(userId: string, username: string): Promise<
  * Verifica si un usuario tiene un nombre de usuario configurado
  */
 export async function hasUsername(userId: string): Promise<boolean> {
+  // Si es usuario local, verificar en localStorage
+  if (userId.startsWith('local_')) {
+    const localProfile = localStorage.getItem('typingquest-local-profile-' + userId)
+    if (localProfile) {
+      const profile = JSON.parse(localProfile)
+      const username = profile?.username || ''
+      return username.trim().length > 0
+    }
+    return false
+  }
+
   const { data } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
 
-  return !!data?.username && data.username.trim().length > 0
+  // No solo verificamos si existe, sino que no sea el patrón por defecto "user_xxxxxxxx"
+  const username = data?.username || ''
+  const isDefaultPattern = /^user_[a-f0-9]{8}$/.test(username)
+
+  return username.trim().length > 0 && !isDefaultPattern
 }
 
 // ============================================
@@ -747,5 +943,12 @@ export async function getCurrentUser(): Promise<string | null> {
 }
 
 export async function signOut(): Promise<void> {
-  await supabase.auth.signOut()
+  try {
+    await supabase.auth.signOut()
+  } catch (error) {
+    console.warn('Error al cerrar sesión en Supabase:', error)
+  }
+  // Limpiar ID local si existe
+  sessionStorage.removeItem('typingquest-local-userid')
+  console.log('[Supabase] Sesión cerrada, localStorage limpio')
 }

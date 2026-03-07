@@ -2,8 +2,8 @@ import { motion } from 'framer-motion'
 import { useAudioStore } from '../store/audioStore'
 
 interface AudioToggleProps {
-  /** Posición del componente: 'top-right', 'top-left', 'bottom-right', 'bottom-left' */
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+  /** Posición del componente: 'top-right', 'top-left', 'bottom-right', 'bottom-left' | 'static' */
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'static'
   /** Mostrar solo el botón sin el slider de volumen */
   compact?: boolean
 }
@@ -13,10 +13,11 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
 
   // Determinar la posición CSS basada en la prop
   const positionClasses = {
-    'top-right': 'top-4 right-4',
-    'top-left': 'top-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
+    'top-right': 'fixed top-4 right-4',
+    'top-left': 'fixed top-4 left-4',
+    'bottom-right': 'fixed bottom-4 right-4',
+    'bottom-left': 'fixed bottom-4 left-4',
+    'static': 'relative',
   }
 
   // Icono basado en el estado del audio
@@ -37,7 +38,7 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`fixed ${positionClasses[position]} z-50 flex flex-col gap-2`}
+      className={`${positionClasses[position]} z-50 flex flex-col gap-2`}
     >
       {/* Botón de toggle */}
       <motion.button

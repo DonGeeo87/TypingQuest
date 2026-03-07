@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
-import { TypingArea, StatsDisplay, ComboIndicator, Button, Card, Confetti, ErrorShake, ErrorParticles, TextComplete, AudioToggle } from '../components'
+import { TypingArea, StatsDisplay, ComboIndicator, Button, Card, Confetti, ErrorShake, ErrorParticles, TextComplete, AudioToggle, DynamicBackground } from '../components'
 import { getTextForLevel } from '../data/words'
-import { supabase } from '../lib/supabase'
+import { getCurrentUser } from '../lib/supabase'
 import { saveGameResult, checkNewPersonalRecord, DURATION_CATEGORIES } from '../services/supabaseService'
 import {
   getDifficultyLevel,
@@ -47,7 +47,11 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     calculateStats,
     initializeGame,
     decrementTime,
-    incrementWordsCompleted,
+    incrementWordsCompletedBy,
+    resetCurrentPhrase,
+    advanceToNextText,
+    totalCorrectChars,
+    totalTypedChars,
   } = useGameStore()
 
   const [liveWpm, setLiveWpm] = useState(0)
@@ -67,6 +71,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   const [difficultyProgress, setDifficultyProgress] = useState(0)
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [isNewRecord, setIsNewRecord] = useState(false)
+  const [localWordsCompleted, setLocalWordsCompleted] = useState(0)
 
   // Hook de sonido
   const { playKeySound, playErrorSound, playCompleteSound, playVictorySound, playTimeWarning, playLevelUpSound } = useSound()
@@ -80,12 +85,13 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   useEffect(() => {
     const text = getTextForLevel(language, level)
     initializeGame(text, language, level)
-    
+
     // Resetear estados
     setDifficultyLevel(1)
     setDifficultyMultiplier(1)
     setDifficultyProgress(0)
     setIsNewRecord(false)
+    setLocalWordsCompleted(0)
   }, [language, level])
 
   // Countdown timer con sonido de advertencia
@@ -98,7 +104,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       if (timeRemaining <= 10 && timeRemaining > 0) {
         const currentRef = lastPlayedTimeWarningRef.current
         if ((timeRemaining === 10 && currentRef >= 10) ||
-            (timeRemaining === 5 && currentRef > 5)) {
+          (timeRemaining === 5 && currentRef > 5)) {
           playTimeWarning()
           lastPlayedTimeWarningRef.current = timeRemaining
         }
@@ -135,57 +141,66 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     }
   }, [timeRemaining, status])
 
-  // Calculate live stats
+  // Calculate live stats - OPTIMIZADO para reducir renders
   useEffect(() => {
-    if (!startTime || status !== 'playing') return
+    if (!startTime || (status !== 'playing' && status !== 'finished')) return
 
     const interval = setInterval(() => {
       const elapsed = (Date.now() - startTime) / 60000 // minutes
-      const wordsTyped = typedChars.length / 5
-      const currentWpm = Math.round(wordsTyped / elapsed) || 0
+      // Usar totalCorrectChars para WPM real que no baja al resetear
+      const wordsTyped = totalCorrectChars / 5
+      const currentWpm = elapsed > 0 ? Math.max(0, Math.round(wordsTyped / elapsed)) : 0
 
-      const totalChars = typedChars.length
-      const correctChars = typedChars.filter((c, i) => c === currentText[i]).length
-      const currentAccuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100
+      // Usar totalTypedChars para precisión real histórica
+      const currentAccuracy = totalTypedChars > 0 ? Math.round((totalCorrectChars / totalTypedChars) * 100) : 100
 
       setLiveWpm(currentWpm)
       setLiveAccuracy(currentAccuracy)
-    }, 500)
+    }, 1000) // Cambiado de 500ms a 1000ms para mejor rendimiento
 
     return () => clearInterval(interval)
-  }, [startTime, status, typedChars, currentText])
+  }, [startTime, status, totalCorrectChars, totalTypedChars])
 
-  // Handle combo display
+  // Handle combo display - OPTIMIZADO
   useEffect(() => {
-    if (combo >= 5) {
+    if (combo >= 5 && combo % 5 === 0) { // Solo mostrar en múltiplos de 5
       setShowCombo(true)
-      const timer = setTimeout(() => setShowCombo(false), 1000)
+      const timer = setTimeout(() => setShowCombo(false), 800)
       return () => clearTimeout(timer)
     }
   }, [combo])
 
-  // Track word completion and show TextComplete animation con sonido
   useEffect(() => {
     if (status !== 'playing') return
 
+    // Solo detectar palabra completada cuando se pulsa ESPACIO o al final del texto
+    const lastChar = typedChars[typedChars.length - 1]
+    const isEndOfWord = lastChar === ' ' || currentIndex >= currentText.length
+
+    if (!isEndOfWord) return
+
     const textUpToIndex = currentText.substring(0, currentIndex)
-    const completedWords = textUpToIndex.trim().split(/\s+/).filter(w => w.length > 0).length
+    const completedWordsCount = textUpToIndex.trim().split(/\s+/).filter(w => w.length > 0).length
 
-    if (completedWords > wordsCompleted) {
-      incrementWordsCompleted()
-      playCompleteSound()
+    if (completedWordsCount > localWordsCompleted) {
+      const diff = completedWordsCount - localWordsCompleted
+      if (diff > 0) {
+        incrementWordsCompletedBy(diff)
+        setLocalWordsCompleted(completedWordsCount)
+        playCompleteSound()
 
-      const words = currentText.split(/\s+/)
-      const currentWordIndex = completedWords - 1
-      if (currentWordIndex >= 0 && currentWordIndex < words.length) {
-        setLastCompletedWord(words[currentWordIndex])
-        setShowTextComplete(true)
-        setTimeout(() => setShowTextComplete(false), 1000)
+        const words = currentText.split(/\s+/)
+        const currentWordIndex = completedWordsCount - 1
+        if (currentWordIndex >= 0 && currentWordIndex < words.length) {
+          setLastCompletedWord(words[currentWordIndex])
+          setShowTextComplete(true)
+          setTimeout(() => setShowTextComplete(false), 1000)
+        }
       }
     }
-  }, [currentIndex, status, currentText, wordsCompleted, incrementWordsCompleted, playCompleteSound])
+  }, [currentIndex, status, currentText, localWordsCompleted, incrementWordsCompletedBy, playCompleteSound, typedChars])
 
-  // Detectar errores y mostrar animación con sonido
+  // Detectar errores y mostrar animación con sonido - OPTIMIZADO
   useEffect(() => {
     if (errors > prevErrorsRef.current && status === 'playing') {
       playErrorSound()
@@ -206,6 +221,37 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     prevWordsCompletedRef.current = wordsCompleted
   }, [errors, status, playErrorSound])
 
+  // Detectar palabras completadas - OPTIMIZADO
+  useEffect(() => {
+    if (status !== 'playing') return
+
+    // Solo detectar palabra completada cuando se pulsa ESPACIO o al final del texto
+    const lastChar = typedChars[typedChars.length - 1]
+    const isEndOfWord = lastChar === ' ' || currentIndex >= currentText.length
+
+    if (!isEndOfWord) return
+
+    const textUpToIndex = currentText.substring(0, currentIndex)
+    const completedWordsCount = textUpToIndex.trim().split(/\s+/).filter(w => w.length > 0).length
+
+    if (completedWordsCount > localWordsCompleted) {
+      const diff = completedWordsCount - localWordsCompleted
+      if (diff > 0) {
+        incrementWordsCompletedBy(diff)
+        setLocalWordsCompleted(completedWordsCount)
+        playCompleteSound()
+
+        const words = currentText.split(/\s+/)
+        const currentWordIndex = completedWordsCount - 1
+        if (currentWordIndex >= 0 && currentWordIndex < words.length) {
+          setLastCompletedWord(words[currentWordIndex])
+          setShowTextComplete(true)
+          setTimeout(() => setShowTextComplete(false), 800)
+        }
+      }
+    }
+  }, [currentIndex, status, currentText, localWordsCompleted, incrementWordsCompletedBy, playCompleteSound, typedChars])
+
   // Mostrar confetti cuando el juego termina exitosamente con sonido de victoria
   useEffect(() => {
     if (status === 'finished' && timeRemaining > 0) {
@@ -217,9 +263,9 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
   // Save result to Supabase
   const saveResult = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const userId = await getCurrentUser()
 
-    if (user) {
+    if (userId) {
       // Calcular standardized score
       const standardizedScore = calculateStandardizedScore(
         wordsCompleted,
@@ -232,7 +278,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       const duration = gameDuration || 60
 
       await saveGameResult({
-        user_id: user.id,
+        user_id: userId,
         language,
         level,
         wpm: liveWpm,
@@ -246,7 +292,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       })
 
       // Verificar si es un nuevo récord personal
-      const isNewRecordResult = await checkNewPersonalRecord(user.id, duration, standardizedScore)
+      const isNewRecordResult = await checkNewPersonalRecord(userId, duration, standardizedScore)
       setIsNewRecord(isNewRecordResult)
     }
   }
@@ -283,16 +329,19 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       playKeySound()
       setCurrentIndex(currentIndex + 1)
 
+      // Si completó el texto actual, cargar el siguiente
       if (currentIndex + 1 >= currentText.length) {
-        setEndTime(Date.now())
-        setStatus('finished')
-        calculateStats()
-        saveResult()
+        const nextText = getTextForLevel(language, level)
+        advanceToNextText(nextText)
+        setLocalWordsCompleted(0)
       }
     } else {
       incrementError()
+      // REINICIAR FRASE AL EQUIVOCARSE (DESAFÍO)
+      resetCurrentPhrase()
+      setLocalWordsCompleted(0)
     }
-  }, [status, currentIndex, currentText, typedChars, playKeySound, setStatus, setStartTime, setCurrentIndex, addTypedChar, updateCombo, setEndTime, calculateStats, wordsCompleted, liveWpm, liveAccuracy, errors, gameDuration, language, level, maxCombo])
+  }, [status, currentIndex, currentText, typedChars, playKeySound, setStatus, setStartTime, setCurrentIndex, addTypedChar, updateCombo, advanceToNextText, resetCurrentPhrase, language, level])
 
   // Attach keyboard listener
   useEffect(() => {
@@ -313,7 +362,13 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
   return (
     <div className="min-h-screen p-4 md:p-8 relative">
-      {/* Animaciones */}
+      {/* Fondo Dinámico Reactivo */}
+      <DynamicBackground
+        isError={showError}
+        combo={combo}
+        status={status}
+      />
+
       <Confetti isActive={showConfetti} />
       <ErrorParticles isActive={showError} position={errorPosition || undefined} />
       <TextComplete isActive={showTextComplete} text={lastCompletedWord} />
@@ -376,19 +431,18 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
           </Button>
           <div className="flex gap-3 items-center flex-wrap justify-center">
             {/* Temporizador */}
-            <span className={`px-4 py-2 rounded-full text-sm font-bold ${
-              timeRemaining <= 10
-                ? 'bg-red-600/20 text-red-400 animate-pulse'
-                : 'bg-violet-600/20 text-violet-400'
-            }`}>
+            <span className={`px-4 py-2 rounded-full text-sm font-bold ${timeRemaining <= 10
+              ? 'bg-red-600/20 text-red-400 animate-pulse'
+              : 'bg-violet-600/20 text-violet-400'
+              }`}>
               ⏱️ {formatTime(timeRemaining)}
             </span>
-            
+
             {/* Idioma */}
             <span className="px-3 py-1 bg-indigo-600/20 text-indigo-400 rounded-full text-sm">
               {language === 'en' ? '🇬🇧 English' : '🇪🇸 Español'}
             </span>
-            
+
             {/* Nivel */}
             <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm">
               Level {level}
@@ -418,7 +472,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
                   </div>
                 </div>
               </div>
-              
+
               {/* Barra de progreso hacia el siguiente nivel */}
               <div className="flex-1 max-w-[200px] ml-4">
                 <div className="flex justify-between text-xs text-zinc-500 mb-1">
@@ -473,10 +527,10 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center"
+            className="text-center bg-violet-600/10 border border-violet-500/30 rounded-xl p-4"
           >
-            <p className="text-zinc-400 text-lg">
-              Start typing to begin... ⌨️
+            <p className="text-violet-400 text-lg font-bold animate-pulse">
+              ⌨️ Escribe la primera letra para comenzar...
             </p>
           </motion.div>
         )}
@@ -531,6 +585,9 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
                 <Button onClick={() => onNavigate('ranking')} variant="accent">
                   View Rankings
                 </Button>
+                <Button onClick={() => onNavigate('home')} variant="secondary">
+                  Home
+                </Button>
               </div>
             </Card>
           </motion.div>
@@ -581,6 +638,9 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
                 </Button>
                 <Button onClick={() => onNavigate('ranking')} variant="accent">
                   View Rankings
+                </Button>
+                <Button onClick={() => onNavigate('home')} variant="secondary">
+                  Home
                 </Button>
               </div>
             </Card>

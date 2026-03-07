@@ -7,6 +7,142 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.1.0] - 2026-03-07 - Sistema de Usuarios Locales y Optimización de Rendimiento
+
+### 🚀 Características Agregadas
+
+#### Sistema de Usuarios Locales (Fallback)
+- 🔄 **Fallback automático** cuando Supabase Auth falla (error 500)
+- 💾 **Almacenamiento en localStorage** para perfiles de usuarios locales
+- 🎮 **IDs locales** con formato `local_xxxxxxxx` usando crypto.randomUUID()
+- 📦 **Persistencia de juegos** en localStorage para usuarios locales
+- 🏆 **Rankings híbridos** que combinan juegos locales y de Supabase
+
+#### Cerrar Sesión Mejorado
+- 🚪 **Modal de confirmación personalizado** con UI arcade
+- 🧹 **Limpieza completa** de localStorage y sessionStorage
+- 🔄 **Redirección automática** a pantalla de registro después de cerrar sesión
+- 🎨 **Animaciones suaves** con Framer Motion
+
+### 🐛 Correcciones de Bugs
+
+#### Rendimiento del Juego
+- ⚡ **Optimización de DynamicBackground**:
+  - Reducido de 40 a 25 partículas
+  - Matrix rain se actualiza cada 2 frames (antes cada frame)
+  - Uso de refs para evitar re-renders innecesarios
+  - Efectos de brillo con cap máximo para reducir carga GPU
+- 🎯 **Optimización de GameScreen**:
+  - WPM/accuracy se actualiza cada 1000ms (antes 500ms)
+  - Combo Indicator solo muestra en múltiplos de 5
+  - Eliminadas dependencias innecesarias en useEffects
+- 📉 **Reducción significativa de latencia** en rachas altas (combo 50+)
+
+#### Cálculo de WPM
+- 🔧 **Corregido WPM = 0** al finalizar el juego
+- 📊 **Cálculo en tiempo real** usando totalCorrectChars
+- ⏱️ **Mantiene WPM final** después de que el juego termina
+
+#### Ranking
+- 🏆 **Ranking funciona con usuarios locales**
+- 📈 **getDurationRanking()** combina juegos locales y de Supabase
+- 🎯 **getPersonalBests()** calcula desde localStorage
+- 📊 **getUserDurationRank()** calcula ranking comparando juegos locales
+- ✅ **checkNewPersonalRecord()** verifica récords en localStorage
+
+### 🔧 Cambios Técnicos
+
+#### Nuevas Funciones en supabaseService.ts
+- `saveGameResult()` - Soporte para usuarios locales
+- `getUserGameResults()` - Obtiene juegos de localStorage
+- `getPersonalBests()` - Soporte para usuarios locales + helper function
+- `getUserDurationRank()` - Soporte para usuarios locales
+- `getDurationRanking()` - Combina datos locales y Supabase
+- `checkNewPersonalRecord()` - Soporte para usuarios locales
+- `checkUsernameAvailable()` - Verifica usernames en localStorage
+- `hasUsername()` - Verifica usernames en localStorage
+- `getProfile()` - Soporte para usuarios locales
+- `updateProfile()` - Guarda en localStorage para usuarios locales
+- `signOut()` - Limpia sessionStorage
+
+#### Actualización de Componentes
+- `GameScreen.tsx` - Usa getCurrentUser(), optimizaciones de rendimiento
+- `ProfileScreen.tsx` - Modal de confirmación personalizado, signOut mejorado
+- `RankingScreen.tsx` - Usa getCurrentUser() en lugar de supabase.auth.getUser()
+- `DynamicBackground.tsx` - Optimizado para mejor rendimiento
+- `App.tsx` - Limpieza de logs de debug
+
+#### Actualización de Librerías
+- `supabase.ts` - signInAnonymously() con fallback local, getCurrentUser() con sessionStorage
+- `authStore.ts` - signOut() limpia localStorage y sessionStorage
+
+### 📊 Mejoras de Rendimiento
+
+#### DynamicBackground
+- 📉 **37.5% menos partículas** (40 → 25)
+- ⚡ **50% menos actualizaciones** de Matrix rain (cada 2 frames)
+- 🎯 **Uso de refs** para evitar re-renders del canvas
+- 🔒 **Cap en efectos** de brillo para reducir carga GPU
+
+#### GameScreen
+- 📊 **WPM calculation**: 1000ms en lugar de 500ms
+- 🎯 **Combo display**: Solo en múltiplos de 5 (5, 10, 15...)
+- 🧹 **Limpieza de dependencias** en useEffects
+
+### 🔄 Flujo de Usuario Mejorado
+
+#### Primer Uso
+1. ✅ Usuario se crea automáticamente (Supabase o local)
+2. 📝 Pantalla de registro de apodo y avatar
+3. 🎮 Puede jugar inmediatamente
+
+#### Cerrar Sesión
+1. 🚪 Click en "END SESSION"
+2. ✅ Confirmación con modal personalizado
+3. 🧹 Limpieza de localStorage + sessionStorage
+4. 🔄 Recarga de página
+5. 📝 Redirección a pantalla de registro
+
+#### Rankings
+1. 🏆 Muestra juegos locales cuando Supabase falla
+2. 📊 Combina juegos locales y de Supabase cuando ambos están disponibles
+3. 🎯 Cálculo de récords personales funciona offline
+
+### 📝 Notas Técnicas
+
+#### Usuarios Locales
+- Los usuarios locales usan el prefijo `local_` en sus IDs
+- Los datos se guardan en localStorage con las claves:
+  - `typingquest-local-userid` - ID del usuario actual
+  - `typingquest-local-profile-{userId}` - Perfil del usuario
+  - `typingquest-local-games-{userId}` - Juegos del usuario
+
+#### Supabase Auth Error 500
+- El sistema detecta automáticamente cuando Supabase Auth falla
+- Genera un ID local y continúa la ejecución
+- Los juegos se guardan en localStorage
+- Cuando Supabase funciona, los datos se sincronizan
+
+### 🎨 UI/UX
+
+#### Modal de Cerrar Sesión
+- 🎮 Diseño arcade con estilo cyberpunk
+- 🎨 Animaciones de entrada/salida suaves
+- 📱 Responsive y centrado en pantalla
+- 🔴 Botón "YES, RESET" con estilo de peligro
+
+---
+
+## [1.0.1] - 2026-03-07
+
+### 🐛 Correcciones de Bugs
+
+#### Interfaz y Experiencia de Usuario (UI/UX)
+- 🛠️ **ErrorShake Fix**: Corregido bug donde la frase de escritura no era visible al inicio del juego. El componente ahora renderiza correctamente a sus hijos incluso cuando no hay errores activos.
+- ⌨️ **Visibilidad del Texto**: Se aseguró que el usuario pueda ver la frase objetivo desde el primer momento en `GameScreen`.
+
+---
+
 ## [1.0.0] - 2026-03-06
 
 ### ✨ Características Agregadas

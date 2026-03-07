@@ -46,6 +46,8 @@ export interface GameState {
   timeRemaining: number
   wordsCompleted: number
   totalWords: number
+  totalCorrectChars: number
+  totalTypedChars: number
 }
 
 export interface GameResult {

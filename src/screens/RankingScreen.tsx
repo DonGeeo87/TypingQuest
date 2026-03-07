@@ -8,7 +8,7 @@ import {
   subscribeToDurationRanking,
   DURATION_CATEGORIES,
 } from '../services/supabaseService'
-import { supabase } from '../lib/supabase'
+import { getCurrentUser } from '../lib/supabase'
 import type { RankedGame, PersonalBest, RealtimeRankingUpdate } from '../types'
 
 interface RankingScreenProps {
@@ -54,8 +54,8 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
   }, [userId, selectedDuration])
 
   const loadUserId = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    setUserId(user?.id || null)
+    const id = await getCurrentUser()
+    setUserId(id)
   }
 
   const loadRankings = async () => {

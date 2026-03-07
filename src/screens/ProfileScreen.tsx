@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
 import { signInAnonymously, getCurrentUser } from '../lib/supabase'
-import { getProfile, getUserGameResults, getUserMissions, getUserAchievements } from '../services/supabaseService'
+import { getProfile, getUserGameResults, getUserMissions, getUserAchievements, signOut } from '../services/supabaseService'
 import { RegistrationScreen } from './RegistrationScreen'
+import { useAuthStore } from '../store/authStore'
 import type { Profile, GameResult, UserMission, UserAchievement } from '../types'
 
 interface ProfileScreenProps {
@@ -18,6 +19,8 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   const [achievements, setAchievements] = useState<UserAchievement[]>([])
   const [loading, setLoading] = useState(true)
   const [needsRegistration, setNeedsRegistration] = useState(false)
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
+  const { signOut: storeSignOut } = useAuthStore()
 
   useEffect(() => {
     loadProfile()
@@ -43,12 +46,12 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     setRecentGames(gamesData)
     setMissions(missionsData)
     setAchievements(achievementsData)
-    
+
     // Verificar si necesita registrarse (no tiene username)
     if (!profileData?.username || profileData.username.trim().length === 0) {
       setNeedsRegistration(true)
     }
-    
+
     setLoading(false)
   }
 
@@ -60,9 +63,30 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     }
   }
 
+  const handleSignOut = () => {
+    setShowSignOutConfirm(true)
+  }
+
+  const confirmSignOut = async () => {
+    setShowSignOutConfirm(false)
+
+    try {
+      await signOut()
+      await storeSignOut()
+      window.location.reload()
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error)
+    }
+  }
+
   // Mostrar pantalla de registro si no tiene username
   if (needsRegistration) {
-    return <RegistrationScreen onComplete={handleRegistrationComplete} />
+    return (
+      <RegistrationScreen
+        onComplete={handleRegistrationComplete}
+        onBack={() => onNavigate('home')}
+      />
+    )
   }
 
   if (loading) {
@@ -172,11 +196,10 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`p-4 rounded-lg border ${
-                    mission.completed
-                      ? 'border-green-500/50 bg-green-500/10'
-                      : 'border-zinc-700 bg-zinc-800/50'
-                  }`}
+                  className={`p-4 rounded-lg border ${mission.completed
+                    ? 'border-green-500/50 bg-green-500/10'
+                    : 'border-zinc-700 bg-zinc-800/50'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -217,7 +240,67 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
             </div>
           )}
         </Card>
+
+        {/* Arcade Style Sign Out */}
+        <div className="flex justify-center pt-8">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              onClick={handleSignOut}
+              variant="secondary"
+              className="bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400 px-8 py-4 rounded-xl flex items-center gap-3 font-black tracking-widest uppercase italic shadow-lg shadow-red-500/10"
+            >
+              <span>🕹️ END SESSION</span>
+              <span className="text-[10px] opacity-50 bg-red-400/20 px-2 py-0.5 rounded">PRESS TO RESET</span>
+            </Button>
+          </motion.div>
+        </div>
       </div>
+
+      {/* Confirm Modal */}
+      <AnimatePresence>
+        {showSignOutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setShowSignOutConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-zinc-900 border border-red-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl shadow-red-500/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center space-y-4">
+                <div className="text-5xl mb-2">🕹️</div>
+                <h2 className="text-2xl font-bold text-white">¿END SESSION?</h2>
+                <p className="text-zinc-400 text-sm">
+                  Tu progreso se guardará en el ranking, pero para volver a jugar deberás crear un nuevo apodo y avatar.
+                </p>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={() => setShowSignOutConfirm(false)}
+                    variant="secondary"
+                    className="flex-1"
+                  >
+                    CANCEL
+                  </Button>
+                  <Button
+                    onClick={confirmSignOut}
+                    variant="accent"
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                  >
+                    YES, RESET
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

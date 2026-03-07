@@ -18,7 +18,9 @@ interface GameStore extends GameState {
   initializeGame: (text: string, language: Language, level: GameLevel) => void
   decrementTime: () => void
   setGameDuration: (duration: number) => void
-  incrementWordsCompleted: () => void
+  incrementWordsCompletedBy: (amount: number) => void
+  resetCurrentPhrase: () => void
+  advanceToNextText: (text: string) => void
 }
 
 const initialState: GameState = {
@@ -41,6 +43,8 @@ const initialState: GameState = {
   timeRemaining: 60,
   wordsCompleted: 0,
   totalWords: 0,
+  totalCorrectChars: 0,
+  totalTypedChars: 0,
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -62,6 +66,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       typedChars: [...state.typedChars, char],
       correctChars: isCorrect ? state.correctChars + 1 : state.correctChars,
       incorrectChars: !isCorrect ? state.incorrectChars + 1 : state.incorrectChars,
+      totalCorrectChars: isCorrect ? state.totalCorrectChars + 1 : state.totalCorrectChars,
+      totalTypedChars: state.totalTypedChars + 1,
     })
   },
 
@@ -86,12 +92,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!state.startTime || !state.endTime) return
 
     const timeInMinutes = (state.endTime - state.startTime) / 60000
-    const wordsTyped = state.typedChars.length / 5 // Standard: 5 chars = 1 word
+    // Usar totalCorrectChars para que no se pierda al resetear frase
+    const wordsTyped = state.totalCorrectChars / 5
 
-    const wpm = Math.round(wordsTyped / timeInMinutes) || 0
-    const totalChars = state.correctChars + state.incorrectChars
-    const accuracy = totalChars > 0
-      ? Math.round((state.correctChars / totalChars) * 100 * 100) / 100
+    const wpm = Math.max(0, Math.round(wordsTyped / timeInMinutes)) || 0
+    // Precisión basada en el histórico de todos los intentos
+    const accuracy = state.totalTypedChars > 0
+      ? Math.round((state.totalCorrectChars / state.totalTypedChars) * 100 * 100) / 100
       : 100
 
     set({ wpm, accuracy })
@@ -109,7 +116,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get()
     // Count words in text (split by spaces)
     const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length
-    
+
     set({
       currentText: text,
       language,
@@ -129,6 +136,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timeRemaining: state.gameDuration,
       wordsCompleted: 0,
       totalWords: wordCount,
+      totalCorrectChars: 0,
+      totalTypedChars: 0,
     })
   },
 
@@ -139,13 +148,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  setGameDuration: (duration) => set({ 
+  setGameDuration: (duration) => set({
     gameDuration: duration,
     timeRemaining: duration,
   }),
 
-  incrementWordsCompleted: () => {
+  incrementWordsCompletedBy: (amount) => {
     const state = get()
-    set({ wordsCompleted: state.wordsCompleted + 1 })
+    set({ wordsCompleted: state.wordsCompleted + amount })
+  },
+
+  resetCurrentPhrase: () => {
+    set({ currentIndex: 0, typedChars: [] })
+  },
+
+  advanceToNextText: (text) => {
+    const state = get()
+    const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length
+    set({
+      currentText: text,
+      currentIndex: 0,
+      typedChars: [],
+      totalWords: state.totalWords + wordCount
+    })
   },
 }))

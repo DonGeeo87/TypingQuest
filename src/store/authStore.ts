@@ -17,7 +17,7 @@ interface AuthState {
   setProfile: (profile: Profile | null) => void
   setHasRegisteredUsername: (hasUsername: boolean) => void
   refreshProfile: () => Promise<void>
-  signOut: () => void
+  signOut: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -128,12 +128,20 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      signOut: () => {
+      signOut: async () => {
+        // Limpiar el localStorage del store
+        localStorage.removeItem('typingquest-auth')
+
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('typingquest-local-userid')
+
+        // Limpiar el estado
         set({
           userId: null,
           profile: null,
           hasRegisteredUsername: false,
-          isAuthenticated: false
+          isAuthenticated: false,
+          isLoading: false
         })
       }
     }),

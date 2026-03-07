@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 interface ErrorShakeProps {
   isActive: boolean
@@ -7,24 +7,18 @@ interface ErrorShakeProps {
 
 export function ErrorShake({ isActive, children }: ErrorShakeProps) {
   return (
-    <AnimatePresence>
-      {isActive && (
-        <motion.div
-          initial={{ x: 0 }}
-          animate={{
-            x: [-10, 10, -10, 10, -10, 10, 0],
-          }}
-          exit={{ x: 0 }}
-          transition={{
-            duration: 0.4,
-            ease: 'easeInOut',
-            times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 1],
-          }}
-          className="inline-block"
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div
+      animate={isActive ? {
+        x: [-4, 4, -4, 4, 0],
+      } : { x: 0 }}
+      transition={{
+        duration: 0.2,
+        ease: 'easeInOut',
+        times: [0, 0.25, 0.5, 0.75, 1],
+      }}
+      className="w-full"
+    >
+      {children}
+    </motion.div>
   )
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ParticleBackground } from './components'
+import { ParticleBackground, FloatingWords } from './components'
 import { HomeScreen, GameScreen, RankingScreen, ProfileScreen, RegistrationScreen } from './screens'
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
@@ -70,7 +70,8 @@ function App() {
   // Mostrar pantalla de carga mientras se inicializa la autenticación
   if (authLoading) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center">
+      <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
+        <FloatingWords />
         <ParticleBackground isActive={false} />
         <div className="relative z-10 text-center space-y-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -81,12 +82,16 @@ function App() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-black overflow-hidden">
+      <FloatingWords />
       <ParticleBackground isActive={currentScreen === 'game'} />
 
       <div className="relative z-10">
         {currentScreen === 'registration' && (
-          <RegistrationScreen onComplete={handleRegistrationComplete} />
+          <RegistrationScreen
+            onComplete={handleRegistrationComplete}
+            onBack={() => setCurrentScreen('home')}
+          />
         )}
 
         {currentScreen === 'home' && (
