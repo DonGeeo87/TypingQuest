@@ -18,6 +18,10 @@ import type {
   MultiplayerRoomPlayer,
   MultiplayerRound,
   MultiplayerSubmission,
+  Class,
+  ClassMember,
+  Assignment,
+  AssignmentAttempt,
   Language,
   GameLevel,
 } from '../types'
@@ -1179,10 +1183,186 @@ export async function listRoundLeaderboard(roundId: string): Promise<Multiplayer
     .from('mp_submissions')
     .select('*')
     .eq('round_id', roundId)
+    .eq('validated', true)
     .order('score', { ascending: false })
     .order('submitted_at', { ascending: true })
 
   return (data as MultiplayerSubmission[]) || []
+}
+
+// ============================================
+// TEACHER MODE (CLASSES / ASSIGNMENTS)
+// ============================================
+
+function makeClassCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const buf = new Uint32Array(3)
+  crypto.getRandomValues(buf)
+  return Array.from(buf)
+    .map((n) => alphabet[n % alphabet.length])
+    .join('')
+}
+
+export async function createClass(params: { teacherId: string; name: string }): Promise<Class> {
+  const { teacherId, name } = params
+  let lastError: Error | null = null
+  for (let i = 0; i < 10; i++) {
+    const code = makeClassCode()
+    const { data, error } = await supabase
+      .from('classes')
+      .insert({ teacher_id: teacherId, name, code })
+      .select('*')
+      .single()
+    if (!error) return data as Class
+    lastError = error
+  }
+  throw lastError ?? new Error('Error creando clase')
+}
+
+export async function listMyClasses(userId: string): Promise<Class[]> {
+  const { data } = await supabase
+    .from('class_members')
+    .select(`
+      classes:class_id (
+        id,
+        teacher_id,
+        name,
+        code,
+        created_at
+      )
+    `)
+    .eq('user_id', userId)
+
+  const rows = (data as unknown as Array<{ classes: Class }> | null) ?? []
+  return rows.map((r) => r.classes).filter(Boolean)
+}
+
+export async function joinClassByCode(params: { userId: string; code: string }): Promise<Class> {
+  const { userId, code } = params
+  const { data: cls, error: clsErr } = await supabase
+    .from('classes')
+    .select('*')
+    .eq('code', code.toUpperCase())
+    .single()
+  if (clsErr) throw clsErr
+
+  const c = cls as Class
+  const { error } = await supabase
+    .from('class_members')
+    .insert({ class_id: c.id, user_id: userId, role: 'student' })
+  if (error) throw error
+  return c
+}
+
+export async function listClassMembers(classId: string): Promise<ClassMember[]> {
+  const { data } = await supabase
+    .from('class_members')
+    .select(`
+      class_id,
+      user_id,
+      role,
+      joined_at,
+      profiles:user_id (
+        username,
+        avatar_url
+      )
+    `)
+    .eq('class_id', classId)
+    .order('joined_at', { ascending: true })
+  const rows = (data as unknown as Array<{
+    class_id: string
+    user_id: string
+    role: 'teacher' | 'student'
+    joined_at: string
+    profiles: { username: string; avatar_url?: string | null } | Array<{ username: string; avatar_url?: string | null }> | null
+  }> | null) ?? []
+
+  return rows.map((r) => ({
+    class_id: r.class_id,
+    user_id: r.user_id,
+    role: r.role,
+    joined_at: r.joined_at,
+    profiles: Array.isArray(r.profiles) ? r.profiles[0] ?? null : r.profiles,
+  }))
+}
+
+export async function createAssignment(params: {
+  classId: string
+  createdBy: string
+  title: string
+  description?: string
+  language: Language
+  level: GameLevel
+  durationSeconds: number
+}): Promise<Assignment> {
+  const { data, error } = await supabase
+    .from('assignments')
+    .insert({
+      class_id: params.classId,
+      created_by: params.createdBy,
+      title: params.title,
+      description: params.description ?? null,
+      language: params.language,
+      level: params.level,
+      duration_seconds: params.durationSeconds,
+      mode: 'classic',
+    })
+    .select('*')
+    .single()
+  if (error) throw error
+  return data as Assignment
+}
+
+export async function listAssignments(classId: string): Promise<Assignment[]> {
+  const { data } = await supabase
+    .from('assignments')
+    .select('*')
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false })
+  return (data as Assignment[]) || []
+}
+
+export async function submitAssignmentAttempt(params: {
+  assignmentId: string
+  userId: string
+  gameResultId?: string | null
+  wpm: number
+  accuracy: number
+  errors: number
+  wordsCompleted: number
+  score: number
+}): Promise<AssignmentAttempt> {
+  const { data, error } = await supabase
+    .from('assignment_attempts')
+    .insert({
+      assignment_id: params.assignmentId,
+      user_id: params.userId,
+      game_result_id: params.gameResultId ?? null,
+      wpm: params.wpm,
+      accuracy: params.accuracy,
+      errors: params.errors,
+      words_completed: params.wordsCompleted,
+      score: params.score,
+    })
+    .select('*')
+    .single()
+  if (error) throw error
+  return data as AssignmentAttempt
+}
+
+export async function listAssignmentAttempts(assignmentId: string): Promise<AssignmentAttempt[]> {
+  const { data } = await supabase
+    .from('assignment_attempts')
+    .select(`
+      *,
+      profiles:user_id (
+        username,
+        avatar_url
+      )
+    `)
+    .eq('assignment_id', assignmentId)
+    .order('submitted_at', { ascending: false })
+  return (data as AssignmentAttempt[]) || []
 }
 
 export function subscribeToRoom(roomId: string, onChange: () => void): () => void {

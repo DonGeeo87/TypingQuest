@@ -7,7 +7,7 @@ import { TypingArea, StatsDisplay, ComboIndicator, Button, Card, Confetti, Error
 import type { ContentMeta } from '../data/words'
 import { selectTextForLevel } from '../data/words'
 import { getCurrentUser } from '../lib/supabase'
-import { saveGameResult, checkNewPersonalRecord, DURATION_CATEGORIES } from '../services/supabaseService'
+import { saveGameResult, checkNewPersonalRecord, DURATION_CATEGORIES, submitAssignmentAttempt } from '../services/supabaseService'
 import {
   getDifficultyLevel,
   getProgressToNextLevel,
@@ -55,6 +55,8 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     advanceToNextText,
     totalCorrectChars,
     totalTypedChars,
+    assignmentId,
+    setAssignmentId,
   } = useGameStore()
 
   const [liveWpm, setLiveWpm] = useState(0)
@@ -158,7 +160,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
     const duration = gameDuration || 60
 
-    await saveGameResult({
+    const saved = await saveGameResult({
       user_id: userId,
       language,
       level,
@@ -176,9 +178,24 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       content_key: contentMeta?.key,
     })
 
+    if (assignmentId && saved?.id) {
+      await submitAssignmentAttempt({
+        assignmentId,
+        userId,
+        gameResultId: saved.id,
+        wpm: liveWpm,
+        accuracy: liveAccuracy,
+        errors,
+        wordsCompleted,
+        score: standardizedScore,
+      })
+      setAssignmentId(null)
+    }
+
     const isNewRecordResult = await checkNewPersonalRecord(userId, duration, standardizedScore)
     setIsNewRecord(isNewRecordResult)
   }, [
+    assignmentId,
     contentMeta,
     errors,
     gameDuration,
@@ -187,6 +204,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     liveAccuracy,
     liveWpm,
     maxCombo,
+    setAssignmentId,
     startTime,
     wordsCompleted,
   ])

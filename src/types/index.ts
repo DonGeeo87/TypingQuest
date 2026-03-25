@@ -48,6 +48,7 @@ export interface GameState {
   totalWords: number
   totalCorrectChars: number
   totalTypedChars: number
+  assignmentId?: string | null
 }
 
 export interface GameResult {
@@ -257,4 +258,49 @@ export interface MultiplayerSubmission {
   submitted_at: string
   validated?: boolean
   validation_reason?: string | null
+}
+
+export interface Class {
+  id: string
+  teacher_id: string
+  name: string
+  code: string
+  created_at: string
+}
+
+export interface ClassMember {
+  class_id: string
+  user_id: string
+  role: 'teacher' | 'student'
+  joined_at: string
+  profiles?: { username: string; avatar_url?: string | null } | null
+}
+
+export interface Assignment {
+  id: string
+  class_id: string
+  created_by: string
+  title: string
+  description?: string | null
+  language: Language
+  level: GameLevel
+  duration_seconds: number
+  mode: 'classic'
+  due_at?: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface AssignmentAttempt {
+  id: string
+  assignment_id: string
+  user_id: string
+  game_result_id?: string | null
+  wpm: number
+  accuracy: number
+  errors: number
+  words_completed: number
+  score: number
+  submitted_at: string
+  profiles?: { username: string; avatar_url?: string | null } | null
 }

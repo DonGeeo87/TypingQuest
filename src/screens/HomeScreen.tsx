@@ -112,7 +112,7 @@ export function HomeScreen({
         </div>
 
         {/* Main Menu Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
@@ -142,6 +142,14 @@ export function HomeScreen({
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">👤</div>
               <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Perfil</h3>
               <p className="text-[var(--muted)] text-sm">Tus logros, historial y cuenta</p>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
+            <Card onClick={() => onNavigate('teacher')} className="cursor-pointer h-full border-sky-500/20 hover:border-sky-500/50 transition-all group">
+              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎓</div>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Profesor</h3>
+              <p className="text-[var(--muted)] text-sm">Clases, asignaciones y reportes</p>
             </Card>
           </motion.div>
         </div>

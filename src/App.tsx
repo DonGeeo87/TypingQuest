@@ -9,7 +9,7 @@ import { useUiStore } from './store/uiStore'
 import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
 import './App.css'
 
-type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer'
+type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher'
 
 const HomeScreen = lazy(() => import('./screens/HomeScreen').then(m => ({ default: m.HomeScreen })))
 const GameScreen = lazy(() => import('./screens/GameScreen').then(m => ({ default: m.GameScreen })))
@@ -19,6 +19,7 @@ const RegistrationScreen = lazy(() => import('./screens/RegistrationScreen').the
 const TapTapGame = lazy(() => import('./screens/TapTapGame').then(m => ({ default: m.TapTapGame })))
 const MultiplayerScreen = lazy(() => import('./screens/MultiplayerScreen').then(m => ({ default: m.MultiplayerScreen })))
 const AuthScreen = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })))
+const TeacherScreen = lazy(() => import('./screens/TeacherScreen').then(m => ({ default: m.TeacherScreen })))
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -203,6 +204,12 @@ function App() {
 
           {currentScreen === 'multiplayer' && (
             <MultiplayerScreen
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentScreen === 'teacher' && (
+            <TeacherScreen
               onNavigate={handleNavigate}
             />
           )}

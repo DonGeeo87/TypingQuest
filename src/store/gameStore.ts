@@ -21,6 +21,7 @@ interface GameStore extends GameState {
   incrementWordsCompletedBy: (amount: number) => void
   resetCurrentPhrase: () => void
   advanceToNextText: (text: string) => void
+  setAssignmentId: (assignmentId: string | null) => void
 }
 
 const initialState: GameState = {
@@ -45,6 +46,7 @@ const initialState: GameState = {
   totalWords: 0,
   totalCorrectChars: 0,
   totalTypedChars: 0,
+  assignmentId: null,
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -172,4 +174,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       totalWords: state.totalWords + wordCount
     })
   },
+
+  setAssignmentId: (assignmentId) => set({ assignmentId }),
 }))
