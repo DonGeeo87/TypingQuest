@@ -4,131 +4,60 @@ type MusicState = {
   volume: number
 }
 
-let ctx: AudioContext | null = null
-let masterGain: GainNode | null = null
-let lead: OscillatorNode | null = null
-let bass: OscillatorNode | null = null
-let chord: OscillatorNode | null = null
-let chordGain: GainNode | null = null
-let timer: number | null = null
-let step = 0
+const tracks = [
+  '/audio/Neon_Overdrive.mp3',
+  '/audio/Pixelated_Dawn.mp3',
+  '/audio/Pixelated_Reverie.mp3',
+] as const
 
-const tempoMs = 420
+let audioEl: HTMLAudioElement | null = null
+let lastState: MusicState = { enabled: true, muted: false, volume: 0.5 }
+const currentTrack = Math.floor(Math.random() * tracks.length)
 
-const scale = [0, 2, 3, 5, 7, 10]
-const chordDegrees = [0, 3, 5, 4]
-
-function ensureContext() {
-  if (!ctx) {
-    ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+function ensureAudio() {
+  if (!audioEl) {
+    audioEl = new Audio(tracks[currentTrack])
+    audioEl.preload = 'none'
+    audioEl.loop = true
+    audioEl.volume = 0
   }
-  if (!masterGain) {
-    masterGain = ctx.createGain()
-    masterGain.gain.value = 0
-    masterGain.connect(ctx.destination)
-  }
-  return ctx
-}
-
-function midiToHz(midi: number) {
-  return 440 * Math.pow(2, (midi - 69) / 12)
+  return audioEl
 }
 
 function setVolumes(state: MusicState) {
-  if (!masterGain) return
+  const a = audioEl
+  if (!a) return
   const target = state.enabled && !state.muted ? Math.max(0, Math.min(1, state.volume)) : 0
-  masterGain.gain.setTargetAtTime(target * 0.08, ensureContext().currentTime, 0.05)
+  a.volume = target * 0.35
 }
 
 export async function resumeAudio() {
-  const c = ensureContext()
-  if (c.state === 'suspended') {
-    await c.resume()
-  }
-}
-
-function startNodes() {
-  const c = ensureContext()
-  if (lead || bass || chord) return
-
-  const filter = c.createBiquadFilter()
-  filter.type = 'lowpass'
-  filter.frequency.value = 1200
-  filter.Q.value = 0.7
-  filter.connect(masterGain!)
-
-  lead = c.createOscillator()
-  lead.type = 'triangle'
-  lead.frequency.value = midiToHz(72)
-  lead.connect(filter)
-
-  bass = c.createOscillator()
-  bass.type = 'sine'
-  bass.frequency.value = midiToHz(48)
-  bass.connect(filter)
-
-  chord = c.createOscillator()
-  chord.type = 'sawtooth'
-  chord.frequency.value = midiToHz(60)
-  chordGain = c.createGain()
-  chordGain.gain.value = 0.12
-  chord.connect(chordGain)
-  chordGain.connect(filter)
-
-  lead.start()
-  bass.start()
-  chord.start()
-
-  step = 0
-  timer = window.setInterval(() => {
-    const t = c.currentTime
-    const rootMidi = 60 + chordDegrees[Math.floor(step / 4) % chordDegrees.length]
-    const degree = scale[step % scale.length]
-    const leadMidi = rootMidi + 12 + degree
-    const bassMidi = rootMidi - 12
-    const chordMidi = rootMidi + 0
-
-    lead!.frequency.setTargetAtTime(midiToHz(leadMidi), t, 0.02)
-    bass!.frequency.setTargetAtTime(midiToHz(bassMidi), t, 0.03)
-    chord!.frequency.setTargetAtTime(midiToHz(chordMidi), t, 0.05)
-
-    step += 1
-  }, tempoMs)
-}
-
-function stopNodes() {
-  if (timer) {
-    window.clearInterval(timer)
-    timer = null
-  }
-
-  const t = ctx?.currentTime ?? 0
-
-  if (masterGain) {
-    masterGain.gain.setTargetAtTime(0, t, 0.03)
-  }
-
-  const nodes: Array<OscillatorNode | null> = [lead, bass, chord]
-  nodes.forEach((n) => {
-    try {
-      n?.stop()
-    } catch (e) {
-      void e
+  const a = ensureAudio()
+  setVolumes(lastState)
+  try {
+    if (lastState.enabled && !lastState.muted && a.paused) {
+      await a.play()
     }
-  })
+  } catch {
+    void 0
+  }
+}
 
-  lead = null
-  bass = null
-  chord = null
-  chordGain = null
+function stopAudio() {
+  if (!audioEl) return
+  audioEl.pause()
+  audioEl.currentTime = 0
 }
 
 export function syncBackgroundMusic(state: MusicState) {
+  lastState = state
   if (!state.enabled) {
-    stopNodes()
+    stopAudio()
     return
   }
 
-  startNodes()
   setVolumes(state)
+  if (audioEl && !state.muted && state.volume > 0) {
+    void resumeAudio()
+  }
 }

@@ -95,6 +95,14 @@ export function HomeScreen({
 
         {/* Header */}
         <div className="text-center space-y-2 py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex items-center justify-center"
+          >
+            <img src="/logo.svg" width={64} height={64} alt="TypingQuest" className="w-14 h-14 md:w-16 md:h-16 drop-shadow-md" />
+          </motion.div>
           <motion.h1
             initial={{ scale: 0.8, filter: 'blur(10px)' }}
             animate={{ scale: 1, filter: 'blur(0px)' }}

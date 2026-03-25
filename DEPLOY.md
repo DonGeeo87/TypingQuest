@@ -88,6 +88,8 @@ vercel env add VITE_SUPABASE_ANON_KEY
 | `VITE_SUPABASE_URL` | `https://your-project.supabase.co` | Production, Preview, Development |
 | `VITE_SUPABASE_ANON_KEY` | `your-anon-key-here` | Production, Preview, Development |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` | Production, Preview, Development |
+| `VITE_GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` | Production, Preview, Development |
+| `VITE_PLAUSIBLE_DOMAIN` | `yourdomain.com` | Production, Preview, Development |
 
 5. Click en "Save"
 

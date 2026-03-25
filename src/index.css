@@ -57,6 +57,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   min-height: 100vh;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 #root {
@@ -241,15 +242,26 @@ body {
 
 .glass {
   background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
 }
 
 .glass-card {
   background: var(--card-bg);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid var(--card-border);
   border-radius: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Typing game specific */

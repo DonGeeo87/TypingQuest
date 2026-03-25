@@ -19,7 +19,7 @@ const AVATARS = [
 export function AvatarSelector({ selectedAvatar, onSelect }: AvatarSelectorProps) {
     return (
         <div className="space-y-4">
-            <label className="block text-sm font-medium text-zinc-300">
+            <label className="block text-sm font-medium text-[var(--foreground)]">
                 Elige tu avatar Pixel Art
             </label>
             <div className="grid grid-cols-4 gap-3">
@@ -33,7 +33,7 @@ export function AvatarSelector({ selectedAvatar, onSelect }: AvatarSelectorProps
               relative p-1 rounded-xl transition-all duration-200 aspect-square
               ${selectedAvatar === avatarUrl
                                 ? 'ring-2 ring-indigo-500 bg-indigo-500/20'
-                                : 'bg-zinc-800/50 hover:bg-zinc-800'
+                                : 'bg-[var(--card-bg)] border border-[var(--card-border)] hover:opacity-90'
                             }
             `}
                     >

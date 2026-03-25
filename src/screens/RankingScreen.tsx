@@ -171,7 +171,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                   <div className="text-2xl font-bold">{category.label}</div>
                   <div className="text-xs opacity-80">{category.description}</div>
                   {userRank && userRank.rank > 0 && (
-                    <div className={`text-xs mt-2 ${isSelected ? 'text-indigo-200' : 'text-zinc-500'}`}>
+                    <div className={`text-xs mt-2 ${isSelected ? 'text-indigo-200' : 'text-[var(--muted)]'}`}>
                       #{userRank.rank} de {userRank.total}
                     </div>
                   )}

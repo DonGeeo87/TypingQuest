@@ -8,6 +8,7 @@ import { supabase } from './lib/supabase'
 import { useUiStore } from './store/uiStore'
 import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
 import { t } from './i18n'
+import { trackScreen } from './analytics'
 import './App.css'
 
 type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher'
@@ -45,6 +46,10 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    document.documentElement.lang = ui
+  }, [ui])
 
   useEffect(() => {
     syncBackgroundMusic({ enabled: audioEnabled, muted: audioMuted, volume: audioVolume })
@@ -88,6 +93,10 @@ function App() {
       setCurrentScreen('home')
     }
   }, [authLoading, userId, hasRegisteredUsername, currentScreen])
+
+  useEffect(() => {
+    trackScreen(currentScreen)
+  }, [currentScreen])
 
   const handleStartGame = () => {
     setCurrentScreen('game')

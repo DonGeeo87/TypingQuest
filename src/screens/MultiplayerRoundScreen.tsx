@@ -141,7 +141,7 @@ export function MultiplayerRoundScreen({ prompt, durationSeconds, onComplete, on
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Button variant="secondary" onClick={onBack}>Volver</Button>
-          <div className="text-zinc-300 font-semibold">
+          <div className="text-[var(--muted)] font-semibold">
             {status === 'finished' ? 'Finalizado' : status === 'playing' ? 'En curso' : 'Listo'}
           </div>
         </div>

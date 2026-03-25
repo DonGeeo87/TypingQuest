@@ -104,9 +104,9 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
             />
             {/* Indicador visual de volumen */}
             <div className="absolute right-10 flex flex-col items-center gap-1 h-full justify-between py-1">
-              <span className={`text-xs ${volume > 0.7 ? 'text-violet-400' : 'text-zinc-500'}`}>🔊</span>
-              <span className={`text-xs ${volume > 0.3 && volume <= 0.7 ? 'text-violet-400' : 'text-zinc-500'}`}>🔉</span>
-              <span className={`text-xs ${volume <= 0.3 ? 'text-violet-400' : 'text-zinc-500'}`}>🔈</span>
+              <span className={`text-xs ${volume > 0.7 ? 'text-violet-400' : 'text-[var(--muted)]'}`}>🔊</span>
+              <span className={`text-xs ${volume > 0.3 && volume <= 0.7 ? 'text-violet-400' : 'text-[var(--muted)]'}`}>🔉</span>
+              <span className={`text-xs ${volume <= 0.3 ? 'text-violet-400' : 'text-[var(--muted)]'}`}>🔈</span>
             </div>
           </div>
 

@@ -517,7 +517,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
                   <div className="text-purple-300 font-bold">
                     {getDifficultyMessage(difficultyLevel, difficultyMultiplier)}
                   </div>
-                  <div className="text-zinc-500 text-xs">
+                  <div className="text-[var(--muted)] text-xs">
                     Palabras: {wordsCompleted} | WPM requerido: {Math.round((liveWpm || 30) * difficultyMultiplier)}
                   </div>
                 </div>
@@ -525,11 +525,11 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
               {/* Barra de progreso hacia el siguiente nivel */}
               <div className="flex-1 max-w-[200px] ml-4">
-                <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                <div className="flex justify-between text-xs text-[var(--muted)] mb-1">
                   <span>Nivel {difficultyLevel}</span>
                   <span>Nivel {difficultyLevel + 1}</span>
                 </div>
-                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--secondary)] rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
                     initial={{ width: 0 }}
