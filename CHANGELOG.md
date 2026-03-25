@@ -320,11 +320,6 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - 🎮 **Logros Steam-like** - Sistema de achievements expandido
 - 📱 **PWA** - Instalar como app nativa
 
----
-
-## [1.0.0] - Initial Release - 2026-03-06
-
-**Desarrollado con ❤️ por el equipo de TypingQuest**
-
+[1.1.0]: https://github.com/DonGeeo87/TypingQuest/releases/tag/v1.1.0
 [1.0.0]: https://github.com/DonGeeo87/TypingQuest/releases/tag/v1.0.0
 [0.1.0]: https://github.com/DonGeeo87/TypingQuest/releases/tag/v0.1.0

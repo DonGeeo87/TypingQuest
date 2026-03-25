@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card, AvatarSelector } from '../components'
 import { checkUsernameAvailable, updateProfile } from '../services/supabaseService'
 import { getCurrentUser } from '../lib/supabase'
+import { log } from '../utils/logger'
 
 interface RegistrationScreenProps {
   onComplete: () => void
@@ -52,7 +53,7 @@ export function RegistrationScreen({ onComplete, onBack }: RegistrationScreenPro
               setError(null)
             }
           } catch (err) {
-            console.error('Error checking username:', err)
+            log.error('Error checking username:', err)
             setError('Error al verificar disponibilidad')
           } finally {
             setIsValidating(false)
@@ -111,7 +112,7 @@ export function RegistrationScreen({ onComplete, onBack }: RegistrationScreenPro
       })
       onComplete()
     } catch (err) {
-      console.error('Error saving profile:', err)
+      log.error('Error saving profile:', err)
       setError('Error al guardar el perfil')
     } finally {
       setIsSaving(false)

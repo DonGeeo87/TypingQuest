@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { log } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -13,12 +14,12 @@ export async function signInAnonymously(): Promise<string | null> {
   try {
     const { data, error } = await supabase.auth.signInAnonymously()
     if (error) {
-      console.warn('Supabase auth falló, usando fallback local:', error.message)
+      log.warn('Supabase auth falló, usando fallback local:', error.message)
       return generateLocalUserId()
     }
     return data.user?.id || generateLocalUserId()
   } catch (err) {
-    console.warn('Error inesperado en Supabase, usando fallback local:', err)
+    log.warn('Error inesperado en Supabase, usando fallback local:', err)
     return generateLocalUserId()
   }
 }
@@ -26,7 +27,7 @@ export async function signInAnonymously(): Promise<string | null> {
 function generateLocalUserId(): string {
   const localId = 'local_' + crypto.randomUUID().replace(/-/g, '').slice(0, 8)
   sessionStorage.setItem('typingquest-local-userid', localId)
-  console.log('[Supabase] Usuario local generado:', localId)
+  log.debug('[Supabase] Usuario local generado:', localId)
   return localId
 }
 

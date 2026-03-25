@@ -7,16 +7,16 @@
 -- ============================================
 
 -- Add new columns to game_results for time-based gameplay
-ALTER TABLE game_results 
+ALTER TABLE public.game_results 
 ADD COLUMN IF NOT EXISTS game_duration INTEGER DEFAULT 60,
 ADD COLUMN IF NOT EXISTS standardized_score INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS time_normalized_score DECIMAL(10,2) DEFAULT 0,
 ADD COLUMN IF NOT EXISTS words_completed INTEGER DEFAULT 0;
 
 -- Add indexes for new columns
-CREATE INDEX IF NOT EXISTS idx_game_results_duration ON game_results(game_duration);
-CREATE INDEX IF NOT EXISTS idx_game_results_standardized_score ON game_results(standardized_score DESC);
-CREATE INDEX IF NOT EXISTS idx_game_results_time_normalized ON game_results(time_normalized_score DESC);
+CREATE INDEX IF NOT EXISTS idx_game_results_duration ON public.game_results(game_duration);
+CREATE INDEX IF NOT EXISTS idx_game_results_standardized_score ON public.game_results(standardized_score DESC);
+CREATE INDEX IF NOT EXISTS idx_game_results_time_normalized ON public.game_results(time_normalized_score DESC);
 
 -- ============================================
 -- UPDATE VIEWS FOR TIME-BASED RANKINGS
@@ -35,8 +35,8 @@ SELECT
   COUNT(gr.id) as total_games,
   ROUND(AVG(gr.wpm), 2) as avg_wpm,
   ROUND(AVG(gr.accuracy), 2) as avg_accuracy
-FROM profiles p
-LEFT JOIN game_results gr ON p.id = gr.user_id
+FROM public.profiles p
+LEFT JOIN public.game_results gr ON p.id = gr.user_id
 GROUP BY p.id, p.username, p.avatar_url
 ORDER BY best_score DESC;
 
@@ -52,8 +52,8 @@ SELECT
   MAX(gr.wpm) as best_wpm,
   ROUND(AVG(gr.accuracy), 2) as avg_accuracy,
   COUNT(gr.id) as games_played
-FROM profiles p
-JOIN game_results gr ON p.id = gr.user_id
+FROM public.profiles p
+JOIN public.game_results gr ON p.id = gr.user_id
 WHERE gr.game_duration IS NOT NULL
 GROUP BY p.id, p.username, p.avatar_url, gr.game_duration
 ORDER BY gr.game_duration, best_score DESC;
@@ -118,7 +118,7 @@ CREATE TRIGGER calculate_game_scores_trigger
 -- ============================================
 
 -- Update existing records with calculated scores
-UPDATE game_results
+UPDATE public.game_results
 SET 
   standardized_score = calculate_game_score(words_completed, wpm, accuracy, errors),
   time_normalized_score = calculate_time_normalized_score(wpm, accuracy, COALESCE(game_duration, 60)),
@@ -131,25 +131,50 @@ WHERE standardized_score IS NULL OR time_normalized_score IS NULL;
 -- ============================================
 
 -- Enable realtime for game_results
-ALTER PUBLICATION supabase_realtime ADD TABLE game_results;
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.game_results;
+EXCEPTION
+  WHEN duplicate_object THEN
+    NULL;
+END;
+$$;
 
 -- ============================================
 -- SEED DATA - UPDATE MISSIONS
 -- ============================================
 
 -- Add new missions for time-based gameplay
-INSERT INTO missions (title, description, type, target_value, reward, is_daily) VALUES
-  ('Sprinter', 'Completa una partida de 30 segundos', 'game_duration', 30, 50, false),
-  ('Maratonista', 'Completa una partida de 120 segundos', 'game_duration', 120, 100, false),
-  ('Preciso', 'Consigue 95% de precisión en 60 segundos', 'accuracy_duration', 95, 150, false),
-  ('Velocista', 'Alcanza 50 WPM en 30 segundos', 'wpm_duration', 50, 120, false),
-  ('Resistente', 'Completa 5 partidas de 90+ segundos', 'games_duration_long', 5, 200, false);
+DO $$
+BEGIN
+  IF to_regclass('public.missions') IS NULL THEN
+    RETURN;
+  END IF;
+
+  INSERT INTO public.missions (title, description, type, target_value, reward, is_daily)
+  SELECT 'Sprinter', 'Completa una partida de 30 segundos', 'game_duration', 30, 50, false
+  WHERE NOT EXISTS (SELECT 1 FROM public.missions WHERE title = 'Sprinter' AND type = 'game_duration');
+
+  INSERT INTO public.missions (title, description, type, target_value, reward, is_daily)
+  SELECT 'Maratonista', 'Completa una partida de 120 segundos', 'game_duration', 120, 100, false
+  WHERE NOT EXISTS (SELECT 1 FROM public.missions WHERE title = 'Maratonista' AND type = 'game_duration');
+
+  INSERT INTO public.missions (title, description, type, target_value, reward, is_daily)
+  SELECT 'Preciso', 'Consigue 95% de precisión en 60 segundos', 'accuracy_duration', 95, 150, false
+  WHERE NOT EXISTS (SELECT 1 FROM public.missions WHERE title = 'Preciso' AND type = 'accuracy_duration');
+
+  INSERT INTO public.missions (title, description, type, target_value, reward, is_daily)
+  SELECT 'Velocista', 'Alcanza 50 WPM en 30 segundos', 'wpm_duration', 50, 120, false
+  WHERE NOT EXISTS (SELECT 1 FROM public.missions WHERE title = 'Velocista' AND type = 'wpm_duration');
+
+  INSERT INTO public.missions (title, description, type, target_value, reward, is_daily)
+  SELECT 'Resistente', 'Completa 5 partidas de 90+ segundos', 'games_duration_long', 5, 200, false
+  WHERE NOT EXISTS (SELECT 1 FROM public.missions WHERE title = 'Resistente' AND type = 'games_duration_long');
+END;
+$$;
 
 -- ============================================
--- RLS POLICIES
+-- GRANTS
 -- ============================================
 
--- Add policies for new views
-CREATE POLICY "Anyone can view duration rankings"
-  ON duration_rankings FOR SELECT
-  USING (TRUE);
+GRANT SELECT ON public.duration_rankings TO anon, authenticated;

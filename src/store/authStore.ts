@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { getCurrentUser, signInAnonymously } from '../lib/supabase'
 import { getProfile, hasUsername } from '../services/supabaseService'
+import { log } from '../utils/logger'
 import type { Profile } from '../types'
 
 interface AuthState {
@@ -64,7 +65,7 @@ export const useAuthStore = create<AuthState>()(
             })
           }
         } catch (error) {
-          console.error('Error initializing auth:', error)
+          log.error('Error initializing auth:', error)
           set({
             userId: null,
             profile: null,
@@ -96,7 +97,7 @@ export const useAuthStore = create<AuthState>()(
             })
           }
         } catch (error) {
-          console.error('Error signing in anonymously:', error)
+          log.error('Error signing in anonymously:', error)
           set({ isLoading: false })
         }
       },
@@ -124,7 +125,7 @@ export const useAuthStore = create<AuthState>()(
             hasRegisteredUsername: userHasUsername
           })
         } catch (error) {
-          console.error('Error refreshing profile:', error)
+          log.error('Error refreshing profile:', error)
         }
       },
 

@@ -74,11 +74,11 @@ npm install
 
 3. **Configurar variables de entorno**
 
-Crea un archivo `.env` en la raíz del proyecto:
+Copia `.env.example` a `.env` en la raíz del proyecto y completa los valores:
 
 ```env
-VITE_SUPABASE_URL=https://cqpqbwptqfvyqhpulrcx.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_RMYdOpkyGJVq1Ytmapq5aw_9om9JrMX
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 4. **Configurar base de datos**
@@ -284,7 +284,7 @@ git push origin feature/tu-feature
 
 ## 📋 Roadmap
 
-### ✅ Completado (v1.0.0)
+### ✅ Completado (v1.1.0)
 - [x] Sistema de juego con temporizador
 - [x] Rankings por duración
 - [x] Dificultad progresiva
@@ -350,7 +350,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 | Métrica | Valor |
 |---------|-------|
-| **Versión** | 1.0.0 |
+| **Versión** | 1.1.0 |
 | **Estado** | ✅ Production Ready |
 | **Última Actualización** | 2026-03-06 |
 | **Archivos** | 55+ |

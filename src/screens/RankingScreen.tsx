@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
 import {
@@ -24,74 +24,89 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [liveUpdate, setLiveUpdate] = useState<RealtimeRankingUpdate | null>(null)
 
-  useEffect(() => {
-    loadUserId()
-  }, [])
-
-  useEffect(() => {
-    if (userId) {
-      loadRankings()
-      loadPersonalBests()
-      loadUserRanks()
-    }
-  }, [userId, selectedDuration])
-
-  // Suscribirse a actualizaciones en tiempo real
-  useEffect(() => {
-    if (!userId) return
-
-    const unsubscribe = subscribeToDurationRanking(selectedDuration, (update) => {
-      setLiveUpdate(update)
-      
-      // Recargar rankings después de 2 segundos para mostrar la notificación primero
-      setTimeout(() => {
-        loadRankings()
-        setLiveUpdate(null)
-      }, 2000)
-    })
-
-    return () => unsubscribe()
-  }, [userId, selectedDuration])
-
-  const loadUserId = async () => {
+  const loadUserId = useCallback(async () => {
     const id = await getCurrentUser()
     setUserId(id)
-  }
+  }, [])
 
-  const loadRankings = async () => {
+  const loadRankings = useCallback(async (duration: number) => {
     setLoading(true)
-    const data = await getDurationRanking(selectedDuration, 50)
+    const data = await getDurationRanking(duration, 50)
     setRankings(prev => ({
       ...prev,
-      [selectedDuration]: data,
+      [duration]: data,
     }))
     setLoading(false)
-  }
+  }, [])
 
-  const loadPersonalBests = async () => {
-    if (!userId) return
-    const bests = await getPersonalBests(userId)
+  const loadPersonalBests = useCallback(async (id: string) => {
+    const bests = await getPersonalBests(id)
     setPersonalBests(bests)
-  }
+  }, [])
 
-  const loadUserRanks = async () => {
-    if (!userId) return
-    
+  const loadUserRanks = useCallback(async (id: string) => {
     const ranks: Record<number, { rank: number; total: number }> = {}
-    
+
     for (const category of DURATION_CATEGORIES) {
-      const result = await getUserDurationRank(userId, category.value)
+      const result = await getUserDurationRank(id, category.value)
       ranks[category.value] = {
         rank: result.rank,
         total: result.total,
       }
     }
-    
+
     setUserRanks(ranks)
-  }
+  }, [])
+
+  useEffect(() => {
+    void loadUserId()
+  }, [loadUserId])
+
+  useEffect(() => {
+    if (userId) {
+      void loadRankings(selectedDuration)
+      void loadPersonalBests(userId)
+      void loadUserRanks(userId)
+    }
+  }, [userId, selectedDuration, loadPersonalBests, loadRankings, loadUserRanks])
+
+  // Suscribirse a actualizaciones en tiempo real
+  useEffect(() => {
+    if (!userId) return
+
+    let timeoutId: number | undefined
+    const unsubscribe = subscribeToDurationRanking(selectedDuration, (update) => {
+      setLiveUpdate(update)
+      
+      // Recargar rankings después de 2 segundos para mostrar la notificación primero
+      timeoutId = window.setTimeout(() => {
+        void loadRankings(selectedDuration)
+        setLiveUpdate(null)
+      }, 2000)
+    })
+
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId)
+      unsubscribe()
+    }
+  }, [userId, selectedDuration, loadRankings])
 
   const currentRanking = rankings[selectedDuration] || []
-  const currentPersonalBest = personalBests?.[`duration_${selectedDuration}` as keyof PersonalBest] as RankedGame | null
+  const currentPersonalBest = (() => {
+    if (!personalBests) return null
+    switch (selectedDuration) {
+      case 30:
+        return personalBests.duration_30
+      case 60:
+        return personalBests.duration_60
+      case 90:
+        return personalBests.duration_90
+      case 120:
+        return personalBests.duration_120
+      default:
+        return null
+    }
+  })()
   const currentUserRank = userRanks[selectedDuration]
 
   const getDurationCategory = (duration: number) => {
@@ -282,23 +297,23 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            {(entry as any).avatar_url ? (
+                            {entry.avatar_url ? (
                               <img
-                                src={(entry as any).avatar_url}
-                                alt={(entry as any).username}
+                                src={entry.avatar_url}
+                                alt={entry.username || 'Jugador'}
                                 className="w-8 h-8 rounded-full"
                               />
                             ) : (
                               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
                                 isUserEntry ? 'bg-indigo-600 text-white' : 'bg-zinc-700 text-zinc-300'
                               }`}>
-                                {(entry as any).username?.[0]?.toUpperCase() || '?'}
+                                {entry.username?.[0]?.toUpperCase() || '?'}
                               </div>
                             )}
                             <span className={`font-semibold ${
                               isUserEntry ? 'text-indigo-400' : 'text-white'
                             }`}>
-                              {(entry as any).username || 'Anónimo'}
+                              {entry.username || 'Anónimo'}
                               {isPersonalBest && ' 👑'}
                             </span>
                             {index < 3 && (

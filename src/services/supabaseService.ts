@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { log } from '../utils/logger'
 import type {
   GameResult,
   Profile,
@@ -13,6 +14,11 @@ import type {
   RealtimeRankingUpdate,
   DurationCategory,
 } from '../types'
+
+type GameResultWithProfile = GameResult & {
+  profiles?: { username: string; avatar_url?: string | null } | null
+  time_normalized_score?: number | null
+}
 
 // ============================================
 // DURATION CATEGORIES
@@ -111,7 +117,7 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
     const currentProfile = await getProfile(userId)
     const updatedProfile = { ...currentProfile, ...updates } as Profile
     localStorage.setItem('typingquest-local-profile-' + userId, JSON.stringify(updatedProfile))
-    console.log('[Supabase] Perfil local actualizado:', updatedProfile)
+    log.debug('[Supabase] Perfil local actualizado:', updatedProfile)
     return
   }
 
@@ -143,7 +149,7 @@ export async function saveGameResult(result: Omit<GameResult, 'id' | 'created_at
 
     games.unshift(newGame) // Agregar al principio
     localStorage.setItem('typingquest-local-games-' + result.user_id, JSON.stringify(games))
-    console.log('[Supabase] Juego local guardado:', newGame)
+    log.debug('[Supabase] Juego local guardado:', newGame)
     return newGame
   }
 
@@ -173,7 +179,7 @@ export async function saveGameResult(result: Omit<GameResult, 'id' | 'created_at
     .single()
 
   if (error) {
-    console.warn('Error al guardar resultado en Supabase:', error.message)
+    log.warn('Error al guardar resultado en Supabase:', error.message)
     return null
   }
   return data
@@ -252,13 +258,15 @@ export async function getDurationRanking(
   limit = 50
 ): Promise<RankedGame[]> {
   // Obtener juegos locales primero
-  const allLocalGames: any[] = []
+  const allLocalGames: GameResult[] = []
   const localKeys = Object.keys(localStorage).filter(k => k.startsWith('typingquest-local-games-'))
   for (const key of localKeys) {
     const games = localStorage.getItem(key)
     if (games) {
-      const parsed = JSON.parse(games)
-      allLocalGames.push(...parsed)
+      const parsed = JSON.parse(games) as unknown
+      if (Array.isArray(parsed)) {
+        allLocalGames.push(...(parsed as GameResult[]))
+      }
     }
   }
 
@@ -267,10 +275,10 @@ export async function getDurationRanking(
     .filter(g => g.game_duration === duration)
     .sort((a, b) => (b.standardized_score || 0) - (a.standardized_score || 0))
     .slice(0, limit)
-    .map((game: any) => ({
+    .map((game): RankedGame => ({
       ...game,
-      time_normalized_score: game.time_normalized_score || 0,
-      duration_category: getDurationCategory(game.game_duration)?.label || 'Unknown',
+      time_normalized_score: 0,
+      duration_category: getDurationCategory(game.game_duration || duration)?.label || 'Unknown',
     }))
 
   // Intentar obtener juegos de Supabase
@@ -287,12 +295,15 @@ export async function getDurationRanking(
       .eq('game_duration', duration)
       .order('standardized_score', { ascending: false })
       .limit(limit)
+      .returns<GameResultWithProfile[]>()
 
     if (data && data.length > 0) {
-      const supabaseGames = data.map((game: any) => ({
+      const supabaseGames: RankedGame[] = data.map((game) => ({
         ...game,
-        time_normalized_score: game.time_normalized_score || 0,
-        duration_category: getDurationCategory(game.game_duration)?.label || 'Unknown',
+        username: game.profiles?.username ?? undefined,
+        avatar_url: game.profiles?.avatar_url ?? undefined,
+        time_normalized_score: game.time_normalized_score ?? 0,
+        duration_category: getDurationCategory(game.game_duration || duration)?.label || 'Unknown',
       }))
 
       // Combinar y ordenar todos los juegos
@@ -303,7 +314,7 @@ export async function getDurationRanking(
       return allGames
     }
   } catch (error) {
-    console.warn('Error al obtener ranking de Supabase:', error)
+    log.warn('Error al obtener ranking de Supabase:', error)
   }
 
   // Si no hay datos de Supabase, retornar solo locales
@@ -362,7 +373,7 @@ export async function getPersonalBests(userId: string): Promise<PersonalBest> {
   return calculatePersonalBestsFromData(data)
 }
 
-function calculatePersonalBestsFromData(data: any[]): PersonalBest {
+function calculatePersonalBestsFromData(data: GameResult[]): PersonalBest {
   const personalBests: PersonalBest = {
     duration_30: null,
     duration_60: null,
@@ -407,15 +418,17 @@ export async function getUserDurationRank(
 ): Promise<{ rank: number; total: number; personalBest: GameResult | null }> {
   // Si es usuario local, calcular ranking localmente
   if (userId.startsWith('local_')) {
-    const allLocalGames: any[] = []
+    const allLocalGames: GameResult[] = []
 
     // Obtener todos los juegos locales de todos los usuarios
     const localKeys = Object.keys(localStorage).filter(k => k.startsWith('typingquest-local-games-'))
     for (const key of localKeys) {
       const games = localStorage.getItem(key)
       if (games) {
-        const parsed = JSON.parse(games)
-        allLocalGames.push(...parsed)
+        const parsed = JSON.parse(games) as unknown
+        if (Array.isArray(parsed)) {
+          allLocalGames.push(...(parsed as GameResult[]))
+        }
       }
     }
 
@@ -577,12 +590,14 @@ export async function checkNewPersonalRecord(
   if (userId.startsWith('local_')) {
     const localResults = localStorage.getItem('typingquest-local-games-' + userId)
     if (localResults) {
-      const games = JSON.parse(localResults)
-      const gamesForDuration = games.filter((g: any) => g.game_duration === duration)
+      const games = JSON.parse(localResults) as unknown
+      const gamesForDuration = Array.isArray(games)
+        ? (games as GameResult[]).filter(g => g.game_duration === duration)
+        : []
       if (gamesForDuration.length === 0) {
         return true // Primer récord en esta duración
       }
-      const currentBest = Math.max(...gamesForDuration.map((g: any) => g.standardized_score || 0))
+      const currentBest = Math.max(...gamesForDuration.map(g => g.standardized_score || 0))
       return newScore > currentBest
     }
     return true // Primer récord
@@ -946,9 +961,9 @@ export async function signOut(): Promise<void> {
   try {
     await supabase.auth.signOut()
   } catch (error) {
-    console.warn('Error al cerrar sesión en Supabase:', error)
+    log.warn('Error al cerrar sesión en Supabase:', error)
   }
   // Limpiar ID local si existe
   sessionStorage.removeItem('typingquest-local-userid')
-  console.log('[Supabase] Sesión cerrada, localStorage limpio')
+  log.debug('[Supabase] Sesión cerrada, localStorage limpio')
 }

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
 import { signInAnonymously, getCurrentUser } from '../lib/supabase'
 import { getProfile, getUserGameResults, getUserMissions, getUserAchievements, signOut } from '../services/supabaseService'
 import { RegistrationScreen } from './RegistrationScreen'
 import { useAuthStore } from '../store/authStore'
+import { log } from '../utils/logger'
 import type { Profile, GameResult, UserMission, UserAchievement } from '../types'
 
 interface ProfileScreenProps {
@@ -22,18 +23,17 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
   const { signOut: storeSignOut } = useAuthStore()
 
-  useEffect(() => {
-    loadProfile()
-  }, [])
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     let id = await getCurrentUser()
 
     if (!id) {
       id = await signInAnonymously()
     }
 
-    if (!id) return
+    if (!id) {
+      setLoading(false)
+      return
+    }
 
     const [profileData, gamesData, missionsData, achievementsData] = await Promise.all([
       getProfile(id),
@@ -53,11 +53,15 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     }
 
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    void loadProfile()
+  }, [loadProfile])
 
   const handleRegistrationComplete = () => {
     setNeedsRegistration(false)
-    loadProfile() // Recargar el perfil con el nuevo username
+    void loadProfile() // Recargar el perfil con el nuevo username
     if (onRegistrationComplete) {
       onRegistrationComplete()
     }
@@ -75,7 +79,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
       await storeSignOut()
       window.location.reload()
     } catch (error) {
-      console.error('Error al cerrar sesión:', error)
+      log.error('Error al cerrar sesión:', error)
     }
   }
 

@@ -24,8 +24,8 @@
    En la sección "Environment Variables", agrega:
    
    ```
-   VITE_SUPABASE_URL=https://cqpqbwptqfvyqhpulrcx.supabase.co
-   VITE_SUPABASE_ANON_KEY=sb_publishable_RMYdOpkyGJVq1Ytmapq5aw_9om9JrMX
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
 
 5. **Click en "Deploy"**
@@ -83,8 +83,8 @@ vercel env add VITE_SUPABASE_ANON_KEY
 
 | Variable | Valor | Environment |
 |----------|-------|-------------|
-| `VITE_SUPABASE_URL` | `https://cqpqbwptqfvyqhpulrcx.supabase.co` | Production, Preview, Development |
-| `VITE_SUPABASE_ANON_KEY` | `sb_publishable_RMYdOpkyGJVq1Ytmapq5aw_9om9JrMX` | Production, Preview, Development |
+| `VITE_SUPABASE_URL` | `https://your-project.supabase.co` | Production, Preview, Development |
+| `VITE_SUPABASE_ANON_KEY` | `your-anon-key-here` | Production, Preview, Development |
 
 5. Click en "Save"
 

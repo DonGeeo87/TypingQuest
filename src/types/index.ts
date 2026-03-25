@@ -70,6 +70,8 @@ export interface RankedGame extends GameResult {
   time_normalized_score: number
   duration_category: string
   rank_position?: number
+  username?: string
+  avatar_url?: string
 }
 
 export interface PersonalBest {

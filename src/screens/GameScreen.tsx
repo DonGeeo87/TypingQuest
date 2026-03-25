@@ -92,7 +92,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     setDifficultyProgress(0)
     setIsNewRecord(false)
     setLocalWordsCompleted(0)
-  }, [language, level])
+  }, [language, level, initializeGame])
 
   // Countdown timer con sonido de advertencia
   useEffect(() => {
@@ -129,7 +129,49 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       playLevelUpSound?.()
       setTimeout(() => setShowLevelUp(false), 2000)
     }
-  }, [wordsCompleted, liveWpm, status])
+  }, [wordsCompleted, liveWpm, status, playLevelUpSound])
+
+  const saveResult = useCallback(async () => {
+    const userId = await getCurrentUser()
+
+    if (!userId) return
+
+    const standardizedScore = calculateStandardizedScore(
+      wordsCompleted,
+      liveWpm,
+      liveAccuracy,
+      errors
+    )
+
+    const duration = gameDuration || 60
+
+    await saveGameResult({
+      user_id: userId,
+      language,
+      level,
+      wpm: liveWpm,
+      accuracy: liveAccuracy,
+      errors,
+      combo_max: maxCombo,
+      duration: startTime ? (Date.now() - startTime) / 1000 : gameDuration,
+      game_duration: duration,
+      words_completed: wordsCompleted,
+      standardized_score: standardizedScore,
+    })
+
+    const isNewRecordResult = await checkNewPersonalRecord(userId, duration, standardizedScore)
+    setIsNewRecord(isNewRecordResult)
+  }, [
+    errors,
+    gameDuration,
+    language,
+    level,
+    liveAccuracy,
+    liveWpm,
+    maxCombo,
+    startTime,
+    wordsCompleted,
+  ])
 
   // Handle game end when time runs out
   useEffect(() => {
@@ -137,9 +179,9 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       setEndTime(Date.now())
       setStatus('finished')
       calculateStats()
-      saveResult()
+      void saveResult()
     }
-  }, [timeRemaining, status])
+  }, [timeRemaining, status, calculateStats, saveResult, setEndTime, setStatus])
 
   // Calculate live stats - OPTIMIZADO para reducir renders
   useEffect(() => {
@@ -219,38 +261,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
     prevErrorsRef.current = errors
     prevWordsCompletedRef.current = wordsCompleted
-  }, [errors, status, playErrorSound])
-
-  // Detectar palabras completadas - OPTIMIZADO
-  useEffect(() => {
-    if (status !== 'playing') return
-
-    // Solo detectar palabra completada cuando se pulsa ESPACIO o al final del texto
-    const lastChar = typedChars[typedChars.length - 1]
-    const isEndOfWord = lastChar === ' ' || currentIndex >= currentText.length
-
-    if (!isEndOfWord) return
-
-    const textUpToIndex = currentText.substring(0, currentIndex)
-    const completedWordsCount = textUpToIndex.trim().split(/\s+/).filter(w => w.length > 0).length
-
-    if (completedWordsCount > localWordsCompleted) {
-      const diff = completedWordsCount - localWordsCompleted
-      if (diff > 0) {
-        incrementWordsCompletedBy(diff)
-        setLocalWordsCompleted(completedWordsCount)
-        playCompleteSound()
-
-        const words = currentText.split(/\s+/)
-        const currentWordIndex = completedWordsCount - 1
-        if (currentWordIndex >= 0 && currentWordIndex < words.length) {
-          setLastCompletedWord(words[currentWordIndex])
-          setShowTextComplete(true)
-          setTimeout(() => setShowTextComplete(false), 800)
-        }
-      }
-    }
-  }, [currentIndex, status, currentText, localWordsCompleted, incrementWordsCompletedBy, playCompleteSound, typedChars])
+  }, [errors, status, playErrorSound, wordsCompleted])
 
   // Mostrar confetti cuando el juego termina exitosamente con sonido de victoria
   useEffect(() => {
@@ -260,42 +271,6 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       setTimeout(() => setShowConfetti(false), 4000)
     }
   }, [status, timeRemaining, playVictorySound])
-
-  // Save result to Supabase
-  const saveResult = async () => {
-    const userId = await getCurrentUser()
-
-    if (userId) {
-      // Calcular standardized score
-      const standardizedScore = calculateStandardizedScore(
-        wordsCompleted,
-        liveWpm,
-        liveAccuracy,
-        errors
-      )
-
-      // Obtener la duración del juego (game_duration) desde el store
-      const duration = gameDuration || 60
-
-      await saveGameResult({
-        user_id: userId,
-        language,
-        level,
-        wpm: liveWpm,
-        accuracy: liveAccuracy,
-        errors,
-        combo_max: maxCombo,
-        duration: startTime ? (Date.now() - startTime) / 1000 : gameDuration,
-        game_duration: duration,
-        words_completed: wordsCompleted,
-        standardized_score: standardizedScore,
-      })
-
-      // Verificar si es un nuevo récord personal
-      const isNewRecordResult = await checkNewPersonalRecord(userId, duration, standardizedScore)
-      setIsNewRecord(isNewRecordResult)
-    }
-  }
 
   // Handle keyboard input con sonidos
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
@@ -341,7 +316,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       resetCurrentPhrase()
       setLocalWordsCompleted(0)
     }
-  }, [status, currentIndex, currentText, typedChars, playKeySound, setStatus, setStartTime, setCurrentIndex, addTypedChar, updateCombo, advanceToNextText, resetCurrentPhrase, language, level])
+  }, [status, currentIndex, currentText, playKeySound, setStatus, setStartTime, setCurrentIndex, addTypedChar, updateCombo, advanceToNextText, resetCurrentPhrase, language, level, incrementError])
 
   // Attach keyboard listener
   useEffect(() => {

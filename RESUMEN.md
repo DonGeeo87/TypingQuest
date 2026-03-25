@@ -1,4 +1,4 @@
-# 📋 Resumen del Proyecto - TypingQuest v1.0.0
+# 📋 Resumen del Proyecto - TypingQuest v1.1.0
 
 ## ✅ Estado del Proyecto
 
@@ -13,7 +13,7 @@ El proyecto TypingQuest está listo para producción con todas las característi
 ### 1. **Código Fuente**
 - ✅ Repositorio Git inicializado
 - ✅ Commit inicial detallado
-- ✅ Tag de versión v1.0.0 creado
+- ✅ Tag de versión v1.1.0 creado
 - ✅ Subido a GitHub: https://github.com/DonGeeo87/TypingQuest
 
 ### 2. **Documentación**
@@ -41,8 +41,8 @@ El proyecto TypingQuest está listo para producción con todas las característi
 4. **Importa el repositorio**: `DonGeeo87/TypingQuest`
 5. **Configura variables de entorno**:
    ```
-   VITE_SUPABASE_URL=https://cqpqbwptqfvyqhpulrcx.supabase.co
-   VITE_SUPABASE_ANON_KEY=sb_publishable_RMYdOpkyGJVq1Ytmapq5aw_9om9JrMX
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
 6. **Click en "Deploy"**
 
@@ -220,6 +220,6 @@ El proyecto está completamente funcional y listo para ser desplegado en Vercel.
 
 **Hecho con ❤️ por el equipo de TypingQuest**
 
-*Versión: 1.0.0*
-*Fecha: 2026-03-06*
+*Versión: 1.1.0*
+*Fecha: 2026-03-07*
 *Estado: ✅ Production Ready*
