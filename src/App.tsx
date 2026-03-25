@@ -58,11 +58,6 @@ function App() {
       return
     }
 
-    if (!hasRegisteredUsername) {
-      setCurrentScreen('registration')
-      return
-    }
-
     if (currentScreen === 'registration' || currentScreen === 'auth') {
       setCurrentScreen('home')
     }
@@ -134,6 +129,7 @@ function App() {
             <RegistrationScreen
               onComplete={handleRegistrationComplete}
               onBack={() => setCurrentScreen('home')}
+              onRecoverAccount={() => setCurrentScreen('auth')}
             />
           )}
 

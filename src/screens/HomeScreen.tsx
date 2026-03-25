@@ -31,6 +31,7 @@ export function HomeScreen({
   const { profile, isAnonymous } = useAuthStore()
   const { theme, toggleTheme } = useUiStore()
   const isMobile = useMobile()
+  const displayName = isAnonymous ? 'Invitado' : (profile?.username || 'Invitado')
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
@@ -59,7 +60,7 @@ export function HomeScreen({
             </div>
             <div className="flex flex-col">
               <span className="text-white text-base font-bold leading-tight group-hover:text-indigo-300 transition-colors">
-                {profile?.username || 'Invitado'}
+                {displayName}
               </span>
               <span className="text-indigo-400 text-[10px] uppercase tracking-widest font-black">Nivel 1 • Ver Perfil</span>
             </div>
@@ -115,8 +116,8 @@ export function HomeScreen({
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
-              <h3 className="text-2xl font-black text-white mb-2">Play Game</h3>
-              <p className="text-zinc-400 text-sm">Challenge yourself and climb the tiers</p>
+              <h3 className="text-2xl font-black text-white mb-2">Jugar</h3>
+              <p className="text-zinc-400 text-sm">Mejora tu velocidad y precisión</p>
             </Card>
           </motion.div>
 
@@ -124,7 +125,7 @@ export function HomeScreen({
             <Card onClick={() => onNavigate('ranking')} className="cursor-pointer h-full border-amber-500/20 hover:border-amber-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🏆</div>
               <h3 className="text-2xl font-black text-white mb-2">Rankings</h3>
-              <p className="text-zinc-400 text-sm">The world's fastest typists are here</p>
+              <p className="text-zinc-400 text-sm">Compite por el top y rompe récords</p>
             </Card>
           </motion.div>
 
@@ -139,8 +140,8 @@ export function HomeScreen({
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('profile')} className="cursor-pointer h-full border-violet-500/20 hover:border-violet-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">👤</div>
-              <h3 className="text-2xl font-black text-white mb-2">Profile</h3>
-              <p className="text-zinc-400 text-sm">Track your progress and unlocks</p>
+              <h3 className="text-2xl font-black text-white mb-2">Perfil</h3>
+              <p className="text-zinc-400 text-sm">Tus logros, historial y cuenta</p>
             </Card>
           </motion.div>
         </div>

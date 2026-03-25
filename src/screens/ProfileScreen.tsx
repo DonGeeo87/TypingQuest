@@ -107,6 +107,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
       <RegistrationScreen
         onComplete={handleRegistrationComplete}
         onBack={() => onNavigate('home')}
+        onRecoverAccount={() => onNavigate('auth')}
       />
     )
   }

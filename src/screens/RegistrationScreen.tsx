@@ -8,9 +8,10 @@ import { log } from '../utils/logger'
 interface RegistrationScreenProps {
   onComplete: () => void
   onBack?: () => void
+  onRecoverAccount?: () => void
 }
 
-export function RegistrationScreen({ onComplete, onBack }: RegistrationScreenProps) {
+export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: RegistrationScreenProps) {
   const [username, setUsername] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [isValidating, setIsValidating] = useState(false)
@@ -271,6 +272,17 @@ export function RegistrationScreen({ onComplete, onBack }: RegistrationScreenPro
               </motion.div>
             )}
           </AnimatePresence>
+
+          {step === 2 && isAvailable === false && onRecoverAccount && (
+            <div className="bg-zinc-800/40 border border-white/10 text-zinc-300 p-3 rounded-lg text-sm text-center space-y-2">
+              <div>
+                Si ese nombre era tuyo, no se puede “entrar” por apodo. Debes iniciar sesión con el email vinculado para recuperar tu cuenta.
+              </div>
+              <Button variant="secondary" onClick={onRecoverAccount} className="w-full">
+                Ir a iniciar sesión
+              </Button>
+            </div>
+          )}
 
           <div className="flex gap-3">
             {step === 2 && (
