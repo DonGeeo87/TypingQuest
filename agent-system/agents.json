@@ -1,0 +1,85 @@
+{
+  "project": {
+    "owner": "DonGeeo87",
+    "repo": "TypingQuest",
+    "defaultBranch": "master",
+    "projectNumber": 2,
+    "milestoneTitle": "v1.0",
+    "milestoneDueDaysFromNow": 21
+  },
+  "slo": {
+    "p0UnassignedMaxMinutes": 120,
+    "completionWithinEstimateTarget": 0.9,
+    "staleNoUpdateDays": 3
+  },
+  "agents": [
+    {
+      "id": "ai-generalist",
+      "name": "AI Generalist",
+      "type": "ai",
+      "skills": ["frontend", "backend", "qa", "i18n", "performance", "security", "docs"],
+      "capacityPoints": 12,
+      "availability": "always"
+    },
+    {
+      "id": "ai-frontend",
+      "name": "AI Frontend",
+      "type": "ai",
+      "skills": ["frontend", "i18n", "ux", "performance"],
+      "capacityPoints": 10,
+      "availability": "always"
+    },
+    {
+      "id": "ai-backend",
+      "name": "AI Backend",
+      "type": "ai",
+      "skills": ["backend", "database", "security", "performance"],
+      "capacityPoints": 10,
+      "availability": "always"
+    },
+    {
+      "id": "ai-education",
+      "name": "AI Education",
+      "type": "ai",
+      "skills": ["education", "ux", "frontend", "backend", "docs"],
+      "capacityPoints": 8,
+      "availability": "always"
+    },
+    {
+      "id": "human-owner",
+      "name": "Owner",
+      "type": "human",
+      "githubUsername": "DonGeeo87",
+      "skills": ["product", "design", "review", "release"],
+      "capacityPoints": 6,
+      "availability": "manual"
+    }
+  ],
+  "sizePoints": {
+    "size:xs": 1,
+    "size:s": 2,
+    "size:m": 3,
+    "size:l": 5,
+    "size:xl": 8
+  },
+  "priorityWeights": {
+    "p0": 100,
+    "p1": 60,
+    "p2": 25
+  },
+  "skillWeights": {
+    "frontend": 14,
+    "backend": 14,
+    "database": 14,
+    "security": 12,
+    "performance": 12,
+    "qa": 10,
+    "i18n": 10,
+    "education": 12,
+    "docs": 8,
+    "marketing": 6,
+    "monetization": 8,
+    "ux": 10,
+    "release": 10
+  }
+}
