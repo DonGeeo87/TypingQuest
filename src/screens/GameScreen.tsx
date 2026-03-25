@@ -554,7 +554,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
         </ErrorShake>
 
         {/* Word Progress */}
-        <div className="text-center text-zinc-400">
+        <div className="text-center text-[var(--muted)]">
           Words: {wordsCompleted} / {totalWords}
         </div>
 
@@ -583,34 +583,34 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <div className="text-4xl font-bold text-indigo-400">{liveWpm}</div>
-                  <div className="text-zinc-400">WPM</div>
+                  <div className="text-[var(--muted)]">WPM</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-violet-400">{liveAccuracy}%</div>
-                  <div className="text-zinc-400">Accuracy</div>
+                  <div className="text-[var(--muted)]">Accuracy</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-amber-400">{maxCombo}</div>
-                  <div className="text-zinc-400">Max Combo</div>
+                  <div className="text-[var(--muted)]">Max Combo</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-red-400">{errors}</div>
-                  <div className="text-zinc-400">Errors</div>
+                  <div className="text-[var(--muted)]">Errors</div>
                 </div>
               </div>
 
               {/* Score Estandarizado */}
-              <div className="bg-zinc-800/50 rounded-lg p-4">
-                <div className="text-zinc-400 text-sm mb-1">Score Estandarizado</div>
+              <div className="bg-[var(--secondary)] rounded-lg p-4">
+                <div className="text-[var(--muted)] text-sm mb-1">Score Estandarizado</div>
                 <div className="text-3xl font-bold text-emerald-400">
                   {calculateStandardizedScore(wordsCompleted, liveWpm, liveAccuracy, errors)}
                 </div>
-                <div className="text-zinc-500 text-xs mt-1">
+                <div className="text-[var(--muted)] text-xs mt-1">
                   ({wordsCompleted} palabras × 100) + (WPM × precisión) - (errores × 10)
                 </div>
               </div>
 
-              <div className="text-zinc-400">
+              <div className="text-[var(--muted)]">
                 Words completed: {wordsCompleted} / {totalWords}
               </div>
 
@@ -641,29 +641,29 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <div className="text-4xl font-bold text-indigo-400">{liveWpm}</div>
-                  <div className="text-zinc-400">WPM</div>
+                  <div className="text-[var(--muted)]">WPM</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-violet-400">{liveAccuracy}%</div>
-                  <div className="text-zinc-400">Accuracy</div>
+                  <div className="text-[var(--muted)]">Accuracy</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-amber-400">{maxCombo}</div>
-                  <div className="text-zinc-400">Max Combo</div>
+                  <div className="text-[var(--muted)]">Max Combo</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-red-400">{errors}</div>
-                  <div className="text-zinc-400">Errors</div>
+                  <div className="text-[var(--muted)]">Errors</div>
                 </div>
               </div>
 
               {/* Score Estandarizado */}
-              <div className="bg-zinc-800/50 rounded-lg p-4">
-                <div className="text-zinc-400 text-sm mb-1">Score Estandarizado</div>
+              <div className="bg-[var(--secondary)] rounded-lg p-4">
+                <div className="text-[var(--muted)] text-sm mb-1">Score Estandarizado</div>
                 <div className="text-3xl font-bold text-emerald-400">
                   {calculateStandardizedScore(wordsCompleted, liveWpm, liveAccuracy, errors)}
                 </div>
-                <div className="text-zinc-500 text-xs mt-1">
+                <div className="text-[var(--muted)] text-xs mt-1">
                   ({wordsCompleted} palabras × 100) + (WPM × precisión) - (errores × 10)
                 </div>
               </div>
@@ -685,7 +685,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
         {/* Instructions */}
         {status === 'playing' && (
-          <div className="text-center text-zinc-500 text-sm">
+          <div className="text-center text-[var(--muted)] text-sm">
             Keep typing! Focus on accuracy over speed. 🔥
           </div>
         )}

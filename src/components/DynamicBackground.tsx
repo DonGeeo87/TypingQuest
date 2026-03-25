@@ -9,7 +9,7 @@ interface DynamicBackgroundProps {
 
 export function DynamicBackground({ isError, combo, status }: DynamicBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const particlesRef = useRef<{ x: number, y: number, size: number, speedX: number, speedY: number, color: string }[]>([])
+    const particlesRef = useRef<{ x: number, y: number, size: number, speedX: number, speedY: number, hue: number }[]>([])
     const comboRef = useRef(combo)
     comboRef.current = combo
 
@@ -21,7 +21,7 @@ export function DynamicBackground({ isError, combo, status }: DynamicBackgroundP
             size: Math.random() * 2 + 1,
             speedX: Math.random() * 0.4 - 0.2,
             speedY: Math.random() * 0.4 - 0.2,
-            color: `hsla(${200 + Math.random() * 100}, 70%, 70%, 0.15)`
+            hue: 200 + Math.random() * 100
         }))
     }, [])
 
@@ -46,13 +46,16 @@ export function DynamicBackground({ isError, combo, status }: DynamicBackgroundP
             frameCount++
             
             // Limpiar con menos frecuencia para mejor rendimiento
-            ctx.fillStyle = 'rgba(10, 10, 15, 0.25)'
+            const isLight = document.documentElement.dataset.theme === 'light'
+            ctx.fillStyle = isLight ? 'rgba(248, 250, 252, 0.35)' : 'rgba(10, 10, 15, 0.25)'
             ctx.fillRect(0, 0, canvas.width, canvas.height)
 
             // Partículas sutiles - actualizar siempre pero con cálculo simplificado
             const comboMultiplier = 1 + Math.min(comboRef.current / 30, 2) // Cap en 3x
             particlesRef.current.forEach(p => {
-                ctx.fillStyle = p.color
+                ctx.fillStyle = isLight
+                  ? `hsla(${p.hue}, 70%, 35%, 0.12)`
+                  : `hsla(${p.hue}, 70%, 70%, 0.15)`
                 ctx.beginPath()
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
                 ctx.fill()
@@ -67,7 +70,9 @@ export function DynamicBackground({ isError, combo, status }: DynamicBackgroundP
             // Matrix rain - solo actualizar cada 2 frames para mejor rendimiento
             if (status === 'playing' && frameCount % 2 === 0) {
                 const hue = Math.min(300, 220 + comboRef.current * 1.5)
-                ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.15)`
+                ctx.fillStyle = isLight
+                  ? `hsla(${hue}, 80%, 30%, 0.10)`
+                  : `hsla(${hue}, 80%, 60%, 0.15)`
                 ctx.font = `bold ${fontSize}px monospace`
 
                 for (let i = 0; i < drops.length; i++) {
@@ -102,7 +107,7 @@ export function DynamicBackground({ isError, combo, status }: DynamicBackgroundP
     const glowScale = 1 + Math.min(0.3, combo / 150)
 
     return (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#0a0a0f]">
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[var(--background)]">
             {/* Capa de Canvas para la Lluvia de Código */}
             <canvas
                 ref={canvasRef}
@@ -180,7 +185,7 @@ export function DynamicBackground({ isError, combo, status }: DynamicBackgroundP
             <div
                 className="absolute inset-0 opacity-[0.03]"
                 style={{
-                    backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+                    backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.18) 1px, transparent 1px)`,
                     backgroundSize: '40px 40px'
                 }}
             />

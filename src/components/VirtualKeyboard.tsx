@@ -18,7 +18,7 @@ export function VirtualKeyboard({ onKeyPress, disabled = false }: VirtualKeyboar
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-xl border-t border-white/10 p-2 z-50 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-[var(--card-bg)] backdrop-blur-xl border-t border-[var(--card-border)] p-2 z-50 safe-area-bottom">
       <div className="max-w-3xl mx-auto space-y-2">
         {rows.map((row, rowIndex) => (
           <div
@@ -34,11 +34,11 @@ export function VirtualKeyboard({ onKeyPress, disabled = false }: VirtualKeyboar
                 onClick={() => handleKeyPress(key)}
                 className="
                   flex-1 max-w-[2.5rem] h-12 rounded-lg
-                  bg-gradient-to-b from-zinc-700 to-zinc-800
-                  text-white font-bold text-lg
-                  border border-white/10
-                  shadow-lg shadow-black/20
-                  active:from-zinc-600 active:to-zinc-700
+                  bg-[var(--secondary)]
+                  text-[var(--foreground)] font-bold text-lg
+                  border border-[var(--card-border)]
+                  shadow-lg shadow-black/10
+                  active:opacity-90
                   disabled:opacity-50 disabled:cursor-not-allowed
                   touch-manipulation select-none
                 "
@@ -56,11 +56,11 @@ export function VirtualKeyboard({ onKeyPress, disabled = false }: VirtualKeyboar
             onClick={() => onKeyPress(' ')}
             className="
               flex-1 max-w-[12rem] h-12 rounded-lg
-              bg-gradient-to-b from-zinc-700 to-zinc-800
-              text-white font-bold
-              border border-white/10
-              shadow-lg shadow-black/20
-              active:from-zinc-600 active:to-zinc-700
+              bg-[var(--secondary)]
+              text-[var(--foreground)] font-bold
+              border border-[var(--card-border)]
+              shadow-lg shadow-black/10
+              active:opacity-90
               touch-manipulation select-none
             "
           >

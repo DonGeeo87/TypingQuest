@@ -133,7 +133,7 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
             initial={{ scale: 0.8, filter: 'blur(10px)', opacity: 0 }}
             animate={{ scale: 1, filter: 'blur(0px)', opacity: 1 }}
             transition={{ duration: 0.8, type: 'spring', stiffness: 100 }}
-            className="text-6xl md:text-8xl font-black text-gradient tracking-tighter"
+            className="text-6xl md:text-8xl font-black text-gradient tracking-tighter leading-tight py-1"
           >
             TypingQuest
           </motion.h1>
@@ -141,13 +141,13 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-xl text-zinc-500 font-medium italic tracking-widest"
+            className="text-xl text-[var(--muted)] font-medium italic tracking-widest"
           >
             INSERT COIN TO START 🕹️
           </motion.p>
         </div>
 
-        <Card className="space-y-6 bg-zinc-900/80 backdrop-blur-xl border-white/5 shadow-2xl relative overflow-hidden">
+        <Card className="space-y-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50"></div>
           {/* Header */}
           <div className="text-center space-y-2">
@@ -163,7 +163,7 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
             <h1 className="text-3xl font-bold text-gradient">
               {step === 1 ? 'Elige tu Avatar' : 'Tu Apodo'}
             </h1>
-            <p className="text-zinc-400">
+            <p className="text-[var(--muted)]">
               {step === 1
                 ? 'Personaliza tu presencia en el ranking'
                 : '¿Cómo quieres que te llamen en TypingQuest?'}
@@ -197,7 +197,7 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
               >
                 {/* Input de Username */}
                 <div className="space-y-2">
-                  <label htmlFor="username" className="block text-sm font-medium text-zinc-300">
+                  <label htmlFor="username" className="block text-sm font-medium text-[var(--foreground)]">
                     Nombre de usuario
                   </label>
                   <div className="relative">
@@ -211,15 +211,15 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
                       autoComplete="off"
                       autoFocus
                       className={`
-                        w-full px-4 py-3 bg-zinc-900/50 border-2 rounded-lg
-                        text-white placeholder-zinc-500
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900
+                        w-full px-4 py-3 bg-[var(--background)] border-2 rounded-lg
+                        text-[var(--foreground)] placeholder-[var(--muted)]
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background)]
                         transition-all duration-200
                         ${validationError || isAvailable === false
                           ? 'border-red-500 focus:ring-red-500'
                           : isAvailable === true
                             ? 'border-green-500 focus:ring-green-500'
-                            : 'border-zinc-700 focus:ring-indigo-500'
+                            : 'border-[var(--card-border)] focus:ring-indigo-500'
                         }
                       `}
                     />
@@ -239,19 +239,19 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
                     </AnimatePresence>
                   </div>
 
-                  <div className="flex justify-between text-xs text-zinc-500">
+                  <div className="flex justify-between text-xs text-[var(--muted)]">
                     <span>{username.length}/20 caracteres</span>
                     <span>3-20 caracteres, alfanumérico</span>
                   </div>
                 </div>
 
-                <div className="p-4 bg-zinc-800/50 rounded-lg space-y-2">
-                  <p className="text-sm font-medium text-zinc-300">Resumen de perfil:</p>
+                <div className="p-4 bg-[var(--secondary)] rounded-lg space-y-2">
+                  <p className="text-sm font-medium text-[var(--foreground)]">Resumen de perfil:</p>
                   <div className="flex items-center gap-4">
-                    <img src={avatarUrl!} alt="Avatar" className="w-12 h-12 rounded-lg bg-zinc-700" />
+                    <img src={avatarUrl!} alt="Avatar" className="w-12 h-12 rounded-lg bg-[var(--background)]" />
                     <div>
-                      <p className="text-white font-bold">{username || '...'}</p>
-                      <p className="text-xs text-zinc-500">Nivel 1 • Jugador Novato</p>
+                      <p className="text-[var(--foreground)] font-bold">{username || '...'}</p>
+                      <p className="text-xs text-[var(--muted)]">Nivel 1 • Jugador Novato</p>
                     </div>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
           </AnimatePresence>
 
           {step === 2 && isAvailable === false && onRecoverAccount && (
-            <div className="bg-zinc-800/40 border border-white/10 text-zinc-300 p-3 rounded-lg text-sm text-center space-y-2">
+            <div className="bg-[var(--secondary)] border border-[var(--card-border)] text-[var(--foreground)] p-3 rounded-lg text-sm text-center space-y-2">
               <div>
                 Si ese nombre era tuyo, no se puede “entrar” por apodo. Debes iniciar sesión con el email vinculado para recuperar tu cuenta.
               </div>
@@ -323,7 +323,7 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
           </div>
 
           {/* Footer */}
-          <p className="text-xs text-center text-zinc-500">
+          <p className="text-xs text-center text-[var(--muted)]">
             Podrás cambiar tu nombre y avatar más tarde en tu perfil
           </p>
         </Card>

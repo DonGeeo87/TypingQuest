@@ -101,19 +101,19 @@ function App() {
   // Mostrar pantalla de carga mientras se inicializa la autenticación
   if (authLoading) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
+      <div className="relative min-h-screen flex items-center justify-center bg-[var(--background)] overflow-hidden">
         <FloatingWords />
         <ParticleBackground isActive={false} />
         <div className="relative z-10 text-center space-y-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-zinc-400">Cargando...</p>
+          <p className="text-[var(--muted)]">Cargando...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
+    <div className="relative min-h-screen bg-[var(--background)] overflow-hidden">
       <FloatingWords />
       <ParticleBackground isActive={currentScreen === 'game'} />
 

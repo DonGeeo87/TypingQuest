@@ -148,12 +148,12 @@ export function MultiplayerRoundScreen({ prompt, durationSeconds, onComplete, on
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-zinc-400">Tiempo</div>
+            <div className="text-[var(--muted)]">Tiempo</div>
             <motion.div
               key={timeRemaining}
               initial={{ scale: 1.05, opacity: 0.7 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="text-white text-2xl font-bold tabular-nums"
+              className="text-[var(--foreground)] text-2xl font-bold tabular-nums"
             >
               {timeRemaining}s
             </motion.div>
@@ -198,22 +198,22 @@ export function MultiplayerRoundScreen({ prompt, durationSeconds, onComplete, on
           <Card className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
-                <div className="text-zinc-400 text-sm">WPM</div>
-                <div className="text-white font-bold text-xl">
+                <div className="text-[var(--muted)] text-sm">WPM</div>
+                <div className="text-[var(--foreground)] font-bold text-xl">
                   {Math.round((correctChars / 5) / Math.max(((startTime ? (Date.now() - startTime) / 1000 : durationSeconds) / 60), 1 / 60))}
                 </div>
               </div>
               <div>
-                <div className="text-zinc-400 text-sm">Precisión</div>
-                <div className="text-white font-bold text-xl">{totalTypedChars > 0 ? Math.round((correctChars / totalTypedChars) * 100) : 0}%</div>
+                <div className="text-[var(--muted)] text-sm">Precisión</div>
+                <div className="text-[var(--foreground)] font-bold text-xl">{totalTypedChars > 0 ? Math.round((correctChars / totalTypedChars) * 100) : 0}%</div>
               </div>
               <div>
-                <div className="text-zinc-400 text-sm">Errores</div>
-                <div className="text-white font-bold text-xl">{errors}</div>
+                <div className="text-[var(--muted)] text-sm">Errores</div>
+                <div className="text-[var(--foreground)] font-bold text-xl">{errors}</div>
               </div>
               <div>
-                <div className="text-zinc-400 text-sm">Palabras</div>
-                <div className="text-white font-bold text-xl">{wordsCompleted}</div>
+                <div className="text-[var(--muted)] text-sm">Palabras</div>
+                <div className="text-[var(--foreground)] font-bold text-xl">{wordsCompleted}</div>
               </div>
             </div>
           </Card>

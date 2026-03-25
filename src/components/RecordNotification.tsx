@@ -89,15 +89,15 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
                 <h4 className={`font-bold ${config.textColor}`}>
                   {config.title}
                 </h4>
-                <p className="text-zinc-300 text-sm mt-1">
+                <p className="text-[var(--muted)] text-sm mt-1">
                   {config.subtitle}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs px-2 py-1 rounded-full bg-zinc-800/50 text-zinc-400">
+                  <span className="text-xs px-2 py-1 rounded-full bg-[var(--secondary)] text-[var(--muted)]">
                     {notification.score} puntos
                   </span>
                   {notification.durationCategory && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-zinc-800/50 text-zinc-400">
+                    <span className="text-xs px-2 py-1 rounded-full bg-[var(--secondary)] text-[var(--muted)]">
                       {durationCategory?.label}
                     </span>
                   )}
@@ -108,7 +108,7 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
                   setVisible(false)
                   setTimeout(onDismiss, 300)
                 }}
-                className="text-zinc-500 hover:text-white transition-colors"
+                className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 ✕
               </button>

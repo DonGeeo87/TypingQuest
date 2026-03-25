@@ -235,7 +235,7 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Button variant="secondary" onClick={() => onNavigate('home')}>Volver</Button>
-          <div className="text-white font-bold text-xl">Multijugador</div>
+          <div className="text-[var(--foreground)] font-bold text-xl">Multijugador</div>
         </div>
 
         <AnimatePresence>
@@ -254,22 +254,22 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
         {mode === 'menu' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h2 className="text-white text-lg font-bold mb-2">Crear sala</h2>
-              <p className="text-zinc-400 mb-4">Genera un PIN, comparte y empieza la ronda.</p>
+              <h2 className="text-[var(--foreground)] text-lg font-bold mb-2">Crear sala</h2>
+              <p className="text-[var(--muted)] mb-4">Genera un PIN, comparte y empieza la ronda.</p>
               <Button onClick={handleHostCreate} disabled={loading || !userId}>
                 {loading ? 'Creando…' : 'Hostear'}
               </Button>
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-white text-lg font-bold mb-2">Unirse</h2>
-              <p className="text-zinc-400 mb-4">Ingresa el PIN de 6 dígitos.</p>
+              <h2 className="text-[var(--foreground)] text-lg font-bold mb-2">Unirse</h2>
+              <p className="text-[var(--muted)] mb-4">Ingresa el PIN de 6 dígitos.</p>
               <div className="flex gap-3">
                 <input
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="PIN (123456)"
-                  className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500"
+                  className="flex-1 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
                 />
                 <Button onClick={handleJoin} disabled={loading || !userId}>
                   {loading ? '…' : 'Entrar'}
@@ -283,9 +283,9 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
           <Card className="p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <div className="text-zinc-400 text-sm">PIN</div>
-                <div className="text-white text-3xl font-black tracking-widest">{room.pin}</div>
-                <div className="text-zinc-400 text-sm mt-1">Jugadores: {players.length}</div>
+                <div className="text-[var(--muted)] text-sm">PIN</div>
+                <div className="text-[var(--foreground)] text-3xl font-black tracking-widest">{room.pin}</div>
+                <div className="text-[var(--muted)] text-sm mt-1">Jugadores: {players.length}</div>
               </div>
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={handleLeave}>Salir</Button>
@@ -301,9 +301,9 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
               {players.map((p) => (
                 <div
                   key={p.user_id}
-                  className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-3"
                 >
-                  <div className="text-white font-semibold">{p.username}</div>
+                  <div className="text-[var(--foreground)] font-semibold">{p.username}</div>
                   {p.is_host && <div className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">Host</div>}
                 </div>
               ))}
@@ -315,8 +315,8 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="text-white text-lg font-bold">Resultados</div>
-                <div className="text-zinc-400 text-sm">Ronda #{round.round_number}</div>
+                <div className="text-[var(--foreground)] text-lg font-bold">Resultados</div>
+                <div className="text-[var(--muted)] text-sm">Ronda #{round.round_number}</div>
               </div>
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={handleLeave}>Salir</Button>
@@ -332,17 +332,17 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
               {leaderboard.map((s, idx) => (
                 <div
                   key={s.id}
-                  className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-3"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="text-zinc-400 w-6 text-right tabular-nums">{idx + 1}</div>
-                    <div className="text-white font-semibold">{players.find(p => p.user_id === s.user_id)?.username || 'Jugador'}</div>
+                    <div className="text-[var(--muted)] w-6 text-right tabular-nums">{idx + 1}</div>
+                    <div className="text-[var(--foreground)] font-semibold">{players.find(p => p.user_id === s.user_id)?.username || 'Jugador'}</div>
                   </div>
-                  <div className="text-white font-bold tabular-nums">{s.score}</div>
+                  <div className="text-[var(--foreground)] font-bold tabular-nums">{s.score}</div>
                 </div>
               ))}
               {leaderboard.length === 0 && (
-                <div className="text-zinc-400">Esperando resultados…</div>
+                <div className="text-[var(--muted)]">Esperando resultados…</div>
               )}
             </div>
           </Card>

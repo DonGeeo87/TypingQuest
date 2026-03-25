@@ -43,7 +43,7 @@ export function HomeScreen({
         className="w-full max-w-5xl space-y-8 relative z-10"
       >
         {/* User Badge - Top Bar */}
-        <div className="flex justify-between items-center bg-zinc-900/40 backdrop-blur-md p-3 px-6 rounded-full border border-white/10 shadow-2xl">
+        <div className="flex justify-between items-center glass p-3 px-6 rounded-full shadow-2xl">
           <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -54,12 +54,12 @@ export function HomeScreen({
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="Profile" className="w-12 h-12 rounded-full border-2 border-indigo-500 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center border-2 border-zinc-700 text-xl">👤</div>
+                <div className="w-12 h-12 rounded-full bg-[var(--secondary)] flex items-center justify-center border-2 border-[var(--card-border)] text-xl">👤</div>
               )}
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-zinc-900 rounded-full"></div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[var(--background)] rounded-full"></div>
             </div>
             <div className="flex flex-col">
-              <span className="text-white text-base font-bold leading-tight group-hover:text-indigo-300 transition-colors">
+              <span className="text-[var(--foreground)] text-base font-bold leading-tight group-hover:text-indigo-300 transition-colors">
                 {displayName}
               </span>
               <span className="text-indigo-400 text-[10px] uppercase tracking-widest font-black">Nivel 1 • Ver Perfil</span>
@@ -81,7 +81,7 @@ export function HomeScreen({
         {isAnonymous && (
           <Card className="p-4 border-amber-500/30 bg-amber-500/10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div className="text-amber-200 text-sm">
+              <div className="text-amber-600 text-sm">
                 Estás jugando en modo anónimo. Si cambias de dispositivo o limpias datos, no podrás recuperar tu progreso.
               </div>
               <Button variant="secondary" onClick={() => onNavigate('profile')}>
@@ -97,7 +97,7 @@ export function HomeScreen({
             initial={{ scale: 0.8, filter: 'blur(10px)' }}
             animate={{ scale: 1, filter: 'blur(0px)' }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="text-6xl md:text-8xl font-black text-gradient tracking-tighter"
+            className="text-6xl md:text-8xl font-black text-gradient tracking-tighter leading-tight py-1"
           >
             TypingQuest
           </motion.h1>
@@ -105,7 +105,7 @@ export function HomeScreen({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-xl text-zinc-400 font-medium"
+            className="text-xl text-[var(--muted)] font-medium"
           >
             Master units of speed & precision 🚀
           </motion.p>
@@ -114,42 +114,42 @@ export function HomeScreen({
         {/* Main Menu Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
+            <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
-              <h3 className="text-2xl font-black text-white mb-2">Jugar</h3>
-              <p className="text-zinc-400 text-sm">Mejora tu velocidad y precisión</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Jugar</h3>
+              <p className="text-[var(--muted)] text-sm">Mejora tu velocidad y precisión</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('ranking')} className="cursor-pointer h-full border-amber-500/20 hover:border-amber-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
+            <Card onClick={() => onNavigate('ranking')} className="cursor-pointer h-full border-amber-500/20 hover:border-amber-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🏆</div>
-              <h3 className="text-2xl font-black text-white mb-2">Rankings</h3>
-              <p className="text-zinc-400 text-sm">Compite por el top y rompe récords</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Rankings</h3>
+              <p className="text-[var(--muted)] text-sm">Compite por el top y rompe récords</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('multiplayer')} className="cursor-pointer h-full border-emerald-500/20 hover:border-emerald-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
+            <Card onClick={() => onNavigate('multiplayer')} className="cursor-pointer h-full border-emerald-500/20 hover:border-emerald-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🧩</div>
-              <h3 className="text-2xl font-black text-white mb-2">Multiplayer</h3>
-              <p className="text-zinc-400 text-sm">Crea una sala y compite en vivo</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Multiplayer</h3>
+              <p className="text-[var(--muted)] text-sm">Crea una sala y compite en vivo</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('profile')} className="cursor-pointer h-full border-violet-500/20 hover:border-violet-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
+            <Card onClick={() => onNavigate('profile')} className="cursor-pointer h-full border-violet-500/20 hover:border-violet-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">👤</div>
-              <h3 className="text-2xl font-black text-white mb-2">Perfil</h3>
-              <p className="text-zinc-400 text-sm">Tus logros, historial y cuenta</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Perfil</h3>
+              <p className="text-[var(--muted)] text-sm">Tus logros, historial y cuenta</p>
             </Card>
           </motion.div>
         </div>
 
         {/* Game Setup Section - Full Width Refactor */}
-        <Card className="p-8 space-y-8 bg-zinc-900/80 backdrop-blur-md border-white/5 relative overflow-hidden shadow-2xl">
+        <Card className="p-8 space-y-8 backdrop-blur-md relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none text-9xl font-black italic">CONFIG</div>
-          <h2 className="text-3xl font-black text-white flex items-center gap-3">
+          <h2 className="text-3xl font-black text-[var(--foreground)] flex items-center gap-3">
             <span className="w-8 h-1 bg-indigo-500 inline-block"></span>
             Configuración de Partida
           </h2>
@@ -175,7 +175,7 @@ export function HomeScreen({
           </div>
 
           {/* Level Selection - FULL WIDTH */}
-          <div className="space-y-4 border-t border-white/5 pt-8">
+          <div className="space-y-4 border-t border-[var(--card-border)] pt-8">
             <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">Nivel de Dificultad</label>
             <LevelSelector
               selectedLevel={level}
@@ -212,7 +212,7 @@ export function HomeScreen({
             </motion.div>
 
             {isMobile && (
-              <p className="text-center text-xs text-zinc-500">
+              <p className="text-center text-xs text-[var(--muted)]">
                 💡 Tip: TapTap es más fácil de usar en móviles
               </p>
             )}
@@ -221,21 +221,21 @@ export function HomeScreen({
 
         {/* Features Footer */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pb-12 pt-4">
-          <div className="bg-white/5 p-4 rounded-2xl backdrop-blur-sm border border-white/5">
+          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">⚡</div>
-            <div className="text-white text-xs font-black uppercase tracking-tighter">WPM Tracking</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">WPM Tracking</div>
           </div>
-          <div className="bg-white/5 p-4 rounded-2xl backdrop-blur-sm border border-white/5">
+          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">🎯</div>
-            <div className="text-white text-xs font-black uppercase tracking-tighter">Accuracy</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">Accuracy</div>
           </div>
-          <div className="bg-white/5 p-4 rounded-2xl backdrop-blur-sm border border-white/5">
+          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">🔥</div>
-            <div className="text-white text-xs font-black uppercase tracking-tighter">Combos</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">Combos</div>
           </div>
-          <div className="bg-white/5 p-4 rounded-2xl backdrop-blur-sm border border-white/5">
+          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">🌐</div>
-            <div className="text-white text-xs font-black uppercase tracking-tighter">Bilingual</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">Bilingual</div>
           </div>
         </div>
       </motion.div>

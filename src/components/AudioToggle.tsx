@@ -52,7 +52,7 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
           transition-all duration-200
           ${enabled && !muted && volume > 0
             ? 'bg-violet-600/30 hover:bg-violet-600/50 text-violet-400 border-2 border-violet-500/50'
-            : 'bg-zinc-700/50 hover:bg-zinc-600/50 text-zinc-400 border-2 border-zinc-600/50'
+            : 'bg-[var(--secondary)] hover:opacity-90 text-[var(--muted)] border-2 border-[var(--card-border)]'
           }
         `}
         title={enabled ? 'Desactivar sonido' : 'Activar sonido'}
@@ -66,12 +66,12 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="flex flex-col items-center gap-1 bg-zinc-800/80 backdrop-blur-sm p-2 rounded-lg border border-zinc-700/50"
+          className="flex flex-col items-center gap-1 bg-[var(--card-bg)] backdrop-blur-sm p-2 rounded-lg border border-[var(--card-border)]"
         >
           {/* Botón de mute rápido */}
           <button
             onClick={toggleMute}
-            className="text-xs text-zinc-400 hover:text-violet-400 transition-colors"
+            className="text-xs text-[var(--muted)] hover:text-violet-400 transition-colors"
             title={muted ? 'Activar sonido' : 'Silenciar'}
           >
             {muted ? 'Unmute' : 'Mute'}
@@ -89,7 +89,7 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
               className="
                 absolute h-24 w-4
                 appearance-none
-                bg-zinc-700
+                bg-[var(--secondary)]
                 rounded-full
                 cursor-pointer
                 writing-mode-vertical
@@ -111,7 +111,7 @@ export function AudioToggle({ position = 'top-right', compact = false }: AudioTo
           </div>
 
           {/* Valor numérico */}
-          <span className="text-xs text-zinc-400 font-mono">
+          <span className="text-xs text-[var(--muted)] font-mono">
             {Math.round((muted ? 0 : volume) * 100)}%
           </span>
         </motion.div>

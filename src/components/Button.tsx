@@ -20,9 +20,9 @@ export function Button({
   const baseStyles = 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
   
   const variants = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700',
-    secondary: 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700',
-    accent: 'bg-violet-600 text-white hover:bg-violet-700',
+    primary: 'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90',
+    secondary: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--card-border)] hover:opacity-90',
+    accent: 'bg-[var(--accent)] text-[var(--accent-foreground)] hover:opacity-90',
   }
 
   return (

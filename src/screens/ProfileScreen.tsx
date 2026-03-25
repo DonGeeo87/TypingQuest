@@ -20,6 +20,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   const [achievements, setAchievements] = useState<UserAchievement[]>([])
   const [loading, setLoading] = useState(true)
   const [needsRegistration, setNeedsRegistration] = useState(false)
+  const [showRegistration, setShowRegistration] = useState(false)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
   const [linkEmail, setLinkEmail] = useState('')
   const [linking, setLinking] = useState(false)
@@ -60,6 +61,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
   const handleRegistrationComplete = () => {
     setNeedsRegistration(false)
+    setShowRegistration(false)
     void loadProfile() // Recargar el perfil con el nuevo username
     if (onRegistrationComplete) {
       onRegistrationComplete()
@@ -101,12 +103,11 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     }
   }, [linkEmail])
 
-  // Mostrar pantalla de registro si no tiene username
-  if (needsRegistration) {
+  if (showRegistration) {
     return (
       <RegistrationScreen
         onComplete={handleRegistrationComplete}
-        onBack={() => onNavigate('home')}
+        onBack={() => setShowRegistration(false)}
         onRecoverAccount={() => onNavigate('auth')}
       />
     )
@@ -115,7 +116,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-zinc-400">Loading profile...</div>
+        <div className="text-[var(--muted)]">Cargando perfil...</div>
       </div>
     )
   }
@@ -134,6 +135,24 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
         {/* Profile Stats */}
         <Card className="space-y-6">
+          {needsRegistration && (
+            <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="text-amber-600 text-sm">
+                  Tu perfil no tiene apodo todavía. Puedes seguir jugando como invitado o elegir uno para aparecer en rankings.
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={() => onNavigate('auth')}>
+                    Iniciar sesión
+                  </Button>
+                  <Button variant="accent" onClick={() => setShowRegistration(true)}>
+                    Elegir apodo
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-4">
             {profile?.avatar_url ? (
               <img
@@ -147,8 +166,8 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
               </div>
             )}
             <div>
-              <h2 className="text-2xl font-bold text-white">{profile?.username || 'Anonymous'}</h2>
-              <p className="text-zinc-400">
+              <h2 className="text-2xl font-bold text-[var(--foreground)]">{profile?.username || 'Invitado'}</h2>
+              <p className="text-[var(--muted)]">
                 Member since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Today'}
               </p>
             </div>
@@ -156,31 +175,31 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-zinc-800/50 rounded-lg">
+            <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-indigo-400">{profile?.total_games || 0}</div>
-              <div className="text-zinc-400 text-sm">Games Played</div>
+              <div className="text-[var(--muted)] text-sm">Games Played</div>
             </div>
-            <div className="text-center p-4 bg-zinc-800/50 rounded-lg">
+            <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-green-400">{profile?.total_wins || 0}</div>
-              <div className="text-zinc-400 text-sm">Wins</div>
+              <div className="text-[var(--muted)] text-sm">Wins</div>
             </div>
-            <div className="text-center p-4 bg-zinc-800/50 rounded-lg">
+            <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-amber-400">{profile?.best_wpm || 0}</div>
-              <div className="text-zinc-400 text-sm">Best WPM</div>
+              <div className="text-[var(--muted)] text-sm">Best WPM</div>
             </div>
-            <div className="text-center p-4 bg-zinc-800/50 rounded-lg">
+            <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-violet-400">{profile?.best_accuracy || 0}%</div>
-              <div className="text-zinc-400 text-sm">Best Accuracy</div>
+              <div className="text-[var(--muted)] text-sm">Best Accuracy</div>
             </div>
           </div>
         </Card>
 
         <Card className="space-y-4">
-          <h3 className="text-xl font-bold text-white">🔐 Cuenta</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)]">🔐 Cuenta</h3>
 
           {isAnonymous ? (
             <div className="space-y-3">
-              <div className="text-zinc-400 text-sm">
+              <div className="text-[var(--muted)] text-sm">
                 Estás jugando en modo anónimo. Si cambias de dispositivo o borras datos, no podrás recuperar tu progreso.
               </div>
 
@@ -189,7 +208,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                   value={linkEmail}
                   onChange={(e) => setLinkEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500"
+                  className="flex-1 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
                 />
                 <Button onClick={handleLinkEmail} disabled={linking || linkSent}>
                   {linkSent ? 'Revisa tu email' : linking ? 'Enviando…' : 'Vincular email'}
@@ -216,7 +235,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
               </AnimatePresence>
             </div>
           ) : (
-            <div className="text-zinc-400 text-sm">
+            <div className="text-[var(--muted)] text-sm">
               Sesión activa{email ? `: ${email}` : ''}.
             </div>
           )}
@@ -228,9 +247,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
         {/* Recent Games */}
         <Card>
-          <h3 className="text-xl font-bold text-white mb-4">🎮 Recent Games</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">🎮 Recent Games</h3>
           {recentGames.length === 0 ? (
-            <p className="text-zinc-400 text-center py-8">No games played yet. Start playing!</p>
+            <p className="text-[var(--muted)] text-center py-8">No games played yet. Start playing!</p>
           ) : (
             <div className="space-y-2">
               {recentGames.map((game, index) => (
@@ -239,13 +258,13 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-[var(--secondary)] rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <span className={`text-lg ${game.language === 'en' ? '' : ''}`}>
                       {game.language === 'en' ? '🇬🇧' : '🇪🇸'}
                     </span>
-                    <span className="text-white font-medium">Level {game.level}</span>
+                    <span className="text-[var(--foreground)] font-medium">Level {game.level}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-indigo-400 font-bold">{game.wpm} WPM</span>
@@ -259,9 +278,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
         {/* Missions */}
         <Card>
-          <h3 className="text-xl font-bold text-white mb-4">📋 Missions</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">📋 Missions</h3>
           {missions.length === 0 ? (
-            <p className="text-zinc-400 text-center py-8">No active missions. Play games to get missions!</p>
+            <p className="text-[var(--muted)] text-center py-8">No active missions. Play games to get missions!</p>
           ) : (
             <div className="space-y-3">
               {missions.map((mission, index) => (
@@ -272,13 +291,13 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                   transition={{ delay: index * 0.1 }}
                   className={`p-4 rounded-lg border ${mission.completed
                     ? 'border-green-500/50 bg-green-500/10'
-                    : 'border-zinc-700 bg-zinc-800/50'
+                    : 'border-[var(--card-border)] bg-[var(--secondary)]'
                     }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-white">Mission</div>
-                      <div className="text-sm text-zinc-400">Progress: {mission.progress}</div>
+                      <div className="font-semibold text-[var(--foreground)]">Mission</div>
+                      <div className="text-sm text-[var(--muted)]">Progress: {mission.progress}</div>
                     </div>
                     {mission.completed && (
                       <span className="text-green-400 font-bold">✓ Complete</span>
@@ -292,9 +311,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
         {/* Achievements */}
         <Card>
-          <h3 className="text-xl font-bold text-white mb-4">🏅 Achievements</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">🏅 Achievements</h3>
           {achievements.length === 0 ? (
-            <p className="text-zinc-400 text-center py-8">No achievements yet. Keep playing!</p>
+            <p className="text-[var(--muted)] text-center py-8">No achievements yet. Keep playing!</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {achievements.map((achievement, index) => (
@@ -306,7 +325,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                   className="text-center p-4 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg border border-amber-500/30"
                 >
                   <div className="text-3xl mb-2">🏅</div>
-                  <div className="text-xs text-zinc-400">
+                  <div className="text-xs text-[var(--muted)]">
                     Unlocked {new Date(achievement.unlocked_at).toLocaleDateString()}
                   </div>
                 </motion.div>
@@ -344,13 +363,13 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-zinc-900 border border-red-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl shadow-red-500/20"
+              className="bg-[var(--card-bg)] border border-red-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl shadow-red-500/20"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center space-y-4">
                 <div className="text-5xl mb-2">🕹️</div>
-                <h2 className="text-2xl font-bold text-white">¿END SESSION?</h2>
-                <p className="text-zinc-400 text-sm">
+                <h2 className="text-2xl font-bold text-[var(--foreground)]">¿END SESSION?</h2>
+                <p className="text-[var(--muted)] text-sm">
                   Tu progreso se guardará en el ranking, pero para volver a jugar deberás crear un nuevo apodo y avatar.
                 </p>
 

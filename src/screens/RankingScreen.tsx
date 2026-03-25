@@ -140,7 +140,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                     <p className="text-emerald-400 font-semibold">
                       ¡Nuevo récord en tiempo real!
                     </p>
-                    <p className="text-zinc-400 text-sm">
+                    <p className="text-[var(--muted)] text-sm">
                       {liveUpdate.username} logró {liveUpdate.score} puntos en {liveUpdate.durationCategory}s
                     </p>
                   </div>
@@ -152,7 +152,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
 
         {/* Selector de Duración */}
         <Card className="space-y-4">
-          <h2 className="text-xl font-bold text-white">Selecciona la Categoría</h2>
+          <h2 className="text-xl font-bold text-[var(--foreground)]">Selecciona la Categoría</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {DURATION_CATEGORIES.map((category) => {
               const userRank = userRanks[category.value]
@@ -165,7 +165,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                   className={`relative p-4 rounded-xl font-semibold transition-all ${
                     isSelected
                       ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                      : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                      : 'bg-[var(--secondary)] text-[var(--muted)] hover:text-[var(--foreground)] hover:opacity-90'
                   }`}
                 >
                   <div className="text-2xl font-bold">{category.label}</div>
@@ -199,7 +199,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                   <div className="text-4xl">👑</div>
                   <div>
                     <h3 className="text-amber-400 font-bold text-lg">Tu Mejor Marca</h3>
-                    <p className="text-zinc-400 text-sm">
+                    <p className="text-[var(--muted)] text-sm">
                       {selectedDuration}s - {getDurationCategory(selectedDuration)?.description}
                     </p>
                   </div>
@@ -208,7 +208,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                   <div className="text-3xl font-bold text-amber-400">
                     {currentPersonalBest.standardized_score || 0}
                   </div>
-                  <div className="text-zinc-400 text-sm">puntos</div>
+                  <div className="text-[var(--muted)] text-sm">puntos</div>
                   {currentUserRank && currentUserRank.rank > 0 && (
                     <div className="text-amber-300 text-sm mt-1">
                       #{currentUserRank.rank} global
@@ -221,19 +221,19 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
               <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-amber-500/20">
                 <div className="text-center">
                   <div className="text-amber-400 font-bold">{currentPersonalBest.wpm}</div>
-                  <div className="text-zinc-500 text-xs">WPM</div>
+                  <div className="text-[var(--muted)] text-xs">WPM</div>
                 </div>
                 <div className="text-center">
                   <div className="text-amber-400 font-bold">{currentPersonalBest.accuracy}%</div>
-                  <div className="text-zinc-500 text-xs">Precisión</div>
+                  <div className="text-[var(--muted)] text-xs">Precisión</div>
                 </div>
                 <div className="text-center">
                   <div className="text-amber-400 font-bold">{currentPersonalBest.errors}</div>
-                  <div className="text-zinc-500 text-xs">Errores</div>
+                  <div className="text-[var(--muted)] text-xs">Errores</div>
                 </div>
                 <div className="text-center">
                   <div className="text-amber-400 font-bold">{currentPersonalBest.words_completed || 0}</div>
-                  <div className="text-zinc-500 text-xs">Palabras</div>
+                  <div className="text-[var(--muted)] text-xs">Palabras</div>
                 </div>
               </div>
             </Card>
@@ -243,29 +243,29 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
         {/* Tabla de Rankings */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
               Top Jugadores - {getDurationCategory(selectedDuration)?.label} {getDurationCategory(selectedDuration)?.description}
             </h2>
             {loading && (
-              <div className="text-zinc-400 text-sm">Cargando...</div>
+              <div className="text-[var(--muted)] text-sm">Cargando...</div>
             )}
           </div>
 
           {currentRanking.length === 0 ? (
-            <div className="text-center py-12 text-zinc-400">
+            <div className="text-center py-12 text-[var(--muted)]">
               No hay registros aún para esta categoría. ¡Sé el primero! 🎮
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-700">
-                    <th className="text-left py-3 px-4 text-zinc-400 font-medium">#</th>
-                    <th className="text-left py-3 px-4 text-zinc-400 font-medium">Jugador</th>
-                    <th className="text-center py-3 px-4 text-zinc-400 font-medium">Score</th>
-                    <th className="text-center py-3 px-4 text-zinc-400 font-medium">WPM</th>
-                    <th className="text-center py-3 px-4 text-zinc-400 font-medium">Precisión</th>
-                    <th className="text-center py-3 px-4 text-zinc-400 font-medium">Palabras</th>
+                  <tr className="border-b border-[var(--card-border)]">
+                    <th className="text-left py-3 px-4 text-[var(--muted)] font-medium">#</th>
+                    <th className="text-left py-3 px-4 text-[var(--muted)] font-medium">Jugador</th>
+                    <th className="text-center py-3 px-4 text-[var(--muted)] font-medium">Score</th>
+                    <th className="text-center py-3 px-4 text-[var(--muted)] font-medium">WPM</th>
+                    <th className="text-center py-3 px-4 text-[var(--muted)] font-medium">Precisión</th>
+                    <th className="text-center py-3 px-4 text-[var(--muted)] font-medium">Palabras</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -279,7 +279,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`border-b border-zinc-800 transition-colors ${
+                        className={`border-b border-[var(--card-border)] transition-colors ${
                           isUserEntry ? 'bg-indigo-600/20' : ''
                         } ${
                           index < 3 ? 'bg-gradient-to-r from-indigo-500/10 to-transparent' : ''
@@ -290,7 +290,7 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                           {index === 1 && '🥈'}
                           {index === 2 && '🥉'}
                           {index > 2 && (
-                            <span className={isUserEntry ? 'text-indigo-400 font-bold' : 'text-zinc-400'}>
+                            <span className={isUserEntry ? 'text-indigo-400 font-bold' : 'text-[var(--muted)]'}>
                               {index + 1}
                             </span>
                           )}
@@ -305,13 +305,13 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                               />
                             ) : (
                               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                                isUserEntry ? 'bg-indigo-600 text-white' : 'bg-zinc-700 text-zinc-300'
+                                isUserEntry ? 'bg-indigo-600 text-white' : 'bg-[var(--secondary)] text-[var(--muted)]'
                               }`}>
                                 {entry.username?.[0]?.toUpperCase() || '?'}
                               </div>
                             )}
                             <span className={`font-semibold ${
-                              isUserEntry ? 'text-indigo-400' : 'text-white'
+                              isUserEntry ? 'text-indigo-400' : 'text-[var(--foreground)]'
                             }`}>
                               {entry.username || 'Anónimo'}
                               {isPersonalBest && ' 👑'}
@@ -330,13 +330,13 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
                             {entry.standardized_score || 0}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-center text-zinc-400">
+                        <td className="py-3 px-4 text-center text-[var(--muted)]">
                           {entry.wpm}
                         </td>
-                        <td className="py-3 px-4 text-center text-zinc-400">
+                        <td className="py-3 px-4 text-center text-[var(--muted)]">
                           {entry.accuracy}%
                         </td>
-                        <td className="py-3 px-4 text-center text-zinc-400">
+                        <td className="py-3 px-4 text-center text-[var(--muted)]">
                           {entry.words_completed || '-'}
                         </td>
                       </motion.tr>
@@ -349,12 +349,12 @@ export function RankingScreen({ onNavigate }: RankingScreenProps) {
         </Card>
 
         {/* Leyenda de Score */}
-        <Card className="bg-zinc-800/50">
-          <h3 className="text-sm font-semibold text-zinc-400 mb-2">📊 Fórmula de Puntuación</h3>
-          <p className="text-zinc-500 text-sm font-mono">
+        <Card className="bg-[var(--secondary)]">
+          <h3 className="text-sm font-semibold text-[var(--muted)] mb-2">📊 Fórmula de Puntuación</h3>
+          <p className="text-[var(--muted)] text-sm font-mono">
             Score = (palabras × 100) + (WPM × precisión) - (errores × 10)
           </p>
-          <p className="text-zinc-600 text-xs mt-2">
+          <p className="text-[var(--muted)] text-xs mt-2">
             Esta fórmula asegura una comparación justa entre jugadores, considerando velocidad, precisión y cantidad de palabras completadas.
           </p>
         </Card>

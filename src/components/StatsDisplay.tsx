@@ -17,7 +17,7 @@ export function StatsDisplay({ wpm, accuracy, combo, errors, progress }: StatsDi
         className="glass-card p-4 text-center"
       >
         <div className="text-3xl font-bold text-indigo-400">{wpm}</div>
-        <div className="text-sm text-zinc-400">WPM</div>
+        <div className="text-sm text-[var(--muted)]">WPM</div>
       </motion.div>
 
       <motion.div
@@ -27,7 +27,7 @@ export function StatsDisplay({ wpm, accuracy, combo, errors, progress }: StatsDi
         className="glass-card p-4 text-center"
       >
         <div className="text-3xl font-bold text-violet-400">{accuracy}%</div>
-        <div className="text-sm text-zinc-400">Accuracy</div>
+        <div className="text-sm text-[var(--muted)]">Accuracy</div>
       </motion.div>
 
       <motion.div
@@ -37,7 +37,7 @@ export function StatsDisplay({ wpm, accuracy, combo, errors, progress }: StatsDi
         className="glass-card p-4 text-center"
       >
         <div className="text-3xl font-bold text-amber-400">{combo}</div>
-        <div className="text-sm text-zinc-400">Combo</div>
+        <div className="text-sm text-[var(--muted)]">Combo</div>
       </motion.div>
 
       <motion.div
@@ -47,7 +47,7 @@ export function StatsDisplay({ wpm, accuracy, combo, errors, progress }: StatsDi
         className="glass-card p-4 text-center"
       >
         <div className="text-3xl font-bold text-red-400">{errors}</div>
-        <div className="text-sm text-zinc-400">Errors</div>
+        <div className="text-sm text-[var(--muted)]">Errors</div>
       </motion.div>
 
       <motion.div
@@ -57,7 +57,7 @@ export function StatsDisplay({ wpm, accuracy, combo, errors, progress }: StatsDi
         className="glass-card p-4 text-center col-span-2 md:col-span-1"
       >
         <div className="text-3xl font-bold text-green-400">{Math.round(progress)}%</div>
-        <div className="text-sm text-zinc-400">Progress</div>
+        <div className="text-sm text-[var(--muted)]">Progress</div>
       </motion.div>
     </div>
   )

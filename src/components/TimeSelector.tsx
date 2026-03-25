@@ -24,12 +24,12 @@ export function TimeSelector({ selectedTime, onTimeChange }: TimeSelectorProps) 
           className={`p-4 rounded-xl border-2 transition-all ${
             selectedTime === option.value
               ? 'border-violet-500 bg-violet-500/20 shadow-lg shadow-violet-500/20'
-              : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+              : 'border-[var(--card-border)] bg-[var(--secondary)] hover:opacity-90'
           }`}
         >
           <div className="text-3xl mb-2">{option.icon}</div>
-          <div className="font-semibold text-white">{option.label}</div>
-          <div className="text-xs text-zinc-400 mt-1">
+          <div className="font-semibold text-[var(--foreground)]">{option.label}</div>
+          <div className="text-xs text-[var(--muted)] mt-1">
             {option.description}
           </div>
         </motion.button>

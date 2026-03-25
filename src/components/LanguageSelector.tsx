@@ -7,7 +7,7 @@ interface LanguageSelectorProps {
 
 export function LanguageSelector({ selectedLanguage, onLanguageChange }: LanguageSelectorProps) {
   return (
-    <div className="flex gap-4 p-2 bg-zinc-800/50 rounded-xl">
+    <div className="flex gap-4 p-2 bg-[var(--secondary)] rounded-xl">
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -15,7 +15,7 @@ export function LanguageSelector({ selectedLanguage, onLanguageChange }: Languag
         className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
           selectedLanguage === 'en'
             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-            : 'text-zinc-400 hover:text-white hover:bg-zinc-700'
+            : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--glass-bg)]'
         }`}
       >
         🇬🇧 English
@@ -27,7 +27,7 @@ export function LanguageSelector({ selectedLanguage, onLanguageChange }: Languag
         className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
           selectedLanguage === 'es'
             ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
-            : 'text-zinc-400 hover:text-white hover:bg-zinc-700'
+            : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--glass-bg)]'
         }`}
       >
         🇪🇸 Español

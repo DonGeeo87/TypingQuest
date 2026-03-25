@@ -46,7 +46,7 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
           <div className={`text-5xl md:text-6xl font-bold ${isTimeLow ? 'animate-pulse' : ''}`}>
             {formatTime(timeRemaining)}
           </div>
-          <div className="text-zinc-500 text-sm mt-1">
+          <div className="text-[var(--muted)] text-sm mt-1">
             {isTimeLow ? '⚠️ Time Running Low!' : 'Time Remaining'}
           </div>
         </motion.div>
@@ -55,13 +55,7 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-8 min-h-[200px] flex flex-wrap content-start gap-1 text-2xl md:text-3xl font-mono leading-relaxed"
-        style={{ 
-          color: '#fafafa',
-          backgroundColor: 'rgba(39, 39, 42, 0.8)',
-          borderRadius: '12px',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
-        }}
+        className="glass-card p-8 min-h-[200px] flex flex-wrap content-start gap-1 text-2xl md:text-3xl font-mono leading-relaxed text-[var(--foreground)]"
       >
         {text.split('').map((char, index) => {
           // Determine the style for each character
@@ -102,7 +96,7 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
             // Pending character - visible but dimmed
             charStyle = {
               ...charStyle,
-              color: '#a1a1aa',
+              color: 'var(--muted)',
               opacity: 0.8,
             }
           }
@@ -116,7 +110,7 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
       </motion.div>
 
       {/* Progress bar */}
-      <div className="mt-4 h-2 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="mt-4 h-2 bg-[var(--secondary)] rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${(currentIndex / text.length) * 100}%` }}

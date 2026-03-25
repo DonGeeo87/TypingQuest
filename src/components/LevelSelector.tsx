@@ -25,12 +25,12 @@ export function LevelSelector({ selectedLevel, onLevelChange }: LevelSelectorPro
           className={`p-4 rounded-xl border-2 transition-all ${
             selectedLevel === level
               ? 'border-indigo-500 bg-indigo-500/20 shadow-lg shadow-indigo-500/20'
-              : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+              : 'border-[var(--card-border)] bg-[var(--secondary)] hover:opacity-90'
           }`}
         >
           <div className="text-3xl mb-2">{levelInfo[level as keyof typeof levelInfo].icon}</div>
-          <div className="font-semibold text-white">{levelInfo[level as keyof typeof levelInfo].name}</div>
-          <div className="text-xs text-zinc-400 mt-1">
+          <div className="font-semibold text-[var(--foreground)]">{levelInfo[level as keyof typeof levelInfo].name}</div>
+          <div className="text-xs text-[var(--muted)] mt-1">
             {levelInfo[level as keyof typeof levelInfo].description}
           </div>
         </motion.button>
