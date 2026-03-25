@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
+import { useMobile } from '../hooks/useMobile'
 import { TypingArea, StatsDisplay, ComboIndicator, Button, Card, Confetti, ErrorShake, ErrorParticles, TextComplete, AudioToggle, DynamicBackground } from '../components'
 import { getTextForLevel } from '../data/words'
 import { getCurrentUser } from '../lib/supabase'
@@ -72,11 +73,14 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [isNewRecord, setIsNewRecord] = useState(false)
   const [localWordsCompleted, setLocalWordsCompleted] = useState(0)
+  const [mobileInputValue, setMobileInputValue] = useState('')
+  const isMobile = useMobile()
 
   // Hook de sonido
   const { playKeySound, playErrorSound, playCompleteSound, playVictorySound, playTimeWarning, playLevelUpSound } = useSound()
 
   const typingAreaRef = useRef<HTMLDivElement>(null)
+  const mobileInputRef = useRef<HTMLInputElement>(null)
   const prevErrorsRef = useRef(errors)
   const prevWordsCompletedRef = useRef(wordsCompleted)
   const lastPlayedTimeWarningRef = useRef<number>(11)
@@ -171,6 +175,63 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     maxCombo,
     startTime,
     wordsCompleted,
+  ])
+
+  const processKey = useCallback((pressedChar: string) => {
+    if (status === 'finished') return
+
+    if (status === 'idle') {
+      setStatus('playing')
+      setStartTime(Date.now())
+    }
+
+    if (status !== 'playing') return
+
+    const expectedChar = currentText[currentIndex]
+
+    if (pressedChar === 'Backspace') {
+      if (currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1)
+      }
+      return
+    }
+
+    if (pressedChar.length > 1 && pressedChar !== ' ') return
+
+    const isCorrect = pressedChar === expectedChar
+
+    addTypedChar(pressedChar, isCorrect)
+    updateCombo(isCorrect)
+
+    if (isCorrect) {
+      playKeySound()
+      setCurrentIndex(currentIndex + 1)
+
+      if (currentIndex + 1 >= currentText.length) {
+        const nextText = getTextForLevel(language, level)
+        advanceToNextText(nextText)
+        setLocalWordsCompleted(0)
+      }
+    } else {
+      incrementError()
+      resetCurrentPhrase()
+      setLocalWordsCompleted(0)
+    }
+  }, [
+    status,
+    currentIndex,
+    currentText,
+    setStatus,
+    setStartTime,
+    setCurrentIndex,
+    addTypedChar,
+    updateCombo,
+    playKeySound,
+    advanceToNextText,
+    language,
+    level,
+    incrementError,
+    resetCurrentPhrase,
   ])
 
   // Handle game end when time runs out
@@ -274,55 +335,31 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
   // Handle keyboard input con sonidos
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    if (status === 'finished') return
-
-    if (status === 'idle') {
-      setStatus('playing')
-      setStartTime(Date.now())
-    }
-
-    if (status !== 'playing') return
-
-    const expectedChar = currentText[currentIndex]
-    const pressedChar = event.key
-
-    if (pressedChar === 'Backspace') {
-      if (currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1)
-      }
-      return
-    }
-
-    if (pressedChar.length > 1 && pressedChar !== ' ') return
-
-    const isCorrect = pressedChar === expectedChar
-
-    addTypedChar(pressedChar, isCorrect)
-    updateCombo(isCorrect)
-
-    if (isCorrect) {
-      playKeySound()
-      setCurrentIndex(currentIndex + 1)
-
-      // Si completó el texto actual, cargar el siguiente
-      if (currentIndex + 1 >= currentText.length) {
-        const nextText = getTextForLevel(language, level)
-        advanceToNextText(nextText)
-        setLocalWordsCompleted(0)
-      }
-    } else {
-      incrementError()
-      // REINICIAR FRASE AL EQUIVOCARSE (DESAFÍO)
-      resetCurrentPhrase()
-      setLocalWordsCompleted(0)
-    }
-  }, [status, currentIndex, currentText, playKeySound, setStatus, setStartTime, setCurrentIndex, addTypedChar, updateCombo, advanceToNextText, resetCurrentPhrase, language, level, incrementError])
+    void event
+    processKey(event.key)
+  }, [processKey])
 
   // Attach keyboard listener
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [handleKeyPress])
+
+  useEffect(() => {
+    if (!isMobile) return
+    if (status === 'finished') return
+    window.setTimeout(() => {
+      mobileInputRef.current?.focus()
+    }, 0)
+  }, [isMobile, status])
+
+  const handleMobileChange = useCallback((value: string) => {
+    if (!value) return
+    for (const ch of value) {
+      processKey(ch)
+    }
+    setMobileInputValue('')
+  }, [processKey])
 
   const progress = (currentIndex / currentText.length) * 100
 
@@ -481,7 +518,31 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
         {/* Typing Area con ErrorShake */}
         <ErrorShake isActive={showError}>
-          <div ref={typingAreaRef}>
+          <div
+            ref={typingAreaRef}
+            onPointerDown={() => {
+              if (!isMobile) return
+              mobileInputRef.current?.focus()
+            }}
+          >
+            {isMobile && (
+              <input
+                ref={mobileInputRef}
+                value={mobileInputValue}
+                onChange={(e) => handleMobileChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Backspace') {
+                    e.preventDefault()
+                    processKey('Backspace')
+                  }
+                }}
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="fixed -left-[9999px] top-0 opacity-0"
+              />
+            )}
             <TypingArea
               text={currentText}
               currentIndex={currentIndex}

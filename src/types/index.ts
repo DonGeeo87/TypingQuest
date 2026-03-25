@@ -193,3 +193,55 @@ export interface RealtimeRankingUpdate {
   durationCategory?: number
   timestamp: string
 }
+
+export type MultiplayerRoomStatus = 'lobby' | 'running' | 'finished'
+
+export type MultiplayerRoundStatus = 'scheduled' | 'running' | 'finished'
+
+export interface MultiplayerRoom {
+  id: string
+  pin: string
+  host_id: string
+  status: MultiplayerRoomStatus
+  language: Language
+  level: GameLevel
+  round_duration: number
+  current_round: number
+  created_at: string
+  started_at?: string
+  ended_at?: string
+}
+
+export interface MultiplayerRoomPlayer {
+  room_id: string
+  user_id: string
+  username: string
+  is_host: boolean
+  joined_at: string
+  last_seen: string
+}
+
+export interface MultiplayerRound {
+  id: string
+  room_id: string
+  round_number: number
+  prompt: string
+  duration_seconds: number
+  status: MultiplayerRoundStatus
+  starts_at?: string
+  ends_at?: string
+  created_at: string
+}
+
+export interface MultiplayerSubmission {
+  id: string
+  room_id: string
+  round_id: string
+  user_id: string
+  wpm: number
+  accuracy: number
+  errors: number
+  words_completed: number
+  score: number
+  submitted_at: string
+}

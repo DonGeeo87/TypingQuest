@@ -13,6 +13,12 @@ import type {
   PersonalBest,
   RealtimeRankingUpdate,
   DurationCategory,
+  MultiplayerRoom,
+  MultiplayerRoomPlayer,
+  MultiplayerRound,
+  MultiplayerSubmission,
+  Language,
+  GameLevel,
 } from '../types'
 
 type GameResultWithProfile = GameResult & {
@@ -966,4 +972,228 @@ export async function signOut(): Promise<void> {
   // Limpiar ID local si existe
   sessionStorage.removeItem('typingquest-local-userid')
   log.debug('[Supabase] Sesión cerrada, localStorage limpio')
+}
+
+// ============================================
+// MULTIPLAYER (KAHOOT-LIKE)
+// ============================================
+
+function generateRoomPin(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+export async function createMultiplayerRoom(params: {
+  hostId: string
+  username: string
+  language: Language
+  level: GameLevel
+  roundDuration: number
+}): Promise<MultiplayerRoom> {
+  const { hostId, username, language, level, roundDuration } = params
+
+  let lastError: unknown
+
+  for (let i = 0; i < 8; i++) {
+    const pin = generateRoomPin()
+
+    const { data: room, error } = await supabase
+      .from('mp_rooms')
+      .insert({
+        pin,
+        host_id: hostId,
+        language,
+        level,
+        round_duration: roundDuration,
+      })
+      .select('*')
+      .single()
+
+    if (error) {
+      lastError = error
+      continue
+    }
+
+    await supabase.from('mp_room_players').insert({
+      room_id: room.id,
+      user_id: hostId,
+      username,
+      is_host: true,
+    })
+
+    return room as MultiplayerRoom
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('No se pudo crear la sala')
+}
+
+export async function getMultiplayerRoomByPin(pin: string): Promise<MultiplayerRoom | null> {
+  const { data } = await supabase
+    .from('mp_rooms')
+    .select('*')
+    .eq('pin', pin)
+    .maybeSingle()
+
+  return (data as MultiplayerRoom) || null
+}
+
+export async function joinMultiplayerRoom(params: {
+  roomId: string
+  userId: string
+  username: string
+}): Promise<void> {
+  const { roomId, userId, username } = params
+
+  const { error } = await supabase.from('mp_room_players').insert({
+    room_id: roomId,
+    user_id: userId,
+    username,
+    is_host: false,
+  })
+
+  if (error) throw error
+}
+
+export async function leaveMultiplayerRoom(params: { roomId: string; userId: string }): Promise<void> {
+  const { roomId, userId } = params
+  await supabase
+    .from('mp_room_players')
+    .delete()
+    .eq('room_id', roomId)
+    .eq('user_id', userId)
+}
+
+export async function listMultiplayerPlayers(roomId: string): Promise<MultiplayerRoomPlayer[]> {
+  const { data } = await supabase
+    .from('mp_room_players')
+    .select('*')
+    .eq('room_id', roomId)
+    .order('joined_at', { ascending: true })
+
+  return (data as MultiplayerRoomPlayer[]) || []
+}
+
+export async function hostStartMultiplayerRound(params: {
+  roomId: string
+  prompt: string
+  durationSeconds: number
+}): Promise<MultiplayerRound> {
+  const { roomId, prompt, durationSeconds } = params
+
+  const now = new Date()
+  const startsAt = now.toISOString()
+  const endsAt = new Date(now.getTime() + durationSeconds * 1000).toISOString()
+
+  const { data: room } = await supabase
+    .from('mp_rooms')
+    .select('current_round')
+    .eq('id', roomId)
+    .single()
+
+  const nextRound = ((room as { current_round: number }).current_round || 0) + 1
+
+  const { data: round, error } = await supabase
+    .from('mp_rounds')
+    .insert({
+      room_id: roomId,
+      round_number: nextRound,
+      prompt,
+      duration_seconds: durationSeconds,
+      status: 'running',
+      starts_at: startsAt,
+      ends_at: endsAt,
+    })
+    .select('*')
+    .single()
+
+  if (error) throw error
+
+  await supabase
+    .from('mp_rooms')
+    .update({
+      status: 'running',
+      current_round: nextRound,
+      started_at: now.toISOString(),
+    })
+    .eq('id', roomId)
+
+  return round as MultiplayerRound
+}
+
+export async function getCurrentMultiplayerRound(roomId: string): Promise<MultiplayerRound | null> {
+  const { data } = await supabase
+    .from('mp_rounds')
+    .select('*')
+    .eq('room_id', roomId)
+    .order('round_number', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return (data as MultiplayerRound) || null
+}
+
+export async function submitMultiplayerResult(params: {
+  roomId: string
+  roundId: string
+  userId: string
+  wpm: number
+  accuracy: number
+  errors: number
+  wordsCompleted: number
+}): Promise<MultiplayerSubmission | null> {
+  const { roomId, roundId, userId, wpm, accuracy, errors, wordsCompleted } = params
+  const score = calculateStandardizedScore(wordsCompleted, wpm, accuracy, errors)
+
+  const { data, error } = await supabase
+    .from('mp_submissions')
+    .insert({
+      room_id: roomId,
+      round_id: roundId,
+      user_id: userId,
+      wpm,
+      accuracy,
+      errors,
+      words_completed: wordsCompleted,
+      score,
+    })
+    .select('*')
+    .single()
+
+  if (error) return null
+  return data as MultiplayerSubmission
+}
+
+export async function listRoundLeaderboard(roundId: string): Promise<MultiplayerSubmission[]> {
+  const { data } = await supabase
+    .from('mp_submissions')
+    .select('*')
+    .eq('round_id', roundId)
+    .order('score', { ascending: false })
+    .order('submitted_at', { ascending: true })
+
+  return (data as MultiplayerSubmission[]) || []
+}
+
+export function subscribeToRoom(roomId: string, onChange: () => void): () => void {
+  const channel = supabase
+    .channel(`mp_room_${roomId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'mp_rooms', filter: `id=eq.${roomId}` },
+      () => onChange()
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'mp_room_players', filter: `room_id=eq.${roomId}` },
+      () => onChange()
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'mp_rounds', filter: `room_id=eq.${roomId}` },
+      () => onChange()
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
 }

@@ -88,7 +88,7 @@ export function HomeScreen({
         </div>
 
         {/* Main Menu Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
@@ -102,6 +102,14 @@ export function HomeScreen({
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🏆</div>
               <h3 className="text-2xl font-black text-white mb-2">Rankings</h3>
               <p className="text-zinc-400 text-sm">The world's fastest typists are here</p>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
+            <Card onClick={() => onNavigate('multiplayer')} className="cursor-pointer h-full border-emerald-500/20 hover:border-emerald-500/50 transition-all bg-zinc-900/60 backdrop-blur-sm group">
+              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🧩</div>
+              <h3 className="text-2xl font-black text-white mb-2">Multiplayer</h3>
+              <p className="text-zinc-400 text-sm">Crea una sala y compite en vivo</p>
             </Card>
           </motion.div>
 

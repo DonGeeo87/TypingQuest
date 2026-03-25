@@ -5,7 +5,7 @@ import { useAuthStore } from './store/authStore'
 import type { Language, GameLevel } from './types'
 import './App.css'
 
-type Screen = 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap'
+type Screen = 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer'
 
 const HomeScreen = lazy(() => import('./screens/HomeScreen').then(m => ({ default: m.HomeScreen })))
 const GameScreen = lazy(() => import('./screens/GameScreen').then(m => ({ default: m.GameScreen })))
@@ -13,6 +13,7 @@ const RankingScreen = lazy(() => import('./screens/RankingScreen').then(m => ({ 
 const ProfileScreen = lazy(() => import('./screens/ProfileScreen').then(m => ({ default: m.ProfileScreen })))
 const RegistrationScreen = lazy(() => import('./screens/RegistrationScreen').then(m => ({ default: m.RegistrationScreen })))
 const TapTapGame = lazy(() => import('./screens/TapTapGame').then(m => ({ default: m.TapTapGame })))
+const MultiplayerScreen = lazy(() => import('./screens/MultiplayerScreen').then(m => ({ default: m.MultiplayerScreen })))
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -147,6 +148,12 @@ function App() {
               language={language}
               level={level}
               onBack={() => setCurrentScreen('home')}
+            />
+          )}
+
+          {currentScreen === 'multiplayer' && (
+            <MultiplayerScreen
+              onNavigate={handleNavigate}
             />
           )}
         </Suspense>
