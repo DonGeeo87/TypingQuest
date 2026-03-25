@@ -21,7 +21,7 @@ export function Button({
   
   const variants = {
     primary: 'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90',
-    secondary: 'bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--card-border)] hover:opacity-90',
+    secondary: 'bg-[var(--card-bg)] text-[var(--foreground)] border border-[var(--glass-border)] shadow-sm shadow-black/10 hover:shadow-md hover:opacity-95',
     accent: 'bg-[var(--accent)] text-[var(--accent-foreground)] hover:opacity-90',
   }
 
