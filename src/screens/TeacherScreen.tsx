@@ -3,6 +3,7 @@ import { Button, Card } from '../components'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import type { Assignment, AssignmentAttempt, Class, GameLevel, Language } from '../types'
+import { t } from '../i18n'
 import {
   createAssignment,
   createClass,
@@ -22,6 +23,7 @@ type View = 'list' | 'class' | 'assignment'
 export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
   const { userId } = useAuthStore()
   const { setLanguage, setLevel, setGameDuration, setAssignmentId } = useGameStore()
+  const ui = useGameStore((s) => s.language)
 
   const [view, setView] = useState<View>('list')
   const [classes, setClasses] = useState<Class[]>([])
@@ -186,11 +188,11 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
       <div className="min-h-screen p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
-            <Button variant="secondary" onClick={() => onNavigate('home')}>Volver</Button>
+            <Button variant="secondary" onClick={() => onNavigate('home')}>{t(ui, 'common.back')}</Button>
           </div>
           <Card className="p-6">
-            <div className="text-[var(--foreground)] font-bold text-xl mb-2">Modo Profesor</div>
-            <div className="text-[var(--muted)]">Inicia sesión para crear clases y asignaciones.</div>
+            <div className="text-[var(--foreground)] font-bold text-xl mb-2">{t(ui, 'teacher.title')}</div>
+            <div className="text-[var(--muted)]">{t(ui, 'teacher.signInRequired')}</div>
           </Card>
         </div>
       </div>
@@ -216,7 +218,7 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
           >
             ← Back
           </Button>
-          <div className="text-[var(--foreground)] font-bold text-xl">Modo Profesor</div>
+          <div className="text-[var(--foreground)] font-bold text-xl">{t(ui, 'teacher.title')}</div>
         </div>
 
         {error && (
@@ -228,38 +230,38 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
         {view === 'list' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6 space-y-4">
-              <div className="text-[var(--foreground)] font-bold">Crear clase</div>
+              <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.createClass')}</div>
               <input
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
-                placeholder="Nombre de la clase"
+                placeholder={t(ui, 'teacher.classNamePlaceholder')}
                 className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
               />
               <Button onClick={handleCreateClass} disabled={loading || !createName.trim()}>
-                Crear
+                {t(ui, 'common.create')}
               </Button>
             </Card>
 
             <Card className="p-6 space-y-4">
-              <div className="text-[var(--foreground)] font-bold">Unirse a clase</div>
+              <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.joinClass')}</div>
               <input
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="Código (ej: A2B3C4)"
+                placeholder={t(ui, 'teacher.codePlaceholder')}
                 className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
               />
               <Button variant="accent" onClick={handleJoin} disabled={loading || !joinCode.trim()}>
-                Unirse
+                {t(ui, 'common.join')}
               </Button>
             </Card>
 
             <Card className="p-6 md:col-span-2">
               <div className="flex items-center justify-between mb-4">
-                <div className="text-[var(--foreground)] font-bold">Mis clases</div>
-                <Button variant="secondary" onClick={refreshClasses} disabled={loading}>Refrescar</Button>
+                <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.myClasses')}</div>
+                <Button variant="secondary" onClick={refreshClasses} disabled={loading}>{t(ui, 'common.refresh')}</Button>
               </div>
               {classes.length === 0 ? (
-                <div className="text-[var(--muted)]">Aún no tienes clases.</div>
+                <div className="text-[var(--muted)]">{t(ui, 'teacher.noClasses')}</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {classes.map((c) => (
@@ -272,7 +274,7 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="text-[var(--foreground)] font-semibold">{c.name}</div>
-                            <div className="text-[var(--muted)] text-sm">Código: {c.code}</div>
+                            <div className="text-[var(--muted)] text-sm">{t(ui, 'teacher.codeLabel')}: {c.code}</div>
                           </div>
                           <div className="text-xs px-2 py-1 rounded-full bg-[var(--secondary)] text-[var(--muted)]">
                             {c.teacher_id === userId ? 'Teacher' : 'Student'}
@@ -457,4 +459,3 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
     </div>
   )
 }
-

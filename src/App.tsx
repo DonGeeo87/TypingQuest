@@ -7,6 +7,7 @@ import type { Language, GameLevel } from './types'
 import { supabase } from './lib/supabase'
 import { useUiStore } from './store/uiStore'
 import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
+import { t } from './i18n'
 import './App.css'
 
 type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher'
@@ -24,6 +25,7 @@ const TeacherScreen = lazy(() => import('./screens/TeacherScreen').then(m => ({ 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const { language, level, gameDuration, setLanguage, setLevel, setGameDuration, resetGame } = useGameStore()
+  const ui = language
   const { theme } = useUiStore()
   const { enabled: audioEnabled, muted: audioMuted, volume: audioVolume } = useAudioStore()
   const {
@@ -130,7 +132,7 @@ function App() {
         <ParticleBackground isActive={false} />
         <div className="relative z-10 text-center space-y-4">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[var(--muted)]">Cargando...</p>
+          <p className="text-[var(--muted)]">{t(ui, 'common.loading')}</p>
         </div>
       </div>
     )
@@ -142,7 +144,7 @@ function App() {
       <ParticleBackground isActive={currentScreen === 'game'} />
 
       <div className="relative z-10">
-        <Suspense fallback={<div className="p-6 text-zinc-400">Cargando…</div>}>
+        <Suspense fallback={<div className="p-6 text-[var(--muted)]">{t(ui, 'common.loading')}</div>}>
           {currentScreen === 'auth' && (
             <AuthScreen
               onContinue={() => setCurrentScreen('home')}

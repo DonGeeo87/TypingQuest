@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
 import { signInWithEmailMagicLink } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
+import { useGameStore } from '../store/gameStore'
+import { t } from '../i18n'
 
 interface AuthScreenProps {
   onContinue: () => void
@@ -10,6 +12,7 @@ interface AuthScreenProps {
 
 export function AuthScreen({ onContinue }: AuthScreenProps) {
   const { signInAnonymously } = useAuthStore()
+  const ui = useGameStore((s) => s.language)
   const [email, setEmail] = useState('')
   const [loadingAnon, setLoadingAnon] = useState(false)
   const [loadingEmail, setLoadingEmail] = useState(false)
@@ -25,16 +28,16 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
       await signInAnonymously()
       onContinue()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo iniciar en modo anónimo')
+      setError(e instanceof Error ? e.message : t(ui, 'common.errorGeneric'))
     } finally {
       setLoadingAnon(false)
     }
-  }, [signInAnonymously, onContinue])
+  }, [signInAnonymously, onContinue, ui])
 
   const handleEmail = useCallback(async () => {
     const clean = email.trim().toLowerCase()
     if (!clean || !clean.includes('@')) {
-      setError('Ingresa un email válido.')
+      setError(t(ui, 'common.errorGeneric'))
       return
     }
 
@@ -44,11 +47,11 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
       await signInWithEmailMagicLink(clean, redirectTo)
       setSent(true)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo enviar el enlace')
+      setError(e instanceof Error ? e.message : t(ui, 'common.errorGeneric'))
     } finally {
       setLoadingEmail(false)
     }
-  }, [email, redirectTo])
+  }, [email, redirectTo, ui])
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -59,10 +62,10 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-black text-[var(--foreground)] tracking-tight"
           >
-            Bienvenido a TypingQuest
+            {t(ui, 'auth.welcome')}
           </motion.h1>
           <p className="text-[var(--muted)]">
-            Puedes jugar anónimo o crear una cuenta en segundos para recuperar tu progreso.
+            {t(ui, 'auth.welcomeDesc')}
           </p>
         </div>
 
@@ -82,33 +85,33 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="p-6 space-y-4">
             <div>
-              <h2 className="text-[var(--foreground)] text-lg font-bold">Jugar anónimo</h2>
+              <h2 className="text-[var(--foreground)] text-lg font-bold">{t(ui, 'auth.anonTitle')}</h2>
               <p className="text-[var(--muted)] text-sm mt-1">
-                Rápido, sin registro. Te avisaremos que no podrás recuperar el avance si cambias de dispositivo o limpias datos.
+                {t(ui, 'auth.anonDesc')}
               </p>
             </div>
             <Button onClick={handleAnonymous} disabled={loadingAnon}>
-              {loadingAnon ? 'Entrando…' : 'Continuar anónimo'}
+              {loadingAnon ? t(ui, 'common.loading') : t(ui, 'auth.anonContinue')}
             </Button>
           </Card>
 
           <Card className="p-6 space-y-4">
             <div>
-              <h2 className="text-[var(--foreground)] text-lg font-bold">Crear cuenta / Iniciar sesión</h2>
+              <h2 className="text-[var(--foreground)] text-lg font-bold">{t(ui, 'auth.accountTitle')}</h2>
               <p className="text-[var(--muted)] text-sm mt-1">
-                Te enviamos un enlace mágico al email. Si ya tienes cuenta, recuperas tu perfil.
+                {t(ui, 'auth.accountDesc')}
               </p>
             </div>
 
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t(ui, 'auth.emailPlaceholder')}
               className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
             />
 
             <Button onClick={handleEmail} disabled={loadingEmail || sent}>
-              {sent ? 'Enlace enviado' : loadingEmail ? 'Enviando…' : 'Enviar enlace'}
+              {sent ? 'Enlace enviado' : loadingEmail ? t(ui, 'common.loading') : t(ui, 'auth.sendLink')}
             </Button>
 
             {sent && (
@@ -120,7 +123,7 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
         </div>
 
         <div className="text-center text-[var(--muted)] text-xs">
-          Al jugar anónimo, tus datos quedan ligados al dispositivo actual.
+          {t(ui, 'auth.deviceNote')}
         </div>
       </div>
     </div>

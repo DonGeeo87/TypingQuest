@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import { useUiStore } from '../store/uiStore'
 import { useMobile } from '../hooks/useMobile'
 import type { Language, GameLevel } from '../types'
+import { t } from '../i18n'
 
 interface HomeScreenProps {
   language: Language
@@ -32,6 +33,7 @@ export function HomeScreen({
   const { theme, toggleTheme } = useUiStore()
   const isMobile = useMobile()
   const displayName = isAnonymous ? 'Invitado' : (profile?.username || 'Invitado')
+  const ui = language
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
@@ -99,7 +101,7 @@ export function HomeScreen({
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className="text-6xl md:text-8xl font-black text-gradient tracking-tighter leading-tight py-1"
           >
-            TypingQuest
+            {t(ui, 'home.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -107,7 +109,7 @@ export function HomeScreen({
             transition={{ delay: 0.4 }}
             className="text-xl text-[var(--muted)] font-medium"
           >
-            Master units of speed & precision 🚀
+            {t(ui, 'home.subtitle')}
           </motion.p>
         </div>
 
@@ -116,40 +118,40 @@ export function HomeScreen({
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Jugar</h3>
-              <p className="text-[var(--muted)] text-sm">Mejora tu velocidad y precisión</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.play')}</h3>
+              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.playDesc')}</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('ranking')} className="cursor-pointer h-full border-amber-500/20 hover:border-amber-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🏆</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Rankings</h3>
-              <p className="text-[var(--muted)] text-sm">Compite por el top y rompe récords</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.rankings')}</h3>
+              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.rankingsDesc')}</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('multiplayer')} className="cursor-pointer h-full border-emerald-500/20 hover:border-emerald-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🧩</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Multiplayer</h3>
-              <p className="text-[var(--muted)] text-sm">Crea una sala y compite en vivo</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.multiplayer')}</h3>
+              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.multiplayerDesc')}</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('profile')} className="cursor-pointer h-full border-violet-500/20 hover:border-violet-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">👤</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Perfil</h3>
-              <p className="text-[var(--muted)] text-sm">Tus logros, historial y cuenta</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.profile')}</h3>
+              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.profileDesc')}</p>
             </Card>
           </motion.div>
 
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('teacher')} className="cursor-pointer h-full border-sky-500/20 hover:border-sky-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎓</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Profesor</h3>
-              <p className="text-[var(--muted)] text-sm">Clases, asignaciones y reportes</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.teacher')}</h3>
+              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.teacherDesc')}</p>
             </Card>
           </motion.div>
         </div>
@@ -159,13 +161,13 @@ export function HomeScreen({
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none text-9xl font-black italic">CONFIG</div>
           <h2 className="text-3xl font-black text-[var(--foreground)] flex items-center gap-3">
             <span className="w-8 h-1 bg-indigo-500 inline-block"></span>
-            Configuración de Partida
+            {t(ui, 'home.gameSetup')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Language Selection */}
             <div className="space-y-4">
-              <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">Idioma de Práctica</label>
+              <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">{t(ui, 'home.practiceLanguage')}</label>
               <LanguageSelector
                 selectedLanguage={language}
                 onLanguageChange={onLanguageChange}
@@ -174,7 +176,7 @@ export function HomeScreen({
 
             {/* Time Selection */}
             <div className="space-y-4">
-              <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">Duración del Desafío</label>
+              <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">{t(ui, 'home.challengeDuration')}</label>
               <TimeSelector
                 selectedTime={gameDuration}
                 onTimeChange={onGameDurationChange}
@@ -184,7 +186,7 @@ export function HomeScreen({
 
           {/* Level Selection - FULL WIDTH */}
           <div className="space-y-4 border-t border-[var(--card-border)] pt-8">
-            <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">Nivel de Dificultad</label>
+            <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">{t(ui, 'home.difficultyLevel')}</label>
             <LevelSelector
               selectedLevel={level}
               onLevelChange={(lvl) => onLevelChange(lvl as GameLevel)}
