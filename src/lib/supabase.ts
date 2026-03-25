@@ -3,13 +3,14 @@ import type { User } from '@supabase/supabase-js'
 import { log } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(
+  isSupabaseConfigured ? supabaseUrl : 'https://invalid.supabase.co',
+  isSupabaseConfigured ? supabaseAnonKey : 'invalid'
+)
 
 export async function getAuthUser(): Promise<User | null> {
   try {
