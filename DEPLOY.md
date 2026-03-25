@@ -26,6 +26,8 @@
    ```
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   # Alternativa recomendada (si tu Supabase la provee):
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    ```
 
 5. **Click en "Deploy"**
@@ -85,6 +87,7 @@ vercel env add VITE_SUPABASE_ANON_KEY
 |----------|-------|-------------|
 | `VITE_SUPABASE_URL` | `https://your-project.supabase.co` | Production, Preview, Development |
 | `VITE_SUPABASE_ANON_KEY` | `your-anon-key-here` | Production, Preview, Development |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` | Production, Preview, Development |
 
 5. Click en "Save"
 
