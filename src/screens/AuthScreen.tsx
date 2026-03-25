@@ -4,7 +4,6 @@ import { Button, Card } from '../components'
 import { signInWithEmailMagicLink } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
-import { useUiStore } from '../store/uiStore'
 import { t } from '../i18n'
 import { trackEvent } from '../analytics'
 
@@ -44,8 +43,6 @@ const testimonials = [
 export function AuthScreen({ onContinue }: AuthScreenProps) {
   const { signInAnonymously } = useAuthStore()
   const ui = useGameStore((s) => s.language)
-  const setUi = useGameStore((s) => s.setLanguage)
-  const { theme, toggleTheme } = useUiStore()
   const [email, setEmail] = useState('')
   const [leadEmail, setLeadEmail] = useState('')
   const [loadingAnon, setLoadingAnon] = useState(false)
@@ -137,57 +134,6 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-[var(--card-border)] bg-[color:var(--background)]/70 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-3">
-          <a href="/" className="flex items-center gap-3 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
-            <img src="/logo.svg" width={36} height={36} alt="TypingQuest" className="w-9 h-9 shrink-0 drop-shadow-sm" />
-            <div>
-              <div className="text-[var(--foreground)] font-black leading-none">TypingQuest</div>
-              <div className="text-[var(--muted)] text-xs leading-none">{t(ui, 'landing.tagline')}</div>
-            </div>
-          </a>
-          <nav aria-label="Primary" className="hidden md:flex items-center gap-2">
-            <a href="#features" className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500">{t(ui, 'landing.navFeatures')}</a>
-            <a href="#testimonials" className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500">{t(ui, 'landing.navTestimonials')}</a>
-            <a href="#cta" className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500">{t(ui, 'landing.navStart')}</a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-1">
-              <button
-                type="button"
-                onClick={() => setUi('es')}
-                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  ui === 'es' ? 'bg-indigo-600 text-white' : 'text-[var(--muted)] hover:text-[var(--foreground)]'
-                }`}
-                aria-pressed={ui === 'es'}
-              >
-                ES
-              </button>
-              <button
-                type="button"
-                onClick={() => setUi('en')}
-                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  ui === 'en' ? 'bg-indigo-600 text-white' : 'text-[var(--muted)] hover:text-[var(--foreground)]'
-                }`}
-                aria-pressed={ui === 'en'}
-              >
-                EN
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="w-10 h-10 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:opacity-90 transition-opacity flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
-            >
-              <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
-            </button>
-            <Button variant="secondary" onClick={scrollToLead}>{t(ui, 'landing.ctaSecondary')}</Button>
-            <Button onClick={handleAnonymous} disabled={loadingAnon}>{loadingAnon ? t(ui, 'common.loading') : t(ui, 'landing.ctaPrimary')}</Button>
-          </div>
-        </div>
-      </header>
-
       <main>
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">

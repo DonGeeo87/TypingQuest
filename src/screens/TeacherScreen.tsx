@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card } from '../components'
+import { Button, Card, Tooltip } from '../components'
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import type { Assignment, AssignmentAttempt, Class, GameLevel, Language } from '../types'
 import { t } from '../i18n'
+import { isSupabaseConfigured } from '../lib/supabase'
+import { log } from '../utils/logger'
 import {
   createAssignment,
   createClass,
@@ -45,11 +47,18 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
   const [error, setError] = useState<string | null>(null)
 
   const isTeacher = useMemo(() => selectedClass?.teacher_id === userId, [selectedClass?.teacher_id, userId])
+  const isLocalUser = useMemo(() => !userId || userId.startsWith('local_') || !/^[0-9a-f]{8}-/i.test(userId), [userId])
+  const teacherModeEnabled = Boolean(userId && isSupabaseConfigured && !isLocalUser)
 
   const refreshClasses = useCallback(async () => {
     if (!userId) return
-    const data = await listMyClasses(userId)
-    setClasses(data)
+    try {
+      const data = await listMyClasses(userId)
+      setClasses(data)
+    } catch (e) {
+      log.warn('[TeacherMode] refreshClasses falló:', e)
+      setError(e instanceof Error ? e.message : 'Error cargando clases')
+    }
   }, [userId])
 
   const openClass = useCallback(async (cls: Class) => {
@@ -88,7 +97,7 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
   }, [])
 
   const handleCreateClass = useCallback(async () => {
-    if (!userId) return
+    if (!teacherModeEnabled || !userId) return
     if (!createName.trim()) return
     setLoading(true)
     setError(null)
@@ -98,14 +107,15 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
       await refreshClasses()
       await openClass(cls)
     } catch (e) {
+      log.warn('[TeacherMode] createClass falló:', e)
       setError(e instanceof Error ? e.message : 'Error creando clase')
     } finally {
       setLoading(false)
     }
-  }, [createName, openClass, refreshClasses, userId])
+  }, [createName, openClass, refreshClasses, teacherModeEnabled, userId])
 
   const handleJoin = useCallback(async () => {
-    if (!userId) return
+    if (!teacherModeEnabled || !userId) return
     if (!joinCode.trim()) return
     setLoading(true)
     setError(null)
@@ -115,14 +125,15 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
       await refreshClasses()
       await openClass(cls)
     } catch (e) {
+      log.warn('[TeacherMode] joinClassByCode falló:', e)
       setError(e instanceof Error ? e.message : 'Error uniéndose a clase')
     } finally {
       setLoading(false)
     }
-  }, [joinCode, openClass, refreshClasses, userId])
+  }, [joinCode, openClass, refreshClasses, teacherModeEnabled, userId])
 
   const handleCreateAssignment = useCallback(async () => {
-    if (!userId || !selectedClass) return
+    if (!teacherModeEnabled || !userId || !selectedClass) return
     if (!aTitle.trim()) return
     setLoading(true)
     setError(null)
@@ -141,11 +152,12 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
       const a = await listAssignments(selectedClass.id)
       setAssignments(a)
     } catch (e) {
+      log.warn('[TeacherMode] createAssignment falló:', e)
       setError(e instanceof Error ? e.message : 'Error creando asignación')
     } finally {
       setLoading(false)
     }
-  }, [aDesc, aDuration, aLang, aLevel, aTitle, selectedClass, userId])
+  }, [aDesc, aDuration, aLang, aLevel, aTitle, selectedClass, teacherModeEnabled, userId])
 
   const handleStartAssignment = useCallback((a: Assignment) => {
     setLanguage(a.language)
@@ -227,30 +239,53 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
           </Card>
         )}
 
+        {!teacherModeEnabled && userId && (
+          <Card className="p-4 border border-amber-500/30 bg-amber-500/10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="text-amber-600">
+                Para usar Modo Profesor necesitas iniciar sesión con Supabase (cuenta online).
+              </div>
+              <Button variant="secondary" onClick={() => onNavigate('auth')}>
+                Iniciar sesión
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {view === 'list' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6 space-y-4">
-              <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.createClass')}</div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.createClass')}</div>
+                <Tooltip content="Crea una clase y comparte el código con tus estudiantes.">
+                  <span className="text-[var(--muted)] font-bold">ⓘ</span>
+                </Tooltip>
+              </div>
               <input
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
                 placeholder={t(ui, 'teacher.classNamePlaceholder')}
                 className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
               />
-              <Button onClick={handleCreateClass} disabled={loading || !createName.trim()}>
+              <Button onClick={handleCreateClass} disabled={!teacherModeEnabled || loading || !createName.trim()}>
                 {t(ui, 'common.create')}
               </Button>
             </Card>
 
             <Card className="p-6 space-y-4">
-              <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.joinClass')}</div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.joinClass')}</div>
+                <Tooltip content="Únete usando el código. Si eres profe, crea tu clase en la izquierda.">
+                  <span className="text-[var(--muted)] font-bold">ⓘ</span>
+                </Tooltip>
+              </div>
               <input
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 placeholder={t(ui, 'teacher.codePlaceholder')}
                 className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
               />
-              <Button variant="accent" onClick={handleJoin} disabled={loading || !joinCode.trim()}>
+              <Button variant="accent" onClick={handleJoin} disabled={!teacherModeEnabled || loading || !joinCode.trim()}>
                 {t(ui, 'common.join')}
               </Button>
             </Card>
@@ -305,7 +340,12 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
 
             {isTeacher && (
               <Card className="p-6 space-y-4">
-                <div className="text-[var(--foreground)] font-bold">Crear asignación</div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[var(--foreground)] font-bold">{t(ui, 'teacher.createAssignment')}</div>
+                  <Tooltip content="Configura idioma, nivel y duración. Luego tus estudiantes juegan y queda registro de intentos.">
+                    <span className="text-[var(--muted)] font-bold">ⓘ</span>
+                  </Tooltip>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input
                     value={aTitle}
@@ -351,8 +391,8 @@ export function TeacherScreen({ onNavigate }: TeacherScreenProps) {
                     <option value={120}>120s</option>
                   </select>
                 </div>
-                <Button onClick={handleCreateAssignment} disabled={loading || !aTitle.trim()}>
-                  Crear asignación
+                <Button onClick={handleCreateAssignment} disabled={!teacherModeEnabled || loading || !aTitle.trim()}>
+                  {t(ui, 'teacher.createAssignment')}
                 </Button>
               </Card>
             )}

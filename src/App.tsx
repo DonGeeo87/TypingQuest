@@ -1,5 +1,5 @@
 import { useState, useEffect, Suspense, lazy } from 'react'
-import { ParticleBackground, FloatingWords } from './components'
+import { ParticleBackground, FloatingWords, Topbar, AppFooter } from './components'
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
 import { useAudioStore } from './store/audioStore'
@@ -11,7 +11,7 @@ import { t } from './i18n'
 import { trackScreen } from './analytics'
 import './App.css'
 
-type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher'
+type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher' | 'teacherGuide' | 'terms' | 'privacy' | 'support'
 
 const HomeScreen = lazy(() => import('./screens/HomeScreen').then(m => ({ default: m.HomeScreen })))
 const GameScreen = lazy(() => import('./screens/GameScreen').then(m => ({ default: m.GameScreen })))
@@ -22,6 +22,10 @@ const TapTapGame = lazy(() => import('./screens/TapTapGame').then(m => ({ defaul
 const MultiplayerScreen = lazy(() => import('./screens/MultiplayerScreen').then(m => ({ default: m.MultiplayerScreen })))
 const AuthScreen = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })))
 const TeacherScreen = lazy(() => import('./screens/TeacherScreen').then(m => ({ default: m.TeacherScreen })))
+const TeacherGuideScreen = lazy(() => import('./screens/TeacherGuideScreen').then(m => ({ default: m.TeacherGuideScreen })))
+const TermsScreen = lazy(() => import('./screens/TermsScreen').then(m => ({ default: m.TermsScreen })))
+const PrivacyScreen = lazy(() => import('./screens/PrivacyScreen').then(m => ({ default: m.PrivacyScreen })))
+const SupportScreen = lazy(() => import('./screens/SupportScreen').then(m => ({ default: m.SupportScreen })))
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -152,8 +156,11 @@ function App() {
       <FloatingWords />
       <ParticleBackground isActive={currentScreen === 'game'} />
 
-      <div className="relative z-10">
-        <Suspense fallback={<div className="p-6 text-[var(--muted)]">{t(ui, 'common.loading')}</div>}>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Topbar currentScreen={currentScreen} onNavigate={handleNavigate} />
+
+        <div className="flex-1">
+          <Suspense fallback={<div className="p-6 text-[var(--muted)]">{t(ui, 'common.loading')}</div>}>
           {currentScreen === 'auth' && (
             <AuthScreen
               onContinue={() => setCurrentScreen('home')}
@@ -224,7 +231,34 @@ function App() {
               onNavigate={handleNavigate}
             />
           )}
+
+          {currentScreen === 'teacherGuide' && (
+            <TeacherGuideScreen
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentScreen === 'terms' && (
+            <TermsScreen
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentScreen === 'privacy' && (
+            <PrivacyScreen
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentScreen === 'support' && (
+            <SupportScreen
+              onNavigate={handleNavigate}
+            />
+          )}
         </Suspense>
+        </div>
+
+        <AppFooter onNavigate={handleNavigate} />
       </div>
     </div>
   )

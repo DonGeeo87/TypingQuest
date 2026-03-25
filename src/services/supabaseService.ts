@@ -1203,8 +1203,13 @@ function makeClassCode() {
     .join('')
 }
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
 export async function createClass(params: { teacherId: string; name: string }): Promise<Class> {
   const { teacherId, name } = params
+  if (!isUuid(teacherId)) throw new Error('Necesitas iniciar sesión para crear clases.')
   let lastError: Error | null = null
   for (let i = 0; i < 10; i++) {
     const code = makeClassCode()
@@ -1213,32 +1218,68 @@ export async function createClass(params: { teacherId: string; name: string }): 
       .insert({ teacher_id: teacherId, name, code })
       .select('*')
       .single()
-    if (!error) return data as Class
-    lastError = error
+    if (!error) {
+      const cls = data as Class
+      const { error: memErr } = await supabase
+        .from('class_members')
+        .insert({ class_id: cls.id, user_id: teacherId, role: 'teacher' })
+
+      if (memErr) {
+        const memCode = (memErr as unknown as { code?: string }).code
+        if (memCode !== '23505') throw memErr
+      }
+
+      return cls
+    }
+
+    const err = error as unknown as { code?: string; message?: string }
+    if (err.code === '23505') {
+      lastError = error
+      continue
+    }
+
+    const msg = err.message ?? ''
+    if (msg.includes('row-level security')) throw new Error('No autorizado para crear clases. Inicia sesión nuevamente.')
+    if (msg.includes('invalid input syntax for type uuid')) throw new Error('Necesitas iniciar sesión para crear clases.')
+    if (msg.includes('violates foreign key constraint')) throw new Error('Necesitas registrar tu perfil antes de crear clases.')
+
+    throw error
   }
   throw lastError ?? new Error('Error creando clase')
 }
 
 export async function listMyClasses(userId: string): Promise<Class[]> {
-  const { data } = await supabase
-    .from('class_members')
-    .select(`
-      classes:class_id (
-        id,
-        teacher_id,
-        name,
-        code,
-        created_at
-      )
-    `)
-    .eq('user_id', userId)
+  if (!isUuid(userId)) return []
+  const [{ data }, { data: owned }] = await Promise.all([
+    supabase
+      .from('class_members')
+      .select(`
+        classes:class_id (
+          id,
+          teacher_id,
+          name,
+          code,
+          created_at
+        )
+      `)
+      .eq('user_id', userId),
+    supabase
+      .from('classes')
+      .select('id,teacher_id,name,code,created_at')
+      .eq('teacher_id', userId),
+  ])
 
-  const rows = (data as unknown as Array<{ classes: Class }> | null) ?? []
-  return rows.map((r) => r.classes).filter(Boolean)
+  const memberRows = (data as unknown as Array<{ classes: Class }> | null) ?? []
+  const ownedRows = (owned as unknown as Class[] | null) ?? []
+  const byId = new Map<string, Class>()
+  memberRows.map((r) => r.classes).filter(Boolean).forEach((c) => byId.set(c.id, c))
+  ownedRows.forEach((c) => byId.set(c.id, c))
+  return Array.from(byId.values())
 }
 
 export async function joinClassByCode(params: { userId: string; code: string }): Promise<Class> {
   const { userId, code } = params
+  if (!isUuid(userId)) throw new Error('Necesitas iniciar sesión para unirte a una clase.')
   const { data: cls, error: clsErr } = await supabase
     .from('classes')
     .select('*')
@@ -1250,7 +1291,11 @@ export async function joinClassByCode(params: { userId: string; code: string }):
   const { error } = await supabase
     .from('class_members')
     .insert({ class_id: c.id, user_id: userId, role: 'student' })
-  if (error) throw error
+  if (error) {
+    const errCode = (error as unknown as { code?: string }).code
+    if (errCode === '23505') return c
+    throw error
+  }
   return c
 }
 

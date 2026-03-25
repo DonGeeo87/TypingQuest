@@ -36,6 +36,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     wpm,
     accuracy,
     startTime,
+    endTime,
     gameDuration,
     timeRemaining,
     wordsCompleted,
@@ -151,10 +152,13 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
     if (!userId) return
 
+    const finalWpm = status === 'finished' ? wpm : liveWpm
+    const finalAccuracy = status === 'finished' ? accuracy : liveAccuracy
+
     const standardizedScore = calculateStandardizedScore(
       wordsCompleted,
-      liveWpm,
-      liveAccuracy,
+      finalWpm,
+      finalAccuracy,
       errors
     )
 
@@ -164,11 +168,11 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       user_id: userId,
       language,
       level,
-      wpm: liveWpm,
-      accuracy: liveAccuracy,
+      wpm: finalWpm,
+      accuracy: finalAccuracy,
       errors,
       combo_max: maxCombo,
-      duration: startTime ? (Date.now() - startTime) / 1000 : gameDuration,
+      duration: startTime && endTime ? (endTime - startTime) / 1000 : gameDuration,
       game_duration: duration,
       words_completed: wordsCompleted,
       standardized_score: standardizedScore,
@@ -183,8 +187,8 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
         assignmentId,
         userId,
         gameResultId: saved.id,
-        wpm: liveWpm,
-        accuracy: liveAccuracy,
+        wpm: finalWpm,
+        accuracy: finalAccuracy,
         errors,
         wordsCompleted,
         score: standardizedScore,
@@ -195,8 +199,10 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     const isNewRecordResult = await checkNewPersonalRecord(userId, duration, standardizedScore)
     setIsNewRecord(isNewRecordResult)
   }, [
+    accuracy,
     assignmentId,
     contentMeta,
+    endTime,
     errors,
     gameDuration,
     language,
@@ -206,6 +212,8 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     maxCombo,
     setAssignmentId,
     startTime,
+    status,
+    wpm,
     wordsCompleted,
   ])
 
@@ -284,7 +292,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
   // Calculate live stats - OPTIMIZADO para reducir renders
   useEffect(() => {
-    if (!startTime || (status !== 'playing' && status !== 'finished')) return
+    if (!startTime || status !== 'playing') return
 
     const interval = setInterval(() => {
       const elapsed = (Date.now() - startTime) / 60000 // minutes
@@ -301,6 +309,12 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
     return () => clearInterval(interval)
   }, [startTime, status, totalCorrectChars, totalTypedChars])
+
+  useEffect(() => {
+    if (status !== 'finished') return
+    setLiveWpm(wpm)
+    setLiveAccuracy(accuracy)
+  }, [accuracy, status, wpm])
 
   // Handle combo display - OPTIMIZADO
   useEffect(() => {
@@ -400,6 +414,9 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   }, [processKey])
 
   const progress = (currentIndex / currentText.length) * 100
+  const displayedWpm = status === 'finished' ? wpm : liveWpm
+  const displayedAccuracy = status === 'finished' ? accuracy : liveAccuracy
+  const displayedScore = calculateStandardizedScore(wordsCompleted, displayedWpm, displayedAccuracy, errors)
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -620,11 +637,11 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <div className="text-4xl font-bold text-indigo-400">{liveWpm}</div>
+                  <div className="text-4xl font-bold text-indigo-400">{displayedWpm}</div>
                   <div className="text-[var(--muted)]">WPM</div>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold text-violet-400">{liveAccuracy}%</div>
+                  <div className="text-4xl font-bold text-violet-400">{displayedAccuracy}%</div>
                   <div className="text-[var(--muted)]">Accuracy</div>
                 </div>
                 <div>
@@ -641,7 +658,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
               <div className="bg-[var(--secondary)] rounded-lg p-4">
                 <div className="text-[var(--muted)] text-sm mb-1">Score Estandarizado</div>
                 <div className="text-3xl font-bold text-emerald-400">
-                  {calculateStandardizedScore(wordsCompleted, liveWpm, liveAccuracy, errors)}
+                  {displayedScore}
                 </div>
                 <div className="text-[var(--muted)] text-xs mt-1">
                   ({wordsCompleted} palabras × 100) + (WPM × precisión) - (errores × 10)
@@ -678,11 +695,11 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <div className="text-4xl font-bold text-indigo-400">{liveWpm}</div>
+                  <div className="text-4xl font-bold text-indigo-400">{displayedWpm}</div>
                   <div className="text-[var(--muted)]">WPM</div>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold text-violet-400">{liveAccuracy}%</div>
+                  <div className="text-4xl font-bold text-violet-400">{displayedAccuracy}%</div>
                   <div className="text-[var(--muted)]">Accuracy</div>
                 </div>
                 <div>
@@ -699,7 +716,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
               <div className="bg-[var(--secondary)] rounded-lg p-4">
                 <div className="text-[var(--muted)] text-sm mb-1">Score Estandarizado</div>
                 <div className="text-3xl font-bold text-emerald-400">
-                  {calculateStandardizedScore(wordsCompleted, liveWpm, liveAccuracy, errors)}
+                  {displayedScore}
                 </div>
                 <div className="text-[var(--muted)] text-xs mt-1">
                   ({wordsCompleted} palabras × 100) + (WPM × precisión) - (errores × 10)

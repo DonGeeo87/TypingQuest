@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
-import { LanguageSelector, LevelSelector, TimeSelector, Button, Card, AudioToggle } from '../components'
+import { LanguageSelector, LevelSelector, TimeSelector, Button, Card, AudioToggle, TeacherTutorialModal } from '../components'
 import { useAuthStore } from '../store/authStore'
 import { useUiStore } from '../store/uiStore'
 import { useMobile } from '../hooks/useMobile'
 import type { Language, GameLevel } from '../types'
 import { t } from '../i18n'
+import { useState } from 'react'
 
 interface HomeScreenProps {
   language: Language
@@ -34,6 +35,7 @@ export function HomeScreen({
   const isMobile = useMobile()
   const displayName = isAnonymous ? 'Invitado' : (profile?.username || 'Invitado')
   const ui = language
+  const [tutorialOpen, setTutorialOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
@@ -122,7 +124,7 @@ export function HomeScreen({
         </div>
 
         {/* Main Menu Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
           <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
             <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
@@ -160,6 +162,14 @@ export function HomeScreen({
               <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎓</div>
               <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.teacher')}</h3>
               <p className="text-[var(--muted)] text-sm">{t(ui, 'home.teacherDesc')}</p>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
+            <Card onClick={() => setTutorialOpen(true)} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
+              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🧑‍🏫</div>
+              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'tutorial.open')}</h3>
+              <p className="text-[var(--muted)] text-sm">{t(ui, 'teacherGuide.stepsTitle')}</p>
             </Card>
           </motion.div>
         </div>
@@ -257,6 +267,15 @@ export function HomeScreen({
           </div>
         </div>
       </motion.div>
+
+      <TeacherTutorialModal
+        open={tutorialOpen}
+        onClose={() => setTutorialOpen(false)}
+        onOpenGuide={() => {
+          setTutorialOpen(false)
+          onNavigate('teacherGuide')
+        }}
+      />
     </div>
   )
 }
