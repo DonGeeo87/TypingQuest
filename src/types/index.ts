@@ -63,6 +63,9 @@ export interface GameResult {
   game_duration?: number  // Duración total del juego en segundos (30, 60, 90, 120)
   standardized_score?: number  // Score estandarizado para ranking justo
   words_completed?: number  // Número de palabras completadas
+  client_result_id?: string
+  validated?: boolean
+  validation_reason?: string | null
   content_seed?: number
   content_pool?: string
   content_version?: string
@@ -252,4 +255,6 @@ export interface MultiplayerSubmission {
   words_completed: number
   score: number
   submitted_at: string
+  validated?: boolean
+  validation_reason?: string | null
 }

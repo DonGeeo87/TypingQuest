@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { log } from '../utils/logger'
+import { createSeed } from '../utils/seededRandom'
 import type {
   GameResult,
   Profile,
@@ -174,13 +175,18 @@ export async function saveGameResult(result: Omit<GameResult, 'id' | 'created_at
     ? calculateTimeNormalizedScore(result.wpm, result.accuracy, result.duration)
     : undefined
 
+  const clientResultId =
+    result.client_result_id ??
+    (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${createSeed()}`)
+
   const { data, error } = await supabase
     .from('game_results')
-    .insert({
+    .upsert({
       ...result,
+      client_result_id: clientResultId,
       standardized_score: standardizedScore,
       time_normalized_score: timeNormalizedScore,
-    })
+    }, { onConflict: 'user_id,client_result_id' })
     .select()
     .single()
 
@@ -298,6 +304,7 @@ export async function getDurationRanking(
           avatar_url
         )
       `)
+      .eq('validated', true)
       .eq('game_duration', duration)
       .order('standardized_score', { ascending: false })
       .limit(limit)
@@ -1150,7 +1157,7 @@ export async function submitMultiplayerResult(params: {
 
   const { data, error } = await supabase
     .from('mp_submissions')
-    .insert({
+    .upsert({
       room_id: roomId,
       round_id: roundId,
       user_id: userId,
@@ -1159,7 +1166,7 @@ export async function submitMultiplayerResult(params: {
       errors,
       words_completed: wordsCompleted,
       score,
-    })
+    }, { onConflict: 'round_id,user_id' })
     .select('*')
     .single()
 
