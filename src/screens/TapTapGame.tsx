@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card, AudioToggle, Confetti } from '../components'
 import { useSound } from '../hooks/useSound'
-import { getWordsForLevel } from '../data/words'
+import { selectTapTapWords } from '../data/words'
+import { useContentStore } from '../store/contentStore'
 import type { Language, GameLevel } from '../types'
 
 interface TapTapGameProps {
@@ -34,13 +35,17 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
   const [showConfetti, setShowConfetti] = useState(false)
   const [wordsMatched, setWordsMatched] = useState(0)
   const [totalWords, setTotalWords] = useState(0)
+  const rememberContentKey = useContentStore((s) => s.rememberKey)
+  const buildContentKey = useContentStore((s) => s.buildKey)
 
   // Generar palabras aleatorias
   const generateWords = useCallback(() => {
-    const words = getWordsForLevel(language, level)
-    const shuffled = [...words].sort(() => Math.random() - 0.5).slice(0, 12)
+    const recentKeys = useContentStore.getState().recentKeys
+    const selection = selectTapTapWords(language, level, 'taptap', recentKeys, 12)
+    const compositeKey = buildContentKey('taptap', language, level, selection.meta.pool, selection.meta.key)
+    rememberContentKey(compositeKey)
     
-    const cards: WordCard[] = shuffled.map((word, index) => ({
+    const cards: WordCard[] = selection.words.map((word, index) => ({
       id: index,
       word,
       x: Math.random() * 80 + 10, // 10-90%
@@ -51,21 +56,16 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
     
     setWordCards(cards)
     setTotalWords(cards.length)
-  }, [language, level])
-
-  // Seleccionar letra objetivo
-  const selectTargetLetter = useCallback(() => {
-    const alphabet = language === 'en' 
-      ? 'abcdefghijklmnopqrstuvwxyz'
-      : 'abcdefghijklmnñopqrstuvwxyz'
-    const letter = alphabet[Math.floor(Math.random() * alphabet.length)]
-    setTargetLetter(letter)
-  }, [language])
+    const letters = Array.from(new Set(cards.map((c) => (c.word[0] || '').toLowerCase()).filter(Boolean)))
+    if (letters.length > 0) {
+      const letter = letters[Math.floor(Math.random() * letters.length)]
+      setTargetLetter(letter)
+    }
+  }, [language, level, rememberContentKey, buildContentKey])
 
   // Iniciar juego
   const startGame = () => {
     generateWords()
-    selectTargetLetter()
     setGameStatus('playing')
     setScore(0)
     setCombo(0)
@@ -108,7 +108,6 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
         setTimeout(() => {
           playCompleteSound()
           generateWords()
-          selectTargetLetter()
         }, 500)
       }
     } else {

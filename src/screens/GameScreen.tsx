@@ -4,7 +4,8 @@ import { useGameStore } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
 import { useMobile } from '../hooks/useMobile'
 import { TypingArea, StatsDisplay, ComboIndicator, Button, Card, Confetti, ErrorShake, ErrorParticles, TextComplete, AudioToggle, DynamicBackground } from '../components'
-import { getTextForLevel } from '../data/words'
+import type { ContentMeta } from '../data/words'
+import { selectTextForLevel } from '../data/words'
 import { getCurrentUser } from '../lib/supabase'
 import { saveGameResult, checkNewPersonalRecord, DURATION_CATEGORIES } from '../services/supabaseService'
 import {
@@ -14,6 +15,7 @@ import {
   getDifficultyMessage,
   calculateStandardizedScore,
 } from '../utils/difficultyScaler'
+import { useContentStore } from '../store/contentStore'
 
 interface GameScreenProps {
   onGameEnd: () => void
@@ -74,6 +76,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   const [isNewRecord, setIsNewRecord] = useState(false)
   const [localWordsCompleted, setLocalWordsCompleted] = useState(0)
   const [mobileInputValue, setMobileInputValue] = useState('')
+  const [contentMeta, setContentMeta] = useState<ContentMeta | null>(null)
   const isMobile = useMobile()
 
   // Hook de sonido
@@ -84,11 +87,17 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   const prevErrorsRef = useRef(errors)
   const prevWordsCompletedRef = useRef(wordsCompleted)
   const lastPlayedTimeWarningRef = useRef<number>(11)
+  const rememberContentKey = useContentStore((s) => s.rememberKey)
+  const buildContentKey = useContentStore((s) => s.buildKey)
 
   // Initialize game text
   useEffect(() => {
-    const text = getTextForLevel(language, level)
-    initializeGame(text, language, level)
+    const recentKeys = useContentStore.getState().recentKeys
+    const selection = selectTextForLevel(language, level, 'classic', recentKeys)
+    const compositeKey = buildContentKey('classic', language, level, selection.meta.pool, selection.meta.key)
+    rememberContentKey(compositeKey)
+    setContentMeta(selection.meta)
+    initializeGame(selection.text, language, level)
 
     // Resetear estados
     setDifficultyLevel(1)
@@ -96,7 +105,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     setDifficultyProgress(0)
     setIsNewRecord(false)
     setLocalWordsCompleted(0)
-  }, [language, level, initializeGame])
+  }, [language, level, initializeGame, rememberContentKey, buildContentKey])
 
   // Countdown timer con sonido de advertencia
   useEffect(() => {
@@ -161,11 +170,16 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       game_duration: duration,
       words_completed: wordsCompleted,
       standardized_score: standardizedScore,
+      content_seed: contentMeta?.seed,
+      content_pool: contentMeta?.pool,
+      content_version: contentMeta?.version,
+      content_key: contentMeta?.key,
     })
 
     const isNewRecordResult = await checkNewPersonalRecord(userId, duration, standardizedScore)
     setIsNewRecord(isNewRecordResult)
   }, [
+    contentMeta,
     errors,
     gameDuration,
     language,
@@ -208,8 +222,12 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       setCurrentIndex(currentIndex + 1)
 
       if (currentIndex + 1 >= currentText.length) {
-        const nextText = getTextForLevel(language, level)
-        advanceToNextText(nextText)
+        const recentKeys = useContentStore.getState().recentKeys
+        const selection = selectTextForLevel(language, level, 'classic', recentKeys)
+        const compositeKey = buildContentKey('classic', language, level, selection.meta.pool, selection.meta.key)
+        rememberContentKey(compositeKey)
+        setContentMeta(selection.meta)
+        advanceToNextText(selection.text)
         setLocalWordsCompleted(0)
       }
     } else {
@@ -230,6 +248,8 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     advanceToNextText,
     language,
     level,
+    buildContentKey,
+    rememberContentKey,
     incrementError,
     resetCurrentPhrase,
   ])

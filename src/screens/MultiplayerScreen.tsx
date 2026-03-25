@@ -16,9 +16,10 @@ import {
   submitMultiplayerResult,
   subscribeToRoom,
 } from '../services/supabaseService'
-import { getTextForLevel } from '../data/words'
+import { selectTextForLevel } from '../data/words'
 import type { MultiplayerRoom, MultiplayerRoomPlayer, MultiplayerRound, MultiplayerSubmission } from '../types'
 import { MultiplayerRoundScreen, type MultiplayerRoundResult } from './MultiplayerRoundScreen'
+import { useContentStore } from '../store/contentStore'
 
 interface MultiplayerScreenProps {
   onNavigate: (screen: string) => void
@@ -28,6 +29,8 @@ type Mode = 'menu' | 'join' | 'host_lobby' | 'player_lobby' | 'playing' | 'resul
 
 export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
   const { language, level, gameDuration } = useGameStore()
+  const rememberContentKey = useContentStore((s) => s.rememberKey)
+  const buildContentKey = useContentStore((s) => s.buildKey)
   const [mode, setMode] = useState<Mode>('menu')
   const [userId, setUserId] = useState<string | null>(null)
   const [room, setRoom] = useState<MultiplayerRoom | null>(null)
@@ -178,11 +181,15 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
     setLoading(true)
     setError(null)
     try {
-      const prompt = getTextForLevel(room.language, room.level)
+      const recentKeys = useContentStore.getState().recentKeys
+      const selection = selectTextForLevel(room.language, room.level, 'multiplayer', recentKeys)
+      const compositeKey = buildContentKey('multiplayer', room.language, room.level, selection.meta.pool, selection.meta.key)
+      rememberContentKey(compositeKey)
       const newRound = await hostStartMultiplayerRound({
         roomId: room.id,
-        prompt,
+        prompt: selection.text,
         durationSeconds: room.round_duration,
+        content: selection.meta,
       })
       setRound(newRound)
       setMode('playing')
@@ -191,7 +198,7 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
     } finally {
       setLoading(false)
     }
-  }, [room])
+  }, [room, rememberContentKey, buildContentKey])
 
   const handleRoundComplete = useCallback(async (result: MultiplayerRoundResult) => {
     if (!room?.id || !round?.id || !userId) return

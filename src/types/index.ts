@@ -63,6 +63,10 @@ export interface GameResult {
   game_duration?: number  // Duración total del juego en segundos (30, 60, 90, 120)
   standardized_score?: number  // Score estandarizado para ranking justo
   words_completed?: number  // Número de palabras completadas
+  content_seed?: number
+  content_pool?: string
+  content_version?: string
+  content_key?: string
   created_at?: string
 }
 
@@ -231,6 +235,10 @@ export interface MultiplayerRound {
   starts_at?: string
   ends_at?: string
   created_at: string
+  content_seed?: number
+  content_pool?: string
+  content_version?: string
+  content_key?: string
 }
 
 export interface MultiplayerSubmission {

@@ -1,4 +1,6 @@
 import type { WordData, PhraseData, ParagraphData } from '../types'
+import { combineSeed, createSeed, mulberry32, shuffleInPlace } from '../utils/seededRandom'
+import { fnv1a32 } from '../utils/hash'
 
 // ============================================
 // ENGLISH WORDS
@@ -358,4 +360,114 @@ export function getTextForLevel(language: 'en' | 'es', level: number): string {
   }
 
   return result
+}
+
+export type ContentMode = 'classic' | 'taptap' | 'multiplayer'
+
+export interface ContentMeta {
+  seed: number
+  pool: string
+  version: string
+  key: string
+}
+
+export interface TextSelection {
+  text: string
+  meta: ContentMeta
+}
+
+export interface WordSelection {
+  words: string[]
+  meta: ContentMeta
+}
+
+const CONTENT_VERSION = 'v1'
+
+export function selectTextForLevel(
+  language: 'en' | 'es',
+  level: number,
+  mode: ContentMode,
+  recentKeys: string[],
+  seed?: number
+): TextSelection {
+  const baseSeed = seed ?? createSeed()
+  const pool = level <= 2 ? `words:${language}:${level}` : level <= 4 ? `phrases:${language}:${level}` : `paragraphs:${language}:5`
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const s = combineSeed(baseSeed, attempt)
+    const rand = mulberry32(s)
+
+    if (level <= 2) {
+      const items = (language === 'en' ? englishWords[level] : spanishWords[level]).map((w) => w.word)
+      const idx = items.map((_, i) => i)
+      shuffleInPlace(idx, rand)
+      const pickedIdx = idx.slice(0, 5)
+      const picked = pickedIdx.map((i) => items[i])
+      const key = fnv1a32(`${pickedIdx.join(',')}`)
+      const composite = `${mode}:${language}:${level}:${pool}:${key}`
+      if (!recentKeys.includes(composite) || attempt === 11) {
+        return {
+          text: picked.join(' '),
+          meta: { seed: s, pool, version: CONTENT_VERSION, key },
+        }
+      }
+    } else if (level <= 4) {
+      const phrases = (language === 'en' ? englishPhrases[level] : spanishPhrases[level]).map((p) => p.phrase)
+      const idx = Math.floor(rand() * phrases.length)
+      const key = fnv1a32(`p:${idx}`)
+      const composite = `${mode}:${language}:${level}:${pool}:${key}`
+      if (!recentKeys.includes(composite) || attempt === 11) {
+        return {
+          text: phrases[idx],
+          meta: { seed: s, pool, version: CONTENT_VERSION, key },
+        }
+      }
+    } else {
+      const paragraphs = (language === 'en' ? englishParagraphs : spanishParagraphs).map((p) => p.paragraph)
+      const idx = Math.floor(rand() * paragraphs.length)
+      const key = fnv1a32(`g:${idx}`)
+      const composite = `${mode}:${language}:${level}:${pool}:${key}`
+      if (!recentKeys.includes(composite) || attempt === 11) {
+        return {
+          text: paragraphs[idx],
+          meta: { seed: s, pool, version: CONTENT_VERSION, key },
+        }
+      }
+    }
+  }
+
+  return {
+    text: getTextForLevel(language, level),
+    meta: { seed: baseSeed, pool, version: CONTENT_VERSION, key: fnv1a32(`${Date.now()}`) },
+  }
+}
+
+export function selectTapTapWords(
+  language: 'en' | 'es',
+  level: number,
+  mode: ContentMode,
+  recentKeys: string[],
+  count = 12,
+  seed?: number
+): WordSelection {
+  const baseSeed = seed ?? createSeed()
+  const pool = `words:${language}:${level}`
+  const items = getWordsForLevel(language, level)
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const s = combineSeed(baseSeed, attempt)
+    const rand = mulberry32(s)
+    const idx = items.map((_, i) => i)
+    shuffleInPlace(idx, rand)
+    const pickedIdx = idx.slice(0, count)
+    const picked = pickedIdx.map((i) => items[i])
+    const key = fnv1a32(`${pickedIdx.join(',')}`)
+    const composite = `${mode}:${language}:${level}:${pool}:${key}`
+    if (!recentKeys.includes(composite) || attempt === 11) {
+      return { words: picked, meta: { seed: s, pool, version: CONTENT_VERSION, key } }
+    }
+  }
+
+  const fallback = [...items].slice(0, count)
+  return { words: fallback, meta: { seed: baseSeed, pool, version: CONTENT_VERSION, key: fnv1a32(fallback.join('|')) } }
 }

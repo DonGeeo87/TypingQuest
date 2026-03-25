@@ -1076,8 +1076,9 @@ export async function hostStartMultiplayerRound(params: {
   roomId: string
   prompt: string
   durationSeconds: number
+  content?: { seed: number; pool: string; version: string; key: string }
 }): Promise<MultiplayerRound> {
-  const { roomId, prompt, durationSeconds } = params
+  const { roomId, prompt, durationSeconds, content } = params
 
   const now = new Date()
   const startsAt = now.toISOString()
@@ -1101,6 +1102,10 @@ export async function hostStartMultiplayerRound(params: {
       status: 'running',
       starts_at: startsAt,
       ends_at: endsAt,
+      content_seed: content?.seed,
+      content_pool: content?.pool,
+      content_version: content?.version,
+      content_key: content?.key,
     })
     .select('*')
     .single()
