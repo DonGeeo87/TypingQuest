@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { LanguageSelector, LevelSelector, TimeSelector, Button, Card, AudioToggle } from '../components'
 import { useAuthStore } from '../store/authStore'
+import { useUiStore } from '../store/uiStore'
 import { useMobile } from '../hooks/useMobile'
 import type { Language, GameLevel } from '../types'
 
@@ -27,7 +28,8 @@ export function HomeScreen({
   onStartTapTap,
   onNavigate,
 }: HomeScreenProps) {
-  const { profile } = useAuthStore()
+  const { profile, isAnonymous } = useAuthStore()
+  const { theme, toggleTheme } = useUiStore()
   const isMobile = useMobile()
 
   return (
@@ -63,9 +65,30 @@ export function HomeScreen({
             </div>
           </motion.div>
 
-          {/* Audio Toggle */}
-          <AudioToggle position="static" compact={true} />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={toggleTheme}
+              className="px-3 py-2 rounded-full"
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </Button>
+            <AudioToggle position="static" compact={true} />
+          </div>
         </div>
+
+        {isAnonymous && (
+          <Card className="p-4 border-amber-500/30 bg-amber-500/10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="text-amber-200 text-sm">
+                Estás jugando en modo anónimo. Si cambias de dispositivo o limpias datos, no podrás recuperar tu progreso.
+              </div>
+              <Button variant="secondary" onClick={() => onNavigate('profile')}>
+                Vincular cuenta
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Header */}
         <div className="text-center space-y-2 py-4">

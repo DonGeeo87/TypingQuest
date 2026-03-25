@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
-import { signInAnonymously, getCurrentUser } from '../lib/supabase'
+import { linkEmailToCurrentUser } from '../lib/supabase'
 import { getProfile, getUserGameResults, getUserMissions, getUserAchievements, signOut } from '../services/supabaseService'
 import { RegistrationScreen } from './RegistrationScreen'
 import { useAuthStore } from '../store/authStore'
@@ -21,25 +21,24 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   const [loading, setLoading] = useState(true)
   const [needsRegistration, setNeedsRegistration] = useState(false)
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
-  const { signOut: storeSignOut } = useAuthStore()
+  const [linkEmail, setLinkEmail] = useState('')
+  const [linking, setLinking] = useState(false)
+  const [linkSent, setLinkSent] = useState(false)
+  const [linkError, setLinkError] = useState<string | null>(null)
+  const { userId, isAnonymous, email, signOut: storeSignOut } = useAuthStore()
 
   const loadProfile = useCallback(async () => {
-    let id = await getCurrentUser()
-
-    if (!id) {
-      id = await signInAnonymously()
-    }
-
-    if (!id) {
+    if (!userId) {
       setLoading(false)
+      onNavigate('auth')
       return
     }
 
     const [profileData, gamesData, missionsData, achievementsData] = await Promise.all([
-      getProfile(id),
-      getUserGameResults(id, 5),
-      getUserMissions(id),
-      getUserAchievements(id),
+      getProfile(userId),
+      getUserGameResults(userId, 5),
+      getUserMissions(userId),
+      getUserAchievements(userId),
     ])
 
     setProfile(profileData)
@@ -53,7 +52,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     }
 
     setLoading(false)
-  }, [])
+  }, [userId, onNavigate])
 
   useEffect(() => {
     void loadProfile()
@@ -82,6 +81,25 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
       log.error('Error al cerrar sesión:', error)
     }
   }
+
+  const handleLinkEmail = useCallback(async () => {
+    const clean = linkEmail.trim().toLowerCase()
+    if (!clean || !clean.includes('@')) {
+      setLinkError('Ingresa un email válido.')
+      return
+    }
+
+    setLinkError(null)
+    setLinking(true)
+    try {
+      await linkEmailToCurrentUser(clean, window.location.origin)
+      setLinkSent(true)
+    } catch (e) {
+      setLinkError(e instanceof Error ? e.message : 'No se pudo vincular el email')
+    } finally {
+      setLinking(false)
+    }
+  }, [linkEmail])
 
   // Mostrar pantalla de registro si no tiene username
   if (needsRegistration) {
@@ -153,6 +171,57 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
               <div className="text-3xl font-bold text-violet-400">{profile?.best_accuracy || 0}%</div>
               <div className="text-zinc-400 text-sm">Best Accuracy</div>
             </div>
+          </div>
+        </Card>
+
+        <Card className="space-y-4">
+          <h3 className="text-xl font-bold text-white">🔐 Cuenta</h3>
+
+          {isAnonymous ? (
+            <div className="space-y-3">
+              <div className="text-zinc-400 text-sm">
+                Estás jugando en modo anónimo. Si cambias de dispositivo o borras datos, no podrás recuperar tu progreso.
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-3">
+                <input
+                  value={linkEmail}
+                  onChange={(e) => setLinkEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500"
+                />
+                <Button onClick={handleLinkEmail} disabled={linking || linkSent}>
+                  {linkSent ? 'Revisa tu email' : linking ? 'Enviando…' : 'Vincular email'}
+                </Button>
+              </div>
+
+              {linkSent && (
+                <div className="text-emerald-300 text-sm">
+                  Te enviamos un enlace. Ábrelo para confirmar y convertir tu cuenta en recuperable.
+                </div>
+              )}
+
+              <AnimatePresence>
+                {linkError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm"
+                  >
+                    {linkError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className="text-zinc-400 text-sm">
+              Sesión activa{email ? `: ${email}` : ''}.
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <Button variant="secondary" onClick={handleSignOut}>Cerrar sesión</Button>
           </div>
         </Card>
 

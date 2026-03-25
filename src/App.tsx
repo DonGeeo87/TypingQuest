@@ -3,9 +3,11 @@ import { ParticleBackground, FloatingWords } from './components'
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
 import type { Language, GameLevel } from './types'
+import { supabase } from './lib/supabase'
+import { useUiStore } from './store/uiStore'
 import './App.css'
 
-type Screen = 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer'
+type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer'
 
 const HomeScreen = lazy(() => import('./screens/HomeScreen').then(m => ({ default: m.HomeScreen })))
 const GameScreen = lazy(() => import('./screens/GameScreen').then(m => ({ default: m.GameScreen })))
@@ -14,10 +16,12 @@ const ProfileScreen = lazy(() => import('./screens/ProfileScreen').then(m => ({ 
 const RegistrationScreen = lazy(() => import('./screens/RegistrationScreen').then(m => ({ default: m.RegistrationScreen })))
 const TapTapGame = lazy(() => import('./screens/TapTapGame').then(m => ({ default: m.TapTapGame })))
 const MultiplayerScreen = lazy(() => import('./screens/MultiplayerScreen').then(m => ({ default: m.MultiplayerScreen })))
+const AuthScreen = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })))
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const { language, level, gameDuration, setLanguage, setLevel, setGameDuration, resetGame } = useGameStore()
+  const { theme } = useUiStore()
   const {
     userId,
     hasRegisteredUsername,
@@ -32,14 +36,35 @@ function App() {
     initializeAuth()
   }, [initializeAuth])
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange(() => {
+      initializeAuth()
+    })
+    return () => {
+      data.subscription.unsubscribe()
+    }
+  }, [initializeAuth])
+
   // Verificar si necesita registro después de cargar la autenticación
   useEffect(() => {
-    if (!authLoading && userId) {
-      if (!hasRegisteredUsername) {
-        setCurrentScreen('registration')
-      } else if (currentScreen === 'registration') {
-        setCurrentScreen('home')
-      }
+    if (authLoading) return
+
+    if (!userId) {
+      setCurrentScreen('auth')
+      return
+    }
+
+    if (!hasRegisteredUsername) {
+      setCurrentScreen('registration')
+      return
+    }
+
+    if (currentScreen === 'registration' || currentScreen === 'auth') {
+      setCurrentScreen('home')
     }
   }, [authLoading, userId, hasRegisteredUsername, currentScreen])
 
@@ -99,6 +124,12 @@ function App() {
 
       <div className="relative z-10">
         <Suspense fallback={<div className="p-6 text-zinc-400">Cargando…</div>}>
+          {currentScreen === 'auth' && (
+            <AuthScreen
+              onContinue={() => setCurrentScreen('home')}
+            />
+          )}
+
           {currentScreen === 'registration' && (
             <RegistrationScreen
               onComplete={handleRegistrationComplete}

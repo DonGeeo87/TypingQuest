@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { User } from '@supabase/supabase-js'
 import { log } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -9,6 +10,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+export async function getAuthUser(): Promise<User | null> {
+  try {
+    const { data } = await supabase.auth.getUser()
+    return data.user ?? null
+  } catch {
+    return null
+  }
+}
 
 export async function signInAnonymously(): Promise<string | null> {
   try {
@@ -44,4 +54,24 @@ export async function getCurrentUser(): Promise<string | null> {
   // Fallback: verificar si hay un ID local en sessionStorage
   const localId = sessionStorage.getItem('typingquest-local-userid')
   return localId || null
+}
+
+export async function signInWithEmailMagicLink(email: string, emailRedirectTo?: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo,
+      shouldCreateUser: true,
+    },
+  })
+
+  if (error) throw error
+}
+
+export async function linkEmailToCurrentUser(email: string, emailRedirectTo?: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser(
+    { email },
+    emailRedirectTo ? { emailRedirectTo } : undefined
+  )
+  if (error) throw error
 }

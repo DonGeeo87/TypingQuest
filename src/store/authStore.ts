@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { getCurrentUser, signInAnonymously } from '../lib/supabase'
+import { getAuthUser, signInAnonymously } from '../lib/supabase'
 import { getProfile, hasUsername } from '../services/supabaseService'
 import { log } from '../utils/logger'
 import type { Profile } from '../types'
@@ -11,6 +11,8 @@ interface AuthState {
   hasRegisteredUsername: boolean
   isLoading: boolean
   isAuthenticated: boolean
+  email: string | null
+  isAnonymous: boolean
 
   // Actions
   initializeAuth: () => Promise<void>
@@ -29,17 +31,15 @@ export const useAuthStore = create<AuthState>()(
       hasRegisteredUsername: false,
       isLoading: true,
       isAuthenticated: false,
+      email: null,
+      isAnonymous: false,
 
       initializeAuth: async () => {
         set({ isLoading: true })
 
         try {
-          let userId = await getCurrentUser()
-
-          // Si no hay usuario, iniciar sesión anónimamente
-          if (!userId) {
-            userId = await signInAnonymously()
-          }
+          const user = await getAuthUser()
+          const userId = user?.id ?? null
 
           if (userId) {
             // Obtener perfil y verificar si tiene username
@@ -53,6 +53,8 @@ export const useAuthStore = create<AuthState>()(
               profile,
               hasRegisteredUsername: userHasUsername,
               isAuthenticated: true,
+              email: user?.email ?? null,
+              isAnonymous: Boolean(user?.is_anonymous),
               isLoading: false
             })
           } else {
@@ -61,6 +63,8 @@ export const useAuthStore = create<AuthState>()(
               profile: null,
               hasRegisteredUsername: false,
               isAuthenticated: false,
+              email: null,
+              isAnonymous: false,
               isLoading: false
             })
           }
@@ -71,6 +75,8 @@ export const useAuthStore = create<AuthState>()(
             profile: null,
             hasRegisteredUsername: false,
             isAuthenticated: false,
+            email: null,
+            isAnonymous: false,
             isLoading: false
           })
         }
@@ -93,6 +99,8 @@ export const useAuthStore = create<AuthState>()(
               profile,
               hasRegisteredUsername: userHasUsername,
               isAuthenticated: true,
+              email: null,
+              isAnonymous: true,
               isLoading: false
             })
           }
@@ -142,6 +150,8 @@ export const useAuthStore = create<AuthState>()(
           profile: null,
           hasRegisteredUsername: false,
           isAuthenticated: false,
+          email: null,
+          isAnonymous: false,
           isLoading: false
         })
       }
