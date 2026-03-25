@@ -2,9 +2,11 @@ import { useState, useEffect, Suspense, lazy } from 'react'
 import { ParticleBackground, FloatingWords } from './components'
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
+import { useAudioStore } from './store/audioStore'
 import type { Language, GameLevel } from './types'
 import { supabase } from './lib/supabase'
 import { useUiStore } from './store/uiStore'
+import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
 import './App.css'
 
 type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer'
@@ -22,6 +24,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const { language, level, gameDuration, setLanguage, setLevel, setGameDuration, resetGame } = useGameStore()
   const { theme } = useUiStore()
+  const { enabled: audioEnabled, muted: audioMuted, volume: audioVolume } = useAudioStore()
   const {
     userId,
     hasRegisteredUsername,
@@ -39,6 +42,26 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    syncBackgroundMusic({ enabled: audioEnabled, muted: audioMuted, volume: audioVolume })
+  }, [audioEnabled, audioMuted, audioVolume])
+
+  useEffect(() => {
+    const handler = () => {
+      void resumeAudio().finally(() => {
+        syncBackgroundMusic({ enabled: audioEnabled, muted: audioMuted, volume: audioVolume })
+      })
+    }
+
+    window.addEventListener('pointerdown', handler, { once: true })
+    window.addEventListener('keydown', handler, { once: true })
+
+    return () => {
+      window.removeEventListener('pointerdown', handler)
+      window.removeEventListener('keydown', handler)
+    }
+  }, [audioEnabled, audioMuted, audioVolume])
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange(() => {
