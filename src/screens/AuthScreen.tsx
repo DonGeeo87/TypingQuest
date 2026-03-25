@@ -44,6 +44,7 @@ const testimonials = [
 export function AuthScreen({ onContinue }: AuthScreenProps) {
   const { signInAnonymously } = useAuthStore()
   const ui = useGameStore((s) => s.language)
+  const setUi = useGameStore((s) => s.setLanguage)
   const { theme, toggleTheme } = useUiStore()
   const [email, setEmail] = useState('')
   const [leadEmail, setLeadEmail] = useState('')
@@ -151,6 +152,28 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
             <a href="#cta" className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500">{t(ui, 'landing.navStart')}</a>
           </nav>
           <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-1">
+              <button
+                type="button"
+                onClick={() => setUi('es')}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  ui === 'es' ? 'bg-indigo-600 text-white' : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+                }`}
+                aria-pressed={ui === 'es'}
+              >
+                ES
+              </button>
+              <button
+                type="button"
+                onClick={() => setUi('en')}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  ui === 'en' ? 'bg-indigo-600 text-white' : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+                }`}
+                aria-pressed={ui === 'en'}
+              >
+                EN
+              </button>
+            </div>
             <button
               type="button"
               onClick={toggleTheme}
