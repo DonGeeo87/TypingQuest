@@ -29,7 +29,8 @@ interface MultiplayerScreenProps {
 type Mode = 'menu' | 'join' | 'host_lobby' | 'player_lobby' | 'playing' | 'results'
 
 export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
-  const { language, level, gameDuration } = useGameStore()  const rememberContentKey = useContentStore((s) => s.rememberKey)
+  const { language, level, gameDuration } = useGameStore()
+  const rememberContentKey = useContentStore((s) => s.rememberKey)
   const buildContentKey = useContentStore((s) => s.buildKey)
   const [mode, setMode] = useState<Mode>('menu')
   const [userId, setUserId] = useState<string | null>(null)
