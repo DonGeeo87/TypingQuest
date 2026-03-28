@@ -2,13 +2,14 @@
 // src/screens/CampaignGameScreen.tsx
 
 import { useEffect, useRef } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeftIcon } from '../components/CampaignIcons';
 import { useGameStore } from '../store/gameStore';
 import { useCampaignStore } from '../store/campaignStore';
 import { CampaignHUD } from '../components/CampaignHUD';
 import { GameScreen } from './GameScreen';
 import { CampaignResultsScreen } from './CampaignResultsScreen';
 import type { CampaignStage } from '../types/campaign';
+import type { GameLevel } from '../types';
 
 interface CampaignGameScreenProps {
   stage: CampaignStage;
@@ -30,8 +31,9 @@ export function CampaignGameScreen({
   // Initialize game with campaign context
   useEffect(() => {
     // Set game parameters based on stage requirements
-    gameStore.setLevel(stage.difficulty_level);
-    gameStore.initializeGame(stage.target_duration_seconds || 60, 1);
+    const clampedLevel = Math.max(1, Math.min(5, stage.difficulty_level)) as GameLevel;
+    gameStore.setGameDuration(stage.target_duration_seconds || 60);
+    gameStore.setLevel(clampedLevel);
   }, [stage, gameStore]);
 
   // Handle game end and record attempt
@@ -114,7 +116,7 @@ export function CampaignGameScreen({
         onClick={onBack}
         className="absolute top-4 left-4 z-50 flex items-center gap-2 text-gray-300 hover:text-white transition-colors p-2 rounded hover:bg-gray-800"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeftIcon className="w-5 h-5" />
         <span className="text-sm">Back</span>
       </button>
 
@@ -129,7 +131,7 @@ export function CampaignGameScreen({
 
       {/* Game Screen (with padding for HUD) */}
       <div className="flex-1 pt-32">
-        <GameScreen onGameEnd={handleGameEnd} />
+        <GameScreen onGameEnd={handleGameEnd} onNavigate={onBack} />
       </div>
     </div>
   );

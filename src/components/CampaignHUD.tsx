@@ -1,7 +1,8 @@
 // HUD overlay during campaign gameplay
 // src/components/CampaignHUD.tsx
 
-import { Zap, Target, Flame } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { ZapIcon, TargetIcon, FlameIcon } from './CampaignIcons';
 import type { CampaignStage } from '../types/campaign';
 
 interface CampaignHUDProps {
@@ -42,7 +43,7 @@ export function CampaignHUD({
             current={currentWpm}
             target={stage.required_wpm}
             progress={wpmProgress}
-            icon={<Zap className="w-4 h-4" />}
+            icon={<ZapIcon className="w-4 h-4" />}
           />
 
           {/* Accuracy Objective */}
@@ -51,7 +52,7 @@ export function CampaignHUD({
             current={currentAccuracy}
             target={stage.required_accuracy}
             progress={accuracyProgress}
-            icon={<Target className="w-4 h-4" />}
+            icon={<TargetIcon className="w-4 h-4" />}
             suffix="%"
           />
 
@@ -62,7 +63,7 @@ export function CampaignHUD({
               current={currentCombo}
               target={stage.required_combo}
               progress={comboProgress}
-              icon={<Flame className="w-4 h-4" />}
+              icon={<FlameIcon className="w-4 h-4" />}
             />
           )}
         </div>
@@ -91,7 +92,7 @@ interface ObjectiveCardProps {
   current: number;
   target: number;
   progress: number;
-  icon: JSX.Element;
+  icon: ReactNode;
   suffix?: string;
 }
 

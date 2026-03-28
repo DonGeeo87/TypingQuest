@@ -7,7 +7,6 @@ import type {
   CampaignProgress,
   CampaignStage,
   CampaignStageAttempt,
-  SaveStageAttemptRequest,
 } from '../types/campaign';
 
 // ============================================

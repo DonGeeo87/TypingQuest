@@ -1,8 +1,14 @@
 // Post-game campaign results screen
 // src/screens/CampaignResultsScreen.tsx
 
-import { Star, Zap, Trophy, ChevronRight } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Button } from '../components/Button';
+import {
+  ChevronRightIcon,
+  StarIcon,
+  TrophyIcon,
+  ZapIcon,
+} from '../components/CampaignIcons';
 import type { CampaignStage } from '../types/campaign';
 
 interface CampaignResultsScreenProps {
@@ -49,7 +55,7 @@ export function CampaignResultsScreen({
                 animationDelay: `${i * 0.2}s`,
               }}
             >
-              <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+              <StarIcon className="w-6 h-6 text-yellow-400 fill-yellow-400" />
             </div>
           ))}
         </div>
@@ -77,7 +83,7 @@ export function CampaignResultsScreen({
               key={i}
               className={`transition-all transform ${i <= starsEarned ? 'scale-110' : 'scale-75 opacity-40'}`}
             >
-              <Star
+              <StarIcon
                 size={48}
                 className={i <= starsEarned ? 'fill-yellow-400 text-yellow-400' : 'text-gray-500'}
               />
@@ -95,7 +101,7 @@ export function CampaignResultsScreen({
         <div className="bg-black bg-opacity-50 rounded-lg p-6 mb-8 border border-yellow-600 border-opacity-50">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
+              <ZapIcon className="w-5 h-5 text-yellow-400" />
               <span className="text-white font-semibold">Experience Points</span>
             </div>
             <div className="text-right">
@@ -118,7 +124,7 @@ export function CampaignResultsScreen({
           <div className="space-y-3 mb-8">
             {isNewPersonalBest && (
               <AchievementBadge
-                icon={<Trophy className="w-4 h-4" />}
+                icon={<TrophyIcon className="w-4 h-4" />}
                 title="New Personal Best!"
                 description={`${wpm} WPM is your new record`}
                 color="purple"
@@ -126,7 +132,7 @@ export function CampaignResultsScreen({
             )}
             {unlockedNextStage && (
               <AchievementBadge
-                icon={<ChevronRight className="w-4 h-4" />}
+                icon={<ChevronRightIcon className="w-4 h-4" />}
                 title="Next Level Unlocked!"
                 description="Complete this stage to progress"
                 color="blue"
@@ -193,7 +199,7 @@ function MetricCard({ label, value, target, suffix = '' }: MetricCardProps) {
 }
 
 interface AchievementBadgeProps {
-  icon: JSX.Element;
+  icon: ReactNode;
   title: string;
   description: string;
   color: 'purple' | 'blue' | 'gold';

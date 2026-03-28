@@ -1,7 +1,7 @@
 // Stage card component for campaign level display
 // src/components/StageCard.tsx
 
-import { Lock, Star } from 'lucide-react';
+import { LockIcon, StarIcon } from './CampaignIcons';
 import type { CampaignStage } from '../types/campaign';
 
 interface StageCardProps {
@@ -59,7 +59,7 @@ export function StageCard({
       {/* Lock overlay */}
       {!isUnlocked && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60">
-          <Lock className="w-6 h-6 text-white" />
+          <LockIcon className="w-6 h-6 text-white" />
         </div>
       )}
 
@@ -78,7 +78,7 @@ export function StageCard({
             {Array(3)
               .fill(0)
               .map((_, i) => (
-                <Star
+                <StarIcon
                   key={i}
                   size={16}
                   className={i < starsEarned ? 'fill-yellow-300 text-yellow-300' : 'text-gray-300'}

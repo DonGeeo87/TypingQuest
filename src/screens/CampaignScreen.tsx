@@ -2,7 +2,7 @@
 // src/screens/CampaignScreen.tsx
 
 import { useEffect, useState } from 'react';
-import { ChevronLeft, Lock } from 'lucide-react';
+import { ChevronLeftIcon } from '../components/CampaignIcons';
 import { useCampaignStore } from '../store/campaignStore';
 import * as campaignService from '../services/campaignService';
 import { StageCard } from '../components/StageCard';
@@ -107,7 +107,7 @@ export function CampaignScreen({ userId, onSelectStage, onBack }: CampaignScreen
             onClick={onBack}
             className="flex items-center gap-2 text-gray-300 hover:text-white transition"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeftIcon className="w-5 h-5" />
             <span>Home</span>
           </button>
 

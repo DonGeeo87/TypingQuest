@@ -216,6 +216,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
         stage_id: stageId,
         user_id: progress.user_id,
         attempt_number: 1, // Should query previous attempts
+        played_at: new Date().toISOString(),
         wpm: attempt.wpm,
         accuracy: attempt.accuracy,
         errors: attempt.errors,
