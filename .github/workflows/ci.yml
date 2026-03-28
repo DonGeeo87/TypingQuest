@@ -30,5 +30,25 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Unit Tests
+        run: npm run test:run
+
+      - name: Start Dev Server
+        run: npm run dev &
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+
+      - name: Wait for Dev Server
+        run: npx wait-on http://localhost:5173 --timeout 60000
+
+      - name: Smoke Tests
+        run: npm run test:smoke
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+
+      - name: Stop Dev Server
+        if: always()
+        run: pkill -f "vite" || true
+
       - name: Audit (critical only)
         run: npm audit --audit-level=critical

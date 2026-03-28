@@ -138,9 +138,6 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
     .eq('id', userId)
 }
 
-export async function incrementGamesPlayed(userId: string): Promise<void> {
-  await supabase.rpc('increment_games_played', { user_id: userId })
-}
 
 // ============================================
 // GAME RESULTS
