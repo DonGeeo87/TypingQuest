@@ -7,6 +7,74 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.2.0] - 2026-03-27 - Sistema de Categorías de Aprendizaje y Correcciones UI
+
+### 🚀 Características Agregadas
+
+#### Sistema de Categorías de Aprendizaje
+- 📚 **9 Categorías Temáticas Totales**: Animals, Fruits, Nouns, Verbs, Parts of Speech, Tenses, Verb to Be, Prepositions, Abbreviations
+- 📊 **Todos los Niveles de Dificultad**: Cada categoría cubre niveles 1-5
+- 🎯 **CategorySelector Component**: UI responsiva con grid dinámico (2-5 columnas según pantalla)
+- 🔄 **Integración Automática**: Categoría se pasa a GameScreen y filtра palabras automáticamente
+- 🌐 **Totalmente Localizada**: EN/ES con traducciones completas
+- 💾 **Persistencia en Store**: Zustand gestiona estado de categoría seleccionada
+
+#### Palabras por Categoría (30+ palabras cada idioma)
+- **Parts of Speech**: noun, verb, adjective, adverb, pronoun, conjunction, etc.
+- **Tenses**: present, past, future, perfect, continuous, subjunctive, etc.
+- **Verb to Be**: am, are, is, was, were, being, been, will be, etc.
+- **Prepositions**: in, on, at, to, from, with, without, by, for, etc.
+- **Abbreviations**: Mr, Mrs, Dr, Inc, Ltd, USA, UK, etc.
+
+### 🎨 Correcciones UI y Responsividad
+
+#### Correcciones de Tamaño y Layout
+- 📏 **Título HomeScreen**: Reducido de text-8xl a text-7xl para evitar cortantes (text-5xl mobile)
+- 📝 **Tracking**: Cambio de tracking-tighter a tracking-tight para mejor espaciado
+- 🛡️ **Overflow Protection**: Agregado flex-wrap con px-2 en título
+- 🏷️ **Texto en CategorySelector**: Reducido tamaño fuente (text-xs para nombres, text-2xs para descripciones)
+- 📦 **Padding Optimizado**: p-2 en botones (antes p-3) para mejor proporción
+- 🎯 **Leading Tight**: Agregado leading-tight en descripciones para evitar clip
+
+#### Grid Responsive
+- 📱 **Mobile**: 2 columnas
+- 💻 **Tablet**: 3 columnas  
+- 🖥️ **Desktop**: 4 columnas (lg) a 5 columnas (xl)
+
+### 🔧 Cambios Técnicos
+
+#### Extensión de Types (`src/types/index.ts`)
+- Agregadas 5 nuevas `WordCategory` types:
+  - `'parts_of_speech'`
+  - `'tenses'`
+  - `'verb_to_be'`
+  - `'prepositions'`
+  - `'abbreviations'`
+
+#### Nueva Data en `src/data/words.ts`
+- `export const categorizedWords`: Expandido de 4 a 9 categorías
+- Cada categoría: 30 palabras con difficulty distribuida 1-5
+- Soporte para EN/ES en todas las nuevas categorías
+- Palabras con metadata: `{ word: string, difficulty: number, category: string }`
+
+#### Componentes Actualizados
+- `CategorySelector.tsx`: Mostrada 9 categorías con iconos emoji únicos
+- `HomeScreen.tsx`: Integración visual de CategorySelector entre LevelSelector y Botón Start
+- `GameScreen.tsx`: Ya integrada, pasa selectedCategory a selectTextForLevel()
+- `App.tsx`: Ya wired, handleCategoryChange() setea selectedCategory en store
+
+#### i18n - Traducciones Nuevas
+- `src/i18n/en.ts`: 15 entradas en `home.categories` (5 nuevas)
+- `src/i18n/es.ts`: 15 entradas en `home.categories` (5 nuevas)
+- Claves: `learningTheme`, `learningThemeDesc`, `categories.<category>`
+
+### 🐛 Correcciones Previas Mantenidas (v1.1.0)
+- ✅ Toast notifications (ComboIndicator, TextComplete, LevelUp) repositionadas para no cubrir área de juego
+- ✅ RecordNotification totalmente localizada (EN/ES) con sustitución dinámica de variables
+- ✅ Ranking screen funcional con 4-column responsive grid
+
+---
+
 ## [1.1.0] - 2026-03-07 - Sistema de Usuarios Locales y Optimización de Rendimiento
 
 ### 🚀 Características Agregadas

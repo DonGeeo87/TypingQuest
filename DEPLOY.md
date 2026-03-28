@@ -90,8 +90,24 @@ vercel env add VITE_SUPABASE_ANON_KEY
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` | Production, Preview, Development |
 | `VITE_GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` | Production, Preview, Development |
 | `VITE_PLAUSIBLE_DOMAIN` | `yourdomain.com` | Production, Preview, Development |
+| `VITE_SITE_URL` | `https://tu-dominio-vercel.vercel.app` (sin barra final) | Production (recomendado); ver abajo |
 
 5. Click en "Save"
+
+### Supabase — enlaces de correo (magic link / verificar email)
+
+Si el botón del correo abre `localhost` o falla el redirect:
+
+1. En [Supabase Dashboard](https://supabase.com/dashboard) → **Authentication** → **URL Configuration**:
+   - **Site URL**: usa tu URL pública de producción (ej. `https://typing-quest-ochre.vercel.app`), no solo `http://localhost:5173`.
+   - **Redirect URLs**: añade la misma URL y variaciones que uses, por ejemplo:
+     - `http://localhost:5173/**` (solo para desarrollo local)
+     - `https://typing-quest-ochre.vercel.app/**`
+     - `https://*.vercel.app/**` (opcional, para previews de Vercel)
+
+2. En Vercel, define **`VITE_SITE_URL`** igual a tu URL de producción canónica. La app la usa como `emailRedirectTo` para que el enlace del correo siempre vuelva al sitio correcto aunque el flujo se haya probado desde otro entorno.
+
+3. Para **texto y diseño del correo** (asunto, HTML, marca TypingQuest): **Authentication → Email Templates** en Supabase. Guía con variables y ejemplo: `docs/auth-email-templates.md`.
 
 ---
 

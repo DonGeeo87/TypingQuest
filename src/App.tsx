@@ -3,7 +3,7 @@ import { ParticleBackground, FloatingWords, Topbar, AppFooter } from './componen
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
 import { useAudioStore } from './store/audioStore'
-import type { Language, GameLevel } from './types'
+import type { Language, GameLevel, WordCategory } from './types'
 import { supabase } from './lib/supabase'
 import { useUiStore } from './store/uiStore'
 import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
@@ -29,13 +29,14 @@ const SupportScreen = lazy(() => import('./screens/SupportScreen').then(m => ({ 
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
-  const { language, level, gameDuration, setLanguage, setLevel, setGameDuration, resetGame } = useGameStore()
+  const { language, level, gameDuration, selectedCategory, setLanguage, setLevel, setGameDuration, setSelectedCategory, resetGame } = useGameStore()
   const ui = language
   const { theme } = useUiStore()
   const { enabled: audioEnabled, muted: audioMuted, volume: audioVolume } = useAudioStore()
   const {
     userId,
     hasRegisteredUsername,
+    isAnonymous,
     isLoading: authLoading,
     initializeAuth,
     setHasRegisteredUsername,
@@ -84,7 +85,7 @@ function App() {
     }
   }, [initializeAuth])
 
-  // Verificar si necesita registro después de cargar la autenticación
+  // Auth: sin usuario → landing. Cuenta con email sin apodo real → registro obligatorio (evita user_xxxxxxxx).
   useEffect(() => {
     if (authLoading) return
 
@@ -93,10 +94,18 @@ function App() {
       return
     }
 
-    if (currentScreen === 'registration' || currentScreen === 'auth') {
+    if (!hasRegisteredUsername && !isAnonymous) {
+      const exempt: Screen[] = ['registration', 'terms', 'privacy', 'support']
+      if (!exempt.includes(currentScreen)) {
+        setCurrentScreen('registration')
+      }
+      return
+    }
+
+    if (hasRegisteredUsername && (currentScreen === 'registration' || currentScreen === 'auth')) {
       setCurrentScreen('home')
     }
-  }, [authLoading, userId, hasRegisteredUsername, currentScreen])
+  }, [authLoading, userId, hasRegisteredUsername, isAnonymous, currentScreen])
 
   useEffect(() => {
     trackScreen(currentScreen)
@@ -129,6 +138,10 @@ function App() {
 
   const handleGameDurationChange = (duration: number) => {
     setGameDuration(duration)
+  }
+
+  const handleCategoryChange = (category: WordCategory) => {
+    setSelectedCategory(category)
   }
 
   const handleRegistrationComplete = () => {
@@ -169,6 +182,7 @@ function App() {
 
           {currentScreen === 'registration' && (
             <RegistrationScreen
+              lockExit={!isAnonymous && !hasRegisteredUsername}
               onComplete={handleRegistrationComplete}
               onBack={() => setCurrentScreen('home')}
               onRecoverAccount={() => setCurrentScreen('auth')}
@@ -180,9 +194,11 @@ function App() {
               language={language}
               level={level}
               gameDuration={gameDuration}
+              selectedCategory={selectedCategory}
               onLanguageChange={handleLanguageChange}
               onLevelChange={handleLevelChange}
               onGameDurationChange={handleGameDurationChange}
+              onCategoryChange={handleCategoryChange}
               onStartGame={handleStartGame}
               onStartTapTap={handleStartTapTap}
               onNavigate={handleNavigate}

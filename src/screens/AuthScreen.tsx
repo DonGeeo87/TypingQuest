@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import { t } from '../i18n'
 import { trackEvent } from '../analytics'
+import { getAuthEmailRedirectOrigin } from '../utils/authRedirect'
 
 interface AuthScreenProps {
   onContinue: () => void
@@ -55,7 +56,7 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const leadRef = useRef<HTMLDivElement | null>(null)
 
-  const redirectTo = useMemo(() => window.location.origin, [])
+  const redirectTo = useMemo(() => getAuthEmailRedirectOrigin(), [])
 
   const handleAnonymous = useCallback(async () => {
     setError(null)

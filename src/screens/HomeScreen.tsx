@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion'
-import { LanguageSelector, LevelSelector, TimeSelector, Button, Card, AudioToggle, TeacherTutorialModal } from '../components'
+import { LanguageSelector, LevelSelector, CategorySelector, TimeSelector, Button, Card, TeacherTutorialModal } from '../components'
 import { useAuthStore } from '../store/authStore'
-import { useUiStore } from '../store/uiStore'
 import { useMobile } from '../hooks/useMobile'
-import type { Language, GameLevel } from '../types'
+import type { Language, GameLevel, WordCategory } from '../types'
 import { t } from '../i18n'
 import { useState } from 'react'
 
@@ -11,9 +10,11 @@ interface HomeScreenProps {
   language: Language
   level: GameLevel
   gameDuration: number
+  selectedCategory: WordCategory
   onLanguageChange: (language: Language) => void
   onLevelChange: (level: GameLevel) => void
   onGameDurationChange: (duration: number) => void
+  onCategoryChange: (category: WordCategory) => void
   onStartGame: () => void
   onStartTapTap: () => void
   onNavigate: (screen: string) => void
@@ -23,17 +24,17 @@ export function HomeScreen({
   language,
   level,
   gameDuration,
+  selectedCategory,
   onLanguageChange,
   onLevelChange,
   onGameDurationChange,
+  onCategoryChange,
   onStartGame,
   onStartTapTap,
   onNavigate,
 }: HomeScreenProps) {
-  const { profile, isAnonymous } = useAuthStore()
-  const { theme, toggleTheme } = useUiStore()
+  const { isAnonymous } = useAuthStore()
   const isMobile = useMobile()
-  const displayName = isAnonymous ? 'Invitado' : (profile?.username || 'Invitado')
   const ui = language
   const [tutorialOpen, setTutorialOpen] = useState(false)
 
@@ -46,42 +47,6 @@ export function HomeScreen({
         transition={{ duration: 0.5 }}
         className="w-full max-w-5xl space-y-8 relative z-10"
       >
-        {/* User Badge - Top Bar */}
-        <div className="flex justify-between items-center glass p-3 px-6 rounded-full shadow-2xl">
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="flex items-center gap-4 cursor-pointer group"
-            onClick={() => onNavigate('profile')}
-          >
-            <div className="relative">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" className="w-12 h-12 rounded-full border-2 border-indigo-500 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform" />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-[var(--secondary)] flex items-center justify-center border-2 border-[var(--card-border)] text-xl">👤</div>
-              )}
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[var(--background)] rounded-full"></div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[var(--foreground)] text-base font-bold leading-tight group-hover:text-indigo-300 transition-colors">
-                {displayName}
-              </span>
-              <span className="text-indigo-400 text-[10px] uppercase tracking-widest font-black">Nivel 1 • Ver Perfil</span>
-            </div>
-          </motion.div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              onClick={toggleTheme}
-              className="px-3 py-2 rounded-full"
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </Button>
-            <AudioToggle position="static" compact={true} />
-          </div>
-        </div>
-
         {isAnonymous && (
           <Card className="p-4 border-amber-500/30 bg-amber-500/10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -109,7 +74,7 @@ export function HomeScreen({
             initial={{ scale: 0.8, filter: 'blur(10px)' }}
             animate={{ scale: 1, filter: 'blur(0px)' }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="text-6xl md:text-8xl font-black text-gradient tracking-tighter leading-tight py-1"
+            className="text-5xl md:text-7xl font-black text-gradient tracking-tight leading-tight py-1 px-2 break-words"
           >
             {t(ui, 'home.title')}
           </motion.h1>
@@ -208,6 +173,15 @@ export function HomeScreen({
             <LevelSelector
               selectedLevel={level}
               onLevelChange={(lvl) => onLevelChange(lvl as GameLevel)}
+            />
+          </div>
+
+          {/* Category Selection - FULL WIDTH */}
+          <div className="space-y-4 border-t border-[var(--card-border)] pt-8">
+            <CategorySelector
+              selectedCategory={selectedCategory}
+              onCategoryChange={onCategoryChange}
+              language={language}
             />
           </div>
 

@@ -388,9 +388,41 @@ export function selectTextForLevel(
   level: number,
   mode: ContentMode,
   recentKeys: string[],
-  seed?: number
+  seed?: number,
+  category?: string
 ): TextSelection {
   const baseSeed = seed ?? createSeed()
+  
+  // Si hay categoría, usar palabras categorizadas
+  if (category && category !== 'general' && categorizedWords[category]) {
+    const categoryWords = categorizedWords[category][language] || []
+    const filteredByLevel = categoryWords.filter(w => w.difficulty <= level)
+    
+    if (filteredByLevel.length > 0) {
+      const pool = `words:${language}:${level}:${category}`
+      
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const s = combineSeed(baseSeed, attempt)
+        const rand = mulberry32(s)
+        
+        const idx = filteredByLevel.map((_, i) => i)
+        shuffleInPlace(idx, rand)
+        const pickedIdx = idx.slice(0, 5)
+        const picked = pickedIdx.map((i) => filteredByLevel[i].word)
+        const key = fnv1a32(`${pickedIdx.join(',')}`)
+        const composite = `${mode}:${language}:${level}:${pool}:${key}`
+        
+        if (!recentKeys.includes(composite) || attempt === 11) {
+          return {
+            text: picked.join(' '),
+            meta: { seed: s, pool, version: CONTENT_VERSION, key },
+          }
+        }
+      }
+    }
+  }
+  
+  // Fallback a palabras generales (original logic)
   const pool = level <= 2 ? `words:${language}:${level}` : level <= 4 ? `phrases:${language}:${level}` : `paragraphs:${language}:5`
 
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -470,4 +502,245 @@ export function selectTapTapWords(
 
   const fallback = [...items].slice(0, count)
   return { words: fallback, meta: { seed: baseSeed, pool, version: CONTENT_VERSION, key: fnv1a32(fallback.join('|')) } }
+}
+
+// ============================================
+// CATEGORIZED WORDS BY THEME
+// ============================================
+
+export const categorizedWords: Record<string, Record<string, WordData[]>> = {
+  animals: {
+    en: [
+      { word: 'elephant', difficulty: 2, category: 'animals' }, { word: 'giraffe', difficulty: 2, category: 'animals' }, { word: 'zebra', difficulty: 2, category: 'animals' },
+      { word: 'lion', difficulty: 1, category: 'animals' }, { word: 'tiger', difficulty: 2, category: 'animals' }, { word: 'bear', difficulty: 1, category: 'animals' },
+      { word: 'dolphin', difficulty: 2, category: 'animals' }, { word: 'penguin', difficulty: 2, category: 'animals' }, { word: 'eagle', difficulty: 2, category: 'animals' },
+      { word: 'butterfly', difficulty: 2, category: 'animals' }, { word: 'snake', difficulty: 2, category: 'animals' }, { word: 'spider', difficulty: 2, category: 'animals' },
+      { word: 'crocodile', difficulty: 3, category: 'animals' }, { word: 'hippopotamus', difficulty: 3, category: 'animals' }, { word: 'rhinoceros', difficulty: 3, category: 'animals' },
+      { word: 'cheetah', difficulty: 2, category: 'animals' }, { word: 'antelope', difficulty: 3, category: 'animals' }, { word: 'kangaroo', difficulty: 3, category: 'animals' },
+      { word: 'panda', difficulty: 2, category: 'animals' }, { word: 'lemur', difficulty: 2, category: 'animals' }, { word: 'wolf', difficulty: 2, category: 'animals' },
+      { word: 'peacock', difficulty: 3, category: 'animals' }, { word: 'flamingo', difficulty: 2, category: 'animals' }, { word: 'koala', difficulty: 2, category: 'animals' },
+      { word: 'squirrel', difficulty: 2, category: 'animals' }, { word: 'hedgehog', difficulty: 3, category: 'animals' }, { word: 'ferret', difficulty: 2, category: 'animals' },
+      { word: 'octopus', difficulty: 2, category: 'animals' }, { word: 'jellyfish', difficulty: 3, category: 'animals' }, { word: 'seahorse', difficulty: 3, category: 'animals' },
+    ],
+    es: [
+      { word: 'elefante', difficulty: 2, category: 'animals' }, { word: 'jirafa', difficulty: 2, category: 'animals' }, { word: 'cebra', difficulty: 2, category: 'animals' },
+      { word: 'león', difficulty: 1, category: 'animals' }, { word: 'tigre', difficulty: 2, category: 'animals' }, { word: 'oso', difficulty: 1, category: 'animals' },
+      { word: 'delfín', difficulty: 2, category: 'animals' }, { word: 'pingüino', difficulty: 2, category: 'animals' }, { word: 'águila', difficulty: 2, category: 'animals' },
+      { word: 'mariposa', difficulty: 2, category: 'animals' }, { word: 'serpiente', difficulty: 2, category: 'animals' }, { word: 'araña', difficulty: 2, category: 'animals' },
+      { word: 'cocodrilo', difficulty: 3, category: 'animals' }, { word: 'hipopótamo', difficulty: 3, category: 'animals' }, { word: 'rinoceronte', difficulty: 3, category: 'animals' },
+      { word: 'guepardo', difficulty: 2, category: 'animals' }, { word: 'antílope', difficulty: 3, category: 'animals' }, { word: 'canguro', difficulty: 3, category: 'animals' },
+      { word: 'panda', difficulty: 2, category: 'animals' }, { word: 'lémur', difficulty: 2, category: 'animals' }, { word: 'lobo', difficulty: 2, category: 'animals' },
+      { word: 'pavo real', difficulty: 3, category: 'animals' }, { word: 'flamenco', difficulty: 2, category: 'animals' }, { word: 'coala', difficulty: 2, category: 'animals' },
+      { word: 'ardilla', difficulty: 2, category: 'animals' }, { word: 'erizo', difficulty: 2, category: 'animals' }, { word: 'hurón', difficulty: 2, category: 'animals' },
+      { word: 'pulpo', difficulty: 2, category: 'animals' }, { word: 'medusa', difficulty: 3, category: 'animals' }, { word: 'caballito', difficulty: 3, category: 'animals' },
+    ],
+  },
+  fruits: {
+    en: [
+      { word: 'apple', difficulty: 1, category: 'fruits' }, { word: 'banana', difficulty: 1, category: 'fruits' }, { word: 'orange', difficulty: 1, category: 'fruits' },
+      { word: 'strawberry', difficulty: 2, category: 'fruits' }, { word: 'blueberry', difficulty: 2, category: 'fruits' }, { word: 'raspberry', difficulty: 2, category: 'fruits' },
+      { word: 'watermelon', difficulty: 2, category: 'fruits' }, { word: 'pineapple', difficulty: 2, category: 'fruits' }, { word: 'mango', difficulty: 1, category: 'fruits' },
+      { word: 'papaya', difficulty: 2, category: 'fruits' }, { word: 'kiwi', difficulty: 1, category: 'fruits' }, { word: 'lime', difficulty: 1, category: 'fruits' },
+      { word: 'lemon', difficulty: 1, category: 'fruits' }, { word: 'grape', difficulty: 1, category: 'fruits' }, { word: 'cherry', difficulty: 2, category: 'fruits' },
+      { word: 'peach', difficulty: 2, category: 'fruits' }, { word: 'plum', difficulty: 1, category: 'fruits' }, { word: 'pear', difficulty: 1, category: 'fruits' },
+      { word: 'coconut', difficulty: 2, category: 'fruits' }, { word: 'guava', difficulty: 2, category: 'fruits' }, { word: 'dragonfruit', difficulty: 3, category: 'fruits' },
+      { word: 'pomegranate', difficulty: 3, category: 'fruits' }, { word: 'cranberry', difficulty: 2, category: 'fruits' }, { word: 'nectarine', difficulty: 3, category: 'fruits' },
+      { word: 'tangerine', difficulty: 2, category: 'fruits' }, { word: 'grapefruit', difficulty: 2, category: 'fruits' }, { word: 'clementine', difficulty: 3, category: 'fruits' },
+      { word: 'fig', difficulty: 1, category: 'fruits' }, { word: 'date', difficulty: 1, category: 'fruits' }, { word: 'apricot', difficulty: 2, category: 'fruits' },
+    ],
+    es: [
+      { word: 'manzana', difficulty: 1, category: 'fruits' }, { word: 'plátano', difficulty: 1, category: 'fruits' }, { word: 'naranja', difficulty: 1, category: 'fruits' },
+      { word: 'fresa', difficulty: 2, category: 'fruits' }, { word: 'arándano', difficulty: 2, category: 'fruits' }, { word: 'frambuesa', difficulty: 2, category: 'fruits' },
+      { word: 'sandía', difficulty: 2, category: 'fruits' }, { word: 'piña', difficulty: 2, category: 'fruits' }, { word: 'mango', difficulty: 1, category: 'fruits' },
+      { word: 'papaya', difficulty: 2, category: 'fruits' }, { word: 'kiwi', difficulty: 1, category: 'fruits' }, { word: 'lima', difficulty: 1, category: 'fruits' },
+      { word: 'limón', difficulty: 1, category: 'fruits' }, { word: 'uva', difficulty: 1, category: 'fruits' }, { word: 'cereza', difficulty: 2, category: 'fruits' },
+      { word: 'melocotón', difficulty: 2, category: 'fruits' }, { word: 'ciruela', difficulty: 1, category: 'fruits' }, { word: 'pera', difficulty: 1, category: 'fruits' },
+      { word: 'coco', difficulty: 2, category: 'fruits' }, { word: 'guayaba', difficulty: 2, category: 'fruits' }, { word: 'pitahaya', difficulty: 3, category: 'fruits' },
+      { word: 'granada', difficulty: 3, category: 'fruits' }, { word: 'arándano rojo', difficulty: 2, category: 'fruits' }, { word: 'nectarina', difficulty: 3, category: 'fruits' },
+      { word: 'mandarina', difficulty: 2, category: 'fruits' }, { word: 'pomelo', difficulty: 2, category: 'fruits' }, { word: 'clementina', difficulty: 3, category: 'fruits' },
+      { word: 'higo', difficulty: 1, category: 'fruits' }, { word: 'dátil', difficulty: 1, category: 'fruits' }, { word: 'albaricoque', difficulty: 2, category: 'fruits' },
+    ],
+  },
+  nouns: {
+    en: [
+      { word: 'person', difficulty: 1, category: 'nouns' }, { word: 'place', difficulty: 1, category: 'nouns' }, { word: 'thing', difficulty: 1, category: 'nouns' },
+      { word: 'mother', difficulty: 1, category: 'nouns' }, { word: 'father', difficulty: 1, category: 'nouns' }, { word: 'brother', difficulty: 2, category: 'nouns' },
+      { word: 'sister', difficulty: 2, category: 'nouns' }, { word: 'friend', difficulty: 1, category: 'nouns' }, { word: 'teacher', difficulty: 2, category: 'nouns' },
+      { word: 'student', difficulty: 2, category: 'nouns' }, { word: 'doctor', difficulty: 2, category: 'nouns' }, { word: 'engineer', difficulty: 2, category: 'nouns' },
+      { word: 'artist', difficulty: 2, category: 'nouns' }, { word: 'musician', difficulty: 3, category: 'nouns' }, { word: 'architect', difficulty: 3, category: 'nouns' },
+      { word: 'house', difficulty: 1, category: 'nouns' }, { word: 'school', difficulty: 2, category: 'nouns' }, { word: 'hospital', difficulty: 2, category: 'nouns' },
+      { word: 'building', difficulty: 2, category: 'nouns' }, { word: 'city', difficulty: 1, category: 'nouns' }, { word: 'country', difficulty: 2, category: 'nouns' },
+      { word: 'mountain', difficulty: 2, category: 'nouns' }, { word: 'forest', difficulty: 2, category: 'nouns' }, { word: 'ocean', difficulty: 2, category: 'nouns' },
+      { word: 'river', difficulty: 2, category: 'nouns' }, { word: 'desert', difficulty: 2, category: 'nouns' }, { word: 'island', difficulty: 2, category: 'nouns' },
+      { word: 'technology', difficulty: 3, category: 'nouns' }, { word: 'knowledge', difficulty: 3, category: 'nouns' }, { word: 'learning', difficulty: 2, category: 'nouns' },
+    ],
+    es: [
+      { word: 'persona', difficulty: 1, category: 'nouns' }, { word: 'lugar', difficulty: 1, category: 'nouns' }, { word: 'cosa', difficulty: 1, category: 'nouns' },
+      { word: 'madre', difficulty: 1, category: 'nouns' }, { word: 'padre', difficulty: 1, category: 'nouns' }, { word: 'hermano', difficulty: 2, category: 'nouns' },
+      { word: 'hermana', difficulty: 2, category: 'nouns' }, { word: 'amigo', difficulty: 1, category: 'nouns' }, { word: 'maestro', difficulty: 2, category: 'nouns' },
+      { word: 'estudiante', difficulty: 2, category: 'nouns' }, { word: 'doctor', difficulty: 2, category: 'nouns' }, { word: 'ingeniero', difficulty: 2, category: 'nouns' },
+      { word: 'artista', difficulty: 2, category: 'nouns' }, { word: 'músico', difficulty: 3, category: 'nouns' }, { word: 'arquitecto', difficulty: 3, category: 'nouns' },
+      { word: 'casa', difficulty: 1, category: 'nouns' }, { word: 'escuela', difficulty: 2, category: 'nouns' }, { word: 'hospital', difficulty: 2, category: 'nouns' },
+      { word: 'edificio', difficulty: 2, category: 'nouns' }, { word: 'ciudad', difficulty: 1, category: 'nouns' }, { word: 'país', difficulty: 1, category: 'nouns' },
+      { word: 'montaña', difficulty: 2, category: 'nouns' }, { word: 'bosque', difficulty: 2, category: 'nouns' }, { word: 'océano', difficulty: 2, category: 'nouns' },
+      { word: 'río', difficulty: 1, category: 'nouns' }, { word: 'desierto', difficulty: 2, category: 'nouns' }, { word: 'isla', difficulty: 1, category: 'nouns' },
+      { word: 'tecnología', difficulty: 3, category: 'nouns' }, { word: 'conocimiento', difficulty: 3, category: 'nouns' }, { word: 'aprendizaje', difficulty: 2, category: 'nouns' },
+    ],
+  },
+  verbs: {
+    en: [
+      { word: 'run', difficulty: 1, category: 'verbs' }, { word: 'walk', difficulty: 1, category: 'verbs' }, { word: 'jump', difficulty: 1, category: 'verbs' },
+      { word: 'sit', difficulty: 1, category: 'verbs' }, { word: 'stand', difficulty: 1, category: 'verbs' }, { word: 'eat', difficulty: 1, category: 'verbs' },
+      { word: 'drink', difficulty: 1, category: 'verbs' }, { word: 'sleep', difficulty: 1, category: 'verbs' }, { word: 'wake', difficulty: 1, category: 'verbs' },
+      { word: 'play', difficulty: 1, category: 'verbs' }, { word: 'work', difficulty: 1, category: 'verbs' }, { word: 'study', difficulty: 2, category: 'verbs' },
+      { word: 'learn', difficulty: 2, category: 'verbs' }, { word: 'teach', difficulty: 2, category: 'verbs' }, { word: 'read', difficulty: 1, category: 'verbs' },
+      { word: 'write', difficulty: 1, category: 'verbs' }, { word: 'speak', difficulty: 2, category: 'verbs' }, { word: 'listen', difficulty: 2, category: 'verbs' },
+      { word: 'create', difficulty: 2, category: 'verbs' }, { word: 'build', difficulty: 2, category: 'verbs' }, { word: 'destroy', difficulty: 2, category: 'verbs' },
+      { word: 'understand', difficulty: 2, category: 'verbs' }, { word: 'think', difficulty: 2, category: 'verbs' }, { word: 'believe', difficulty: 2, category: 'verbs' },
+      { word: 'know', difficulty: 1, category: 'verbs' }, { word: 'remember', difficulty: 2, category: 'verbs' }, { word: 'forget', difficulty: 2, category: 'verbs' },
+      { word: 'improve', difficulty: 3, category: 'verbs' }, { word: 'explore', difficulty: 3, category: 'verbs' }, { word: 'discover', difficulty: 3, category: 'verbs' },
+    ],
+    es: [
+      { word: 'correr', difficulty: 1, category: 'verbs' }, { word: 'caminar', difficulty: 1, category: 'verbs' }, { word: 'saltar', difficulty: 1, category: 'verbs' },
+      { word: 'sentarse', difficulty: 2, category: 'verbs' }, { word: 'levantarse', difficulty: 2, category: 'verbs' }, { word: 'comer', difficulty: 1, category: 'verbs' },
+      { word: 'beber', difficulty: 1, category: 'verbs' }, { word: 'dormir', difficulty: 1, category: 'verbs' }, { word: 'despertar', difficulty: 2, category: 'verbs' },
+      { word: 'jugar', difficulty: 1, category: 'verbs' }, { word: 'trabajar', difficulty: 1, category: 'verbs' }, { word: 'estudiar', difficulty: 2, category: 'verbs' },
+      { word: 'aprender', difficulty: 2, category: 'verbs' }, { word: 'enseñar', difficulty: 2, category: 'verbs' }, { word: 'leer', difficulty: 1, category: 'verbs' },
+      { word: 'escribir', difficulty: 1, category: 'verbs' }, { word: 'hablar', difficulty: 2, category: 'verbs' }, { word: 'escuchar', difficulty: 2, category: 'verbs' },
+      { word: 'crear', difficulty: 2, category: 'verbs' }, { word: 'construir', difficulty: 2, category: 'verbs' }, { word: 'destruir', difficulty: 2, category: 'verbs' },
+      { word: 'entender', difficulty: 2, category: 'verbs' }, { word: 'pensar', difficulty: 1, category: 'verbs' }, { word: 'creer', difficulty: 1, category: 'verbs' },
+      { word: 'saber', difficulty: 1, category: 'verbs' }, { word: 'recordar', difficulty: 2, category: 'verbs' }, { word: 'olvidar', difficulty: 2, category: 'verbs' },
+      { word: 'mejorar', difficulty: 3, category: 'verbs' }, { word: 'explorar', difficulty: 3, category: 'verbs' }, { word: 'descubrir', difficulty: 3, category: 'verbs' },
+    ],
+  },
+  parts_of_speech: {
+    en: [
+      { word: 'noun', difficulty: 1, category: 'parts_of_speech' }, { word: 'verb', difficulty: 1, category: 'parts_of_speech' }, { word: 'adjective', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'adverb', difficulty: 2, category: 'parts_of_speech' }, { word: 'pronoun', difficulty: 2, category: 'parts_of_speech' }, { word: 'preposition', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'conjunction', difficulty: 2, category: 'parts_of_speech' }, { word: 'interjection', difficulty: 3, category: 'parts_of_speech' }, { word: 'article', difficulty: 1, category: 'parts_of_speech' },
+      { word: 'determiner', difficulty: 3, category: 'parts_of_speech' }, { word: 'gerund', difficulty: 3, category: 'parts_of_speech' }, { word: 'participle', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'infinitive', difficulty: 3, category: 'parts_of_speech' }, { word: 'clause', difficulty: 3, category: 'parts_of_speech' }, { word: 'phrase', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'subject', difficulty: 2, category: 'parts_of_speech' }, { word: 'object', difficulty: 2, category: 'parts_of_speech' }, { word: 'predicate', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'compound', difficulty: 3, category: 'parts_of_speech' }, { word: 'simple', difficulty: 1, category: 'parts_of_speech' }, { word: 'complex', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'tense', difficulty: 2, category: 'parts_of_speech' }, { word: 'mood', difficulty: 3, category: 'parts_of_speech' }, { word: 'voice', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'person', difficulty: 2, category: 'parts_of_speech' }, { word: 'number', difficulty: 2, category: 'parts_of_speech' }, { word: 'gender', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'modifier', difficulty: 3, category: 'parts_of_speech' }, { word: 'complement', difficulty: 3, category: 'parts_of_speech' }, { word: 'attribute', difficulty: 3, category: 'parts_of_speech' },
+    ],
+    es: [
+      { word: 'sustantivo', difficulty: 1, category: 'parts_of_speech' }, { word: 'verbo', difficulty: 1, category: 'parts_of_speech' }, { word: 'adjetivo', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'adverbio', difficulty: 2, category: 'parts_of_speech' }, { word: 'pronombre', difficulty: 2, category: 'parts_of_speech' }, { word: 'preposición', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'conjunción', difficulty: 2, category: 'parts_of_speech' }, { word: 'interjección', difficulty: 3, category: 'parts_of_speech' }, { word: 'artículo', difficulty: 1, category: 'parts_of_speech' },
+      { word: 'determinante', difficulty: 3, category: 'parts_of_speech' }, { word: 'gerundio', difficulty: 3, category: 'parts_of_speech' }, { word: 'participio', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'infinitivo', difficulty: 3, category: 'parts_of_speech' }, { word: 'cláusula', difficulty: 3, category: 'parts_of_speech' }, { word: 'frase', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'sujeto', difficulty: 2, category: 'parts_of_speech' }, { word: 'objeto', difficulty: 2, category: 'parts_of_speech' }, { word: 'predicado', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'compuesto', difficulty: 3, category: 'parts_of_speech' }, { word: 'simple', difficulty: 1, category: 'parts_of_speech' }, { word: 'complejo', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'tiempo', difficulty: 2, category: 'parts_of_speech' }, { word: 'modo', difficulty: 3, category: 'parts_of_speech' }, { word: 'voz', difficulty: 3, category: 'parts_of_speech' },
+      { word: 'persona', difficulty: 2, category: 'parts_of_speech' }, { word: 'número', difficulty: 2, category: 'parts_of_speech' }, { word: 'género', difficulty: 2, category: 'parts_of_speech' },
+      { word: 'modificador', difficulty: 3, category: 'parts_of_speech' }, { word: 'complemento', difficulty: 3, category: 'parts_of_speech' }, { word: 'atributo', difficulty: 3, category: 'parts_of_speech' },
+    ],
+  },
+  tenses: {
+    en: [
+      { word: 'present', difficulty: 1, category: 'tenses' }, { word: 'past', difficulty: 1, category: 'tenses' }, { word: 'future', difficulty: 1, category: 'tenses' },
+      { word: 'simple', difficulty: 2, category: 'tenses' }, { word: 'continuous', difficulty: 2, category: 'tenses' }, { word: 'perfect', difficulty: 2, category: 'tenses' },
+      { word: 'present perfect', difficulty: 3, category: 'tenses' }, { word: 'past perfect', difficulty: 3, category: 'tenses' }, { word: 'future perfect', difficulty: 3, category: 'tenses' },
+      { word: 'progressive', difficulty: 2, category: 'tenses' }, { word: 'habitual', difficulty: 2, category: 'tenses' }, { word: 'conditional', difficulty: 3, category: 'tenses' },
+      { word: 'subjunctive', difficulty: 4, category: 'tenses' }, { word: 'imperative', difficulty: 2, category: 'tenses' }, { word: 'indicative', difficulty: 3, category: 'tenses' },
+      { word: 'preterite', difficulty: 3, category: 'tenses' }, { word: 'imperfect', difficulty: 3, category: 'tenses' }, { word: 'pluperfect', difficulty: 4, category: 'tenses' },
+      { word: 'sequential', difficulty: 4, category: 'tenses' }, { word: 'momentaneous', difficulty: 4, category: 'tenses' }, { word: 'iterative', difficulty: 4, category: 'tenses' },
+      { word: 'instantaneous', difficulty: 4, category: 'tenses' }, { word: 'durative', difficulty: 4, category: 'tenses' }, { word: 'perfective', difficulty: 4, category: 'tenses' },
+      { word: 'imperfective', difficulty: 4, category: 'tenses' }, { word: 'aspectual', difficulty: 5, category: 'tenses' }, { word: 'modality', difficulty: 5, category: 'tenses' },
+      { word: 'transitivity', difficulty: 5, category: 'tenses' }, { word: 'causative', difficulty: 4, category: 'tenses' }, { word: 'reflexive', difficulty: 4, category: 'tenses' },
+    ],
+    es: [
+      { word: 'presente', difficulty: 1, category: 'tenses' }, { word: 'pasado', difficulty: 1, category: 'tenses' }, { word: 'futuro', difficulty: 1, category: 'tenses' },
+      { word: 'simple', difficulty: 2, category: 'tenses' }, { word: 'continuo', difficulty: 2, category: 'tenses' }, { word: 'perfecto', difficulty: 2, category: 'tenses' },
+      { word: 'pretérito perfecto', difficulty: 3, category: 'tenses' }, { word: 'pretérito pluscuamperfecto', difficulty: 4, category: 'tenses' }, { word: 'futuro perfecto', difficulty: 3, category: 'tenses' },
+      { word: 'progresivo', difficulty: 2, category: 'tenses' }, { word: 'habitual', difficulty: 2, category: 'tenses' }, { word: 'condicional', difficulty: 3, category: 'tenses' },
+      { word: 'subjuntivo', difficulty: 4, category: 'tenses' }, { word: 'imperativo', difficulty: 2, category: 'tenses' }, { word: 'indicativo', difficulty: 3, category: 'tenses' },
+      { word: 'pretérito indefinido', difficulty: 3, category: 'tenses' }, { word: 'imperfecto', difficulty: 3, category: 'tenses' }, { word: 'plusquamperfecto', difficulty: 4, category: 'tenses' },
+      { word: 'secuencial', difficulty: 4, category: 'tenses' }, { word: 'momentáneo', difficulty: 4, category: 'tenses' }, { word: 'iterativo', difficulty: 4, category: 'tenses' },
+      { word: 'instantáneo', difficulty: 4, category: 'tenses' }, { word: 'durativo', difficulty: 4, category: 'tenses' }, { word: 'perfectivo', difficulty: 4, category: 'tenses' },
+      { word: 'imperfectivo', difficulty: 4, category: 'tenses' }, { word: 'aspectual', difficulty: 5, category: 'tenses' }, { word: 'modalidad', difficulty: 5, category: 'tenses' },
+      { word: 'transitividad', difficulty: 5, category: 'tenses' }, { word: 'causativo', difficulty: 4, category: 'tenses' }, { word: 'reflexivo', difficulty: 4, category: 'tenses' },
+    ],
+  },
+  verb_to_be: {
+    en: [
+      { word: 'am', difficulty: 1, category: 'verb_to_be' }, { word: 'are', difficulty: 1, category: 'verb_to_be' }, { word: 'is', difficulty: 1, category: 'verb_to_be' },
+      { word: 'was', difficulty: 1, category: 'verb_to_be' }, { word: 'were', difficulty: 1, category: 'verb_to_be' }, { word: 'be', difficulty: 1, category: 'verb_to_be' },
+      { word: 'being', difficulty: 2, category: 'verb_to_be' }, { word: 'been', difficulty: 2, category: 'verb_to_be' }, { word: 'will be', difficulty: 2, category: 'verb_to_be' },
+      { word: 'going to be', difficulty: 2, category: 'verb_to_be' }, { word: 'was being', difficulty: 3, category: 'verb_to_be' }, { word: 'have been', difficulty: 2, category: 'verb_to_be' },
+      { word: 'has been', difficulty: 2, category: 'verb_to_be' }, { word: 'had been', difficulty: 3, category: 'verb_to_be' }, { word: 'will have been', difficulty: 3, category: 'verb_to_be' },
+      { word: 'exists', difficulty: 2, category: 'verb_to_be' }, { word: 'existed', difficulty: 2, category: 'verb_to_be' }, { word: 'presence', difficulty: 2, category: 'verb_to_be' },
+      { word: 'being present', difficulty: 3, category: 'verb_to_be' }, { word: 'becoming', difficulty: 3, category: 'verb_to_be' }, { word: 'remaining', difficulty: 3, category: 'verb_to_be' },
+      { word: 'are not', difficulty: 2, category: 'verb_to_be' }, { word: 'is not', difficulty: 1, category: 'verb_to_be' }, { word: 'am not', difficulty: 1, category: 'verb_to_be' },
+      { word: 'were not', difficulty: 2, category: 'verb_to_be' }, { word: 'was not', difficulty: 1, category: 'verb_to_be' }, { word: 'be not', difficulty: 2, category: 'verb_to_be' },
+      { word: 'negation', difficulty: 3, category: 'verb_to_be' }, { word: 'affirmation', difficulty: 3, category: 'verb_to_be' }, { word: 'conditional being', difficulty: 4, category: 'verb_to_be' },
+    ],
+    es: [
+      { word: 'soy', difficulty: 1, category: 'verb_to_be' }, { word: 'eres', difficulty: 1, category: 'verb_to_be' }, { word: 'es', difficulty: 1, category: 'verb_to_be' },
+      { word: 'era', difficulty: 1, category: 'verb_to_be' }, { word: 'eras', difficulty: 1, category: 'verb_to_be' }, { word: 'ser', difficulty: 1, category: 'verb_to_be' },
+      { word: 'siendo', difficulty: 2, category: 'verb_to_be' }, { word: 'sido', difficulty: 2, category: 'verb_to_be' }, { word: 'seré', difficulty: 2, category: 'verb_to_be' },
+      { word: 'voy a ser', difficulty: 2, category: 'verb_to_be' }, { word: 'estaba siendo', difficulty: 3, category: 'verb_to_be' }, { word: 'he sido', difficulty: 2, category: 'verb_to_be' },
+      { word: 'ha sido', difficulty: 2, category: 'verb_to_be' }, { word: 'había sido', difficulty: 3, category: 'verb_to_be' }, { word: 'habré sido', difficulty: 3, category: 'verb_to_be' },
+      { word: 'existo', difficulty: 2, category: 'verb_to_be' }, { word: 'existía', difficulty: 2, category: 'verb_to_be' }, { word: 'presencia', difficulty: 2, category: 'verb_to_be' },
+      { word: 'estoy siendo', difficulty: 3, category: 'verb_to_be' }, { word: 'convirtiéndome', difficulty: 3, category: 'verb_to_be' }, { word: 'permaneciendo', difficulty: 3, category: 'verb_to_be' },
+      { word: 'no soy', difficulty: 1, category: 'verb_to_be' }, { word: 'no eres', difficulty: 1, category: 'verb_to_be' }, { word: 'no es', difficulty: 1, category: 'verb_to_be' },
+      { word: 'no era', difficulty: 1, category: 'verb_to_be' }, { word: 'no eras', difficulty: 1, category: 'verb_to_be' }, { word: 'no ser', difficulty: 1, category: 'verb_to_be' },
+      { word: 'negación', difficulty: 3, category: 'verb_to_be' }, { word: 'afirmación', difficulty: 3, category: 'verb_to_be' }, { word: 'ser condicional', difficulty: 4, category: 'verb_to_be' },
+    ],
+  },
+  abbreviations: {
+    en: [
+      { word: 'Mr', difficulty: 1, category: 'abbreviations' }, { word: 'Mrs', difficulty: 1, category: 'abbreviations' }, { word: 'Ms', difficulty: 1, category: 'abbreviations' },
+      { word: 'Dr', difficulty: 1, category: 'abbreviations' }, { word: 'Prof', difficulty: 2, category: 'abbreviations' }, { word: 'St', difficulty: 1, category: 'abbreviations' },
+      { word: 'Ave', difficulty: 2, category: 'abbreviations' }, { word: 'Blvd', difficulty: 2, category: 'abbreviations' }, { word: 'Inc', difficulty: 1, category: 'abbreviations' },
+      { word: 'Ltd', difficulty: 1, category: 'abbreviations' }, { word: 'Co', difficulty: 1, category: 'abbreviations' }, { word: 'Corp', difficulty: 2, category: 'abbreviations' },
+      { word: 'Jan', difficulty: 1, category: 'abbreviations' }, { word: 'Feb', difficulty: 1, category: 'abbreviations' }, { word: 'Dec', difficulty: 1, category: 'abbreviations' },
+      { word: 'Mon', difficulty: 1, category: 'abbreviations' }, { word: 'Tue', difficulty: 1, category: 'abbreviations' }, { word: 'Wed', difficulty: 1, category: 'abbreviations' },
+      { word: 'USA', difficulty: 1, category: 'abbreviations' }, { word: 'UK', difficulty: 1, category: 'abbreviations' }, { word: 'UN', difficulty: 1, category: 'abbreviations' },
+      { word: 'etc', difficulty: 1, category: 'abbreviations' }, { word: 'eg', difficulty: 1, category: 'abbreviations' }, { word: 'ie', difficulty: 1, category: 'abbreviations' },
+      { word: 'vs', difficulty: 1, category: 'abbreviations' }, { word: 'aka', difficulty: 1, category: 'abbreviations' }, { word: 'ASAP', difficulty: 2, category: 'abbreviations' },
+      { word: 'FAQ', difficulty: 2, category: 'abbreviations' }, { word: 'CEO', difficulty: 2, category: 'abbreviations' }, { word: 'GPS', difficulty: 2, category: 'abbreviations' },
+    ],
+    es: [
+      { word: 'Sr', difficulty: 1, category: 'abbreviations' }, { word: 'Sra', difficulty: 1, category: 'abbreviations' }, { word: 'Srta', difficulty: 1, category: 'abbreviations' },
+      { word: 'Dr', difficulty: 1, category: 'abbreviations' }, { word: 'Prof', difficulty: 2, category: 'abbreviations' }, { word: 'Calle', difficulty: 1, category: 'abbreviations' },
+      { word: 'Avenida', difficulty: 2, category: 'abbreviations' }, { word: 'Boulevard', difficulty: 2, category: 'abbreviations' }, { word: 'S.A', difficulty: 1, category: 'abbreviations' },
+      { word: 'Ltda', difficulty: 1, category: 'abbreviations' }, { word: 'Compañía', difficulty: 2, category: 'abbreviations' }, { word: 'Corporación', difficulty: 2, category: 'abbreviations' },
+      { word: 'Enero', difficulty: 1, category: 'abbreviations' }, { word: 'Febrero', difficulty: 1, category: 'abbreviations' }, { word: 'Diciembre', difficulty: 1, category: 'abbreviations' },
+      { word: 'Lunes', difficulty: 1, category: 'abbreviations' }, { word: 'Martes', difficulty: 1, category: 'abbreviations' }, { word: 'Miércoles', difficulty: 1, category: 'abbreviations' },
+      { word: 'EE.UU', difficulty: 1, category: 'abbreviations' }, { word: 'RU', difficulty: 1, category: 'abbreviations' }, { word: 'ONU', difficulty: 1, category: 'abbreviations' },
+      { word: 'etc', difficulty: 1, category: 'abbreviations' }, { word: 'ej', difficulty: 1, category: 'abbreviations' }, { word: 'es decir', difficulty: 1, category: 'abbreviations' },
+      { word: 'vs', difficulty: 1, category: 'abbreviations' }, { word: 'también conocido', difficulty: 2, category: 'abbreviations' }, { word: 'ASAP', difficulty: 2, category: 'abbreviations' },
+      { word: 'PF', difficulty: 2, category: 'abbreviations' }, { word: 'CEO', difficulty: 2, category: 'abbreviations' }, { word: 'GPS', difficulty: 2, category: 'abbreviations' },
+    ],
+  },
+  prepositions: {
+    en: [
+      { word: 'in', difficulty: 1, category: 'prepositions' }, { word: 'on', difficulty: 1, category: 'prepositions' }, { word: 'at', difficulty: 1, category: 'prepositions' },
+      { word: 'to', difficulty: 1, category: 'prepositions' }, { word: 'from', difficulty: 1, category: 'prepositions' }, { word: 'with', difficulty: 1, category: 'prepositions' },
+      { word: 'without', difficulty: 2, category: 'prepositions' }, { word: 'by', difficulty: 1, category: 'prepositions' }, { word: 'for', difficulty: 1, category: 'prepositions' },
+      { word: 'of', difficulty: 1, category: 'prepositions' }, { word: 'about', difficulty: 2, category: 'prepositions' }, { word: 'during', difficulty: 2, category: 'prepositions' },
+      { word: 'before', difficulty: 2, category: 'prepositions' }, { word: 'after', difficulty: 2, category: 'prepositions' }, { word: 'between', difficulty: 2, category: 'prepositions' },
+      { word: 'among', difficulty: 2, category: 'prepositions' }, { word: 'through', difficulty: 2, category: 'prepositions' }, { word: 'across', difficulty: 2, category: 'prepositions' },
+      { word: 'around', difficulty: 2, category: 'prepositions' }, { word: 'near', difficulty: 2, category: 'prepositions' }, { word: 'beside', difficulty: 2, category: 'prepositions' },
+      { word: 'above', difficulty: 2, category: 'prepositions' }, { word: 'below', difficulty: 2, category: 'prepositions' }, { word: 'under', difficulty: 1, category: 'prepositions' },
+      { word: 'over', difficulty: 2, category: 'prepositions' }, { word: 'inside', difficulty: 2, category: 'prepositions' }, { word: 'outside', difficulty: 2, category: 'prepositions' },
+      { word: 'behind', difficulty: 2, category: 'prepositions' }, { word: 'along', difficulty: 3, category: 'prepositions' }, { word: 'throughout', difficulty: 3, category: 'prepositions' },
+    ],
+    es: [
+      { word: 'en', difficulty: 1, category: 'prepositions' }, { word: 'sobre', difficulty: 1, category: 'prepositions' }, { word: 'a', difficulty: 1, category: 'prepositions' },
+      { word: 'hacia', difficulty: 1, category: 'prepositions' }, { word: 'desde', difficulty: 1, category: 'prepositions' }, { word: 'con', difficulty: 1, category: 'prepositions' },
+      { word: 'sin', difficulty: 2, category: 'prepositions' }, { word: 'por', difficulty: 1, category: 'prepositions' }, { word: 'para', difficulty: 1, category: 'prepositions' },
+      { word: 'de', difficulty: 1, category: 'prepositions' }, { word: 'acerca de', difficulty: 2, category: 'prepositions' }, { word: 'durante', difficulty: 2, category: 'prepositions' },
+      { word: 'antes de', difficulty: 2, category: 'prepositions' }, { word: 'después de', difficulty: 2, category: 'prepositions' }, { word: 'entre', difficulty: 2, category: 'prepositions' },
+      { word: 'entre muchos', difficulty: 2, category: 'prepositions' }, { word: 'a través', difficulty: 2, category: 'prepositions' }, { word: 'cruzando', difficulty: 2, category: 'prepositions' },
+      { word: 'alrededor', difficulty: 2, category: 'prepositions' }, { word: 'cerca', difficulty: 2, category: 'prepositions' }, { word: 'al lado', difficulty: 2, category: 'prepositions' },
+      { word: 'encima', difficulty: 2, category: 'prepositions' }, { word: 'debajo', difficulty: 2, category: 'prepositions' }, { word: 'bajo', difficulty: 1, category: 'prepositions' },
+      { word: 'sobre', difficulty: 2, category: 'prepositions' }, { word: 'dentro', difficulty: 2, category: 'prepositions' }, { word: 'fuera', difficulty: 2, category: 'prepositions' },
+      { word: 'detrás', difficulty: 2, category: 'prepositions' }, { word: 'a lo largo', difficulty: 3, category: 'prepositions' }, { word: 'a lo largo de todo', difficulty: 3, category: 'prepositions' },
+    ],
+  },
 }

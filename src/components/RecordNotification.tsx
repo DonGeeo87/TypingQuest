@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from './Card'
-import type { RealtimeRankingUpdate } from '../types'
+import { useGameStore } from '../store/gameStore'
+import type { RealtimeRankingUpdate, Language } from '../types'
 import { getDurationCategory } from '../services/supabaseService'
+import { t } from '../i18n'
 
 interface RecordNotificationProps {
   notification: RealtimeRankingUpdate | null
   onDismiss: () => void
+  language?: Language
 }
 
-export function RecordNotification({ notification, onDismiss }: RecordNotificationProps) {
+export function RecordNotification({ notification, onDismiss, language: languageProp }: RecordNotificationProps) {
+  const { language: gameLanguage } = useGameStore()
+  const language = languageProp || gameLanguage
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -35,8 +40,10 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
       case 'overtake':
         return {
           icon: '🚨',
-          title: '¡Récord Superado!',
-          subtitle: `${notification.username} ha superado tu récord en ${durationCategory?.label}`,
+          title: t(language, 'ranking.recordOvertaken'),
+          subtitle: t(language, 'ranking.recordOvertakenDesc')
+            .replace('{username}', notification.username)
+            .replace('{duration}', durationCategory?.label || ''),
           color: 'from-red-600/30 to-orange-600/30',
           borderColor: 'border-red-500/50',
           textColor: 'text-red-400',
@@ -44,8 +51,10 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
       case 'new_record':
         return {
           icon: '🔥',
-          title: '¡Nuevo Récord Global!',
-          subtitle: `${notification.username} estableció un nuevo récord en ${durationCategory?.label}`,
+          title: t(language, 'ranking.newGlobalRecord'),
+          subtitle: t(language, 'ranking.newGlobalRecordDesc')
+            .replace('{username}', notification.username)
+            .replace('{duration}', durationCategory?.label || ''),
           color: 'from-emerald-600/30 to-green-600/30',
           borderColor: 'border-emerald-500/50',
           textColor: 'text-emerald-400',
@@ -53,8 +62,8 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
       case 'rank_change':
         return {
           icon: '📊',
-          title: 'Cambio en el Ranking',
-          subtitle: `Has subido al puesto #${notification.newRank}`,
+          title: t(language, 'ranking.rankChange'),
+          subtitle: t(language, 'ranking.rankChangeDesc').replace('{rank}', String(notification.newRank || '')),
           color: 'from-blue-600/30 to-indigo-600/30',
           borderColor: 'border-blue-500/50',
           textColor: 'text-blue-400',
@@ -62,8 +71,8 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
       default:
         return {
           icon: '📢',
-          title: 'Actualización',
-          subtitle: 'Nueva actividad en el ranking',
+          title: t(language, 'ranking.genericUpdate'),
+          subtitle: t(language, 'ranking.genericUpdateDesc'),
           color: 'from-zinc-600/30 to-gray-600/30',
           borderColor: 'border-zinc-500/50',
           textColor: 'text-zinc-400',
@@ -82,7 +91,7 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
           exit={{ opacity: 0, x: 100, scale: 0.9 }}
           className="fixed bottom-4 right-4 z-50 max-w-sm"
         >
-          <Card className={`${config.color} ${config.borderColor} border shadow-2xl`}>
+          <Card className={`${config.color} ${config.borderColor} border shadow-2xl bg-black/60 backdrop-blur-md`}>
             <div className="flex items-start gap-3">
               <span className="text-3xl">{config.icon}</span>
               <div className="flex-1 min-w-0">
@@ -94,7 +103,7 @@ export function RecordNotification({ notification, onDismiss }: RecordNotificati
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs px-2 py-1 rounded-full bg-[var(--secondary)] text-[var(--muted)]">
-                    {notification.score} puntos
+                    {notification.score} {t(language, 'ranking.score')}
                   </span>
                   {notification.durationCategory && (
                     <span className="text-xs px-2 py-1 rounded-full bg-[var(--secondary)] text-[var(--muted)]">

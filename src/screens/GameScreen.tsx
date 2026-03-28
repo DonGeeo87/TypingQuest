@@ -16,6 +16,7 @@ import {
   calculateStandardizedScore,
 } from '../utils/difficultyScaler'
 import { useContentStore } from '../store/contentStore'
+import { t } from '../i18n'
 
 interface GameScreenProps {
   onGameEnd: () => void
@@ -41,6 +42,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     timeRemaining,
     wordsCompleted,
     totalWords,
+    selectedCategory,
     setStatus,
     setCurrentIndex,
     addTypedChar,
@@ -96,7 +98,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   // Initialize game text
   useEffect(() => {
     const recentKeys = useContentStore.getState().recentKeys
-    const selection = selectTextForLevel(language, level, 'classic', recentKeys)
+    const selection = selectTextForLevel(language, level, 'classic', recentKeys, undefined, selectedCategory)
     const compositeKey = buildContentKey('classic', language, level, selection.meta.pool, selection.meta.key)
     rememberContentKey(compositeKey)
     setContentMeta(selection.meta)
@@ -143,7 +145,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     if (checkLevelUp(prevWordsCompletedRef.current, wordsCompleted)) {
       setShowLevelUp(true)
       playLevelUpSound?.()
-      setTimeout(() => setShowLevelUp(false), 2000)
+      setTimeout(() => setShowLevelUp(false), 800)
     }
   }, [wordsCompleted, liveWpm, status, playLevelUpSound])
 
@@ -249,7 +251,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
       if (currentIndex + 1 >= currentText.length) {
         const recentKeys = useContentStore.getState().recentKeys
-        const selection = selectTextForLevel(language, level, 'classic', recentKeys)
+        const selection = selectTextForLevel(language, level, 'classic', recentKeys, undefined, selectedCategory)
         const compositeKey = buildContentKey('classic', language, level, selection.meta.pool, selection.meta.key)
         rememberContentKey(compositeKey)
         setContentMeta(selection.meta)
@@ -320,7 +322,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
   useEffect(() => {
     if (combo >= 5 && combo % 5 === 0) { // Solo mostrar en múltiplos de 5
       setShowCombo(true)
-      const timer = setTimeout(() => setShowCombo(false), 800)
+      const timer = setTimeout(() => setShowCombo(false), 300)
       return () => clearTimeout(timer)
     }
   }, [combo])
@@ -349,7 +351,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
         if (currentWordIndex >= 0 && currentWordIndex < words.length) {
           setLastCompletedWord(words[currentWordIndex])
           setShowTextComplete(true)
-          setTimeout(() => setShowTextComplete(false), 1000)
+          setTimeout(() => setShowTextComplete(false), 300)
         }
       }
     }
@@ -438,8 +440,8 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
       <Confetti isActive={showConfetti} />
       <ErrorParticles isActive={showError} position={errorPosition || undefined} />
+      <ComboIndicator combo={combo} show={showCombo} language={language} />
       <TextComplete isActive={showTextComplete} text={lastCompletedWord} />
-      <ComboIndicator combo={combo} show={showCombo} />
 
       {/* Audio Toggle */}
       <AudioToggle position="top-right" compact={false} />
@@ -448,21 +450,18 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
       <AnimatePresence>
         {showLevelUp && (
           <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.8 }}
+            initial={{ opacity: 0, y: -30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.8 }}
-            className="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-50"
+            exit={{ opacity: 0, y: -30, scale: 0.8 }}
+            className="fixed top-24 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"
           >
-            <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-500/50 px-8 py-4">
+            <div className="bg-gradient-to-r from-purple-600/80 to-pink-600/80 border border-purple-500/50 rounded-xl px-6 py-2 backdrop-blur-sm">
               <div className="text-center">
-                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                  🔥 ¡Nivel {difficultyLevel} Alcanzado!
-                </div>
-                <div className="text-purple-300 text-sm mt-1">
-                  Velocidad requerida: +{((difficultyMultiplier - 1) * 100).toFixed(0)}%
+                <div className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
+                  🔥 ¡Nivel {difficultyLevel}!
                 </div>
               </div>
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -474,18 +473,18 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed top-1/3 left-1/2 transform -translate-x-1/2 z-50"
+            className="fixed top-4 right-4 z-40 pointer-events-none"
           >
-            <Card className="bg-gradient-to-r from-amber-600/30 to-orange-600/30 border-amber-500/50 px-8 py-4">
+            <div className="bg-gradient-to-r from-amber-600/80 to-orange-600/80 border border-amber-500/50 rounded-xl px-6 py-3 backdrop-blur-sm">
               <div className="text-center">
-                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
-                  👑 ¡Nuevo Récord Personal!
+                <div className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-300">
+                  👑 ¡Nuevo Récord!
                 </div>
-                <div className="text-amber-300 text-sm mt-1">
+                <div className="text-amber-200 text-xs mt-0.5">
                   {durationCategory?.label} - {gameDuration}s
                 </div>
               </div>
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -494,7 +493,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button onClick={onGameEnd} variant="secondary">
-            ← Back
+            ← {t(language, 'game.back')}
           </Button>
           <div className="flex gap-3 items-center flex-wrap justify-center">
             {/* Temporizador */}
@@ -512,7 +511,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
             {/* Nivel */}
             <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm">
-              Level {level}
+              {t(language, 'game.level')} {level}
             </span>
 
             {/* Duración */}
@@ -535,7 +534,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
                     {getDifficultyMessage(difficultyLevel, difficultyMultiplier)}
                   </div>
                   <div className="text-[var(--muted)] text-xs">
-                    Palabras: {wordsCompleted} | WPM requerido: {Math.round((liveWpm || 30) * difficultyMultiplier)}
+                    {t(language, 'game.wordsCompleted')}: {wordsCompleted} | {t(language, 'game.wpmRequired')}: {Math.round((liveWpm || 30) * difficultyMultiplier)}
                   </div>
                 </div>
               </div>
@@ -555,7 +554,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
                   />
                 </div>
                 <div className="text-center text-xs text-purple-400 mt-1">
-                  {5 - (wordsCompleted % 5)} palabras para el siguiente nivel
+                  {5 - (wordsCompleted % 5)} {t(language, 'game.wordsToNextLevel')}
                 </div>
               </div>
             </div>
@@ -610,7 +609,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
 
         {/* Word Progress */}
         <div className="text-center text-[var(--muted)]">
-          Words: {wordsCompleted} / {totalWords}
+          {t(language, 'game.wordsCompleted')}: {wordsCompleted} / {totalWords}
         </div>
 
         {/* Status Messages */}
@@ -621,7 +620,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
             className="text-center bg-violet-600/10 border border-violet-500/30 rounded-xl p-4"
           >
             <p className="text-violet-400 text-lg font-bold animate-pulse">
-              ⌨️ Escribe la primera letra para comenzar...
+              ⌨️ {t(language, 'game.startTyping')}
             </p>
           </motion.div>
         )}
@@ -633,51 +632,51 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card className="text-center space-y-6">
-              <h2 className="text-3xl font-bold text-gradient">⏰ Time's Up!</h2>
+              <h2 className="text-3xl font-bold text-gradient">⏰ {t(language, 'game.timesUp')}</h2>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <div className="text-4xl font-bold text-indigo-400">{displayedWpm}</div>
-                  <div className="text-[var(--muted)]">WPM</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.wpm')}</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-violet-400">{displayedAccuracy}%</div>
-                  <div className="text-[var(--muted)]">Accuracy</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.accuracy')}</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-amber-400">{maxCombo}</div>
-                  <div className="text-[var(--muted)]">Max Combo</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.maxCombo')}</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-red-400">{errors}</div>
-                  <div className="text-[var(--muted)]">Errors</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.errors')}</div>
                 </div>
               </div>
 
               {/* Score Estandarizado */}
               <div className="bg-[var(--secondary)] rounded-lg p-4">
-                <div className="text-[var(--muted)] text-sm mb-1">Score Estandarizado</div>
+                <div className="text-[var(--muted)] text-sm mb-1">{t(language, 'game.score')}</div>
                 <div className="text-3xl font-bold text-emerald-400">
                   {displayedScore}
                 </div>
                 <div className="text-[var(--muted)] text-xs mt-1">
-                  ({wordsCompleted} palabras × 100) + (WPM × precisión) - (errores × 10)
+                  {t(language, 'game.scoreFormula')}
                 </div>
               </div>
 
               <div className="text-[var(--muted)]">
-                Words completed: {wordsCompleted} / {totalWords}
+                {t(language, 'game.wordsCompletedTotal')}: {wordsCompleted} / {totalWords}
               </div>
 
               <div className="flex gap-4 justify-center pt-4 flex-wrap">
                 <Button onClick={onGameEnd} variant="primary">
-                  Play Again
+                  {t(language, 'game.playAgain')}
                 </Button>
                 <Button onClick={() => onNavigate('ranking')} variant="accent">
-                  View Rankings
+                  {t(language, 'game.viewRankings')}
                 </Button>
                 <Button onClick={() => onNavigate('home')} variant="secondary">
-                  Home
+                  {t(language, 'game.home')}
                 </Button>
               </div>
             </Card>
@@ -691,47 +690,47 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card className="text-center space-y-6">
-              <h2 className="text-3xl font-bold text-gradient">🎉 Complete!</h2>
+              <h2 className="text-3xl font-bold text-gradient">🎉 {t(language, 'game.complete')}</h2>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <div className="text-4xl font-bold text-indigo-400">{displayedWpm}</div>
-                  <div className="text-[var(--muted)]">WPM</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.wpm')}</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-violet-400">{displayedAccuracy}%</div>
-                  <div className="text-[var(--muted)]">Accuracy</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.accuracy')}</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-amber-400">{maxCombo}</div>
-                  <div className="text-[var(--muted)]">Max Combo</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.maxCombo')}</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-red-400">{errors}</div>
-                  <div className="text-[var(--muted)]">Errors</div>
+                  <div className="text-[var(--muted)]">{t(language, 'game.errors')}</div>
                 </div>
               </div>
 
               {/* Score Estandarizado */}
               <div className="bg-[var(--secondary)] rounded-lg p-4">
-                <div className="text-[var(--muted)] text-sm mb-1">Score Estandarizado</div>
+                <div className="text-[var(--muted)] text-sm mb-1">{t(language, 'game.score')}</div>
                 <div className="text-3xl font-bold text-emerald-400">
                   {displayedScore}
                 </div>
                 <div className="text-[var(--muted)] text-xs mt-1">
-                  ({wordsCompleted} palabras × 100) + (WPM × precisión) - (errores × 10)
+                  {t(language, 'game.scoreFormula')}
                 </div>
               </div>
 
               <div className="flex gap-4 justify-center pt-4 flex-wrap">
                 <Button onClick={onGameEnd} variant="primary">
-                  Play Again
+                  {t(language, 'game.playAgain')}
                 </Button>
                 <Button onClick={() => onNavigate('ranking')} variant="accent">
-                  View Rankings
+                  {t(language, 'game.viewRankings')}
                 </Button>
                 <Button onClick={() => onNavigate('home')} variant="secondary">
-                  Home
+                  {t(language, 'game.home')}
                 </Button>
               </div>
             </Card>
@@ -741,7 +740,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
         {/* Instructions */}
         {status === 'playing' && (
           <div className="text-center text-[var(--muted)] text-sm">
-            Keep typing! Focus on accuracy over speed. 🔥
+            {t(language, 'game.keepTyping')} 🔥
           </div>
         )}
       </div>

@@ -931,6 +931,13 @@ export async function updateUsername(userId: string, username: string): Promise<
     .eq('id', userId)
 }
 
+/** True si falta apodo o es el generado por BD (user_ + 8 hex del UUID). */
+export function isPlaceholderUsername(username: string | null | undefined): boolean {
+  const u = (username ?? '').trim()
+  if (u.length === 0) return true
+  return /^user_[a-f0-9]{8}$/i.test(u)
+}
+
 /**
  * Verifica si un usuario tiene un nombre de usuario configurado
  */
@@ -940,8 +947,7 @@ export async function hasUsername(userId: string): Promise<boolean> {
     const localProfile = localStorage.getItem('typingquest-local-profile-' + userId)
     if (localProfile) {
       const profile = JSON.parse(localProfile)
-      const username = profile?.username || ''
-      return username.trim().length > 0
+      return !isPlaceholderUsername(profile?.username as string | undefined)
     }
     return false
   }
@@ -952,11 +958,7 @@ export async function hasUsername(userId: string): Promise<boolean> {
     .eq('id', userId)
     .maybeSingle()
 
-  // No solo verificamos si existe, sino que no sea el patrón por defecto "user_xxxxxxxx"
-  const username = data?.username || ''
-  const isDefaultPattern = /^user_[a-f0-9]{8}$/.test(username)
-
-  return username.trim().length > 0 && !isDefaultPattern
+  return !isPlaceholderUsername(data?.username)
 }
 
 // ============================================

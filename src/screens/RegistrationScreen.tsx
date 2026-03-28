@@ -4,14 +4,19 @@ import { Button, Card, AvatarSelector } from '../components'
 import { checkUsernameAvailable, updateProfile } from '../services/supabaseService'
 import { getCurrentUser } from '../lib/supabase'
 import { log } from '../utils/logger'
+import { t } from '../i18n'
+import { useGameStore } from '../store/gameStore'
+import { useAuthStore } from '../store/authStore'
 
 interface RegistrationScreenProps {
   onComplete: () => void
   onBack?: () => void
   onRecoverAccount?: () => void
+  /** Sin botón volver (cuenta email obligada a elegir apodo tras verificar correo). */
+  lockExit?: boolean
 }
 
-export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: RegistrationScreenProps) {
+export function RegistrationScreen({ onComplete, onBack, onRecoverAccount, lockExit = false }: RegistrationScreenProps) {
   const [username, setUsername] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [isValidating, setIsValidating] = useState(false)
@@ -19,6 +24,9 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState(1) // 1: Avatar, 2: Nickname
+  const ui = useGameStore((s) => s.language)
+  const isAnonymous = useAuthStore((s) => s.isAnonymous)
+  const emailWelcome = !isAnonymous
 
   // Validación del username en tiempo real
   const validateUsername = (value: string): string | null => {
@@ -165,9 +173,18 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
             </h1>
             <p className="text-[var(--muted)]">
               {step === 1
-                ? 'Personaliza tu presencia en el ranking'
-                : '¿Cómo quieres que te llamen en TypingQuest?'}
+                ? emailWelcome
+                  ? t(ui, 'usernameSetup.avatarHintEmail')
+                  : t(ui, 'usernameSetup.avatarHintAnon')
+                : emailWelcome
+                  ? t(ui, 'usernameSetup.nicknameHintEmail')
+                  : t(ui, 'usernameSetup.nicknameHintAnon')}
             </p>
+            {emailWelcome && (
+              <p className="text-sm text-indigo-400/90 text-center max-w-md mx-auto">
+                {t(ui, 'usernameSetup.emailVerifiedBanner')}
+              </p>
+            )}
           </div>
 
           <AnimatePresence mode="wait">
@@ -295,14 +312,14 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
                 Atrás
               </Button>
             )}
-            {step === 1 && onBack && (
+            {step === 1 && onBack && !lockExit && (
               <Button
                 onClick={onBack}
                 variant="secondary"
                 className="flex-1"
                 disabled={isSaving}
               >
-                Volver
+                {t(ui, 'common.back')}
               </Button>
             )}
             <Button
@@ -324,7 +341,7 @@ export function RegistrationScreen({ onComplete, onBack, onRecoverAccount }: Reg
 
           {/* Footer */}
           <p className="text-xs text-center text-[var(--muted)]">
-            Podrás cambiar tu nombre y avatar más tarde en tu perfil
+            {lockExit ? t(ui, 'usernameSetup.footnoteRequired') : t(ui, 'usernameSetup.footnoteOptional')}
           </p>
         </Card>
       </div>

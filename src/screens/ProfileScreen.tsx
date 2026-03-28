@@ -2,11 +2,21 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
 import { linkEmailToCurrentUser } from '../lib/supabase'
-import { getProfile, getUserGameResults, getUserMissions, getUserAchievements, signOut } from '../services/supabaseService'
+import {
+  getProfile,
+  getUserGameResults,
+  getUserMissions,
+  getUserAchievements,
+  signOut,
+  isPlaceholderUsername,
+} from '../services/supabaseService'
 import { RegistrationScreen } from './RegistrationScreen'
 import { useAuthStore } from '../store/authStore'
+import { useGameStore } from '../store/gameStore'
 import { log } from '../utils/logger'
+import { getAuthEmailRedirectOrigin } from '../utils/authRedirect'
 import type { Profile, GameResult, UserMission, UserAchievement } from '../types'
+import { t } from '../i18n'
 
 interface ProfileScreenProps {
   onNavigate: (screen: string) => void
@@ -27,6 +37,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   const [linkSent, setLinkSent] = useState(false)
   const [linkError, setLinkError] = useState<string | null>(null)
   const { userId, isAnonymous, email, signOut: storeSignOut } = useAuthStore()
+  const { language } = useGameStore()
 
   const loadProfile = useCallback(async () => {
     if (!userId) {
@@ -47,10 +58,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     setMissions(missionsData)
     setAchievements(achievementsData)
 
-    // Verificar si necesita registrarse (no tiene username)
-    if (!profileData?.username || profileData.username.trim().length === 0) {
-      setNeedsRegistration(true)
-    }
+    setNeedsRegistration(isPlaceholderUsername(profileData?.username))
 
     setLoading(false)
   }, [userId, onNavigate])
@@ -94,7 +102,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
     setLinkError(null)
     setLinking(true)
     try {
-      await linkEmailToCurrentUser(clean, window.location.origin)
+      await linkEmailToCurrentUser(clean, getAuthEmailRedirectOrigin())
       setLinkSent(true)
     } catch (e) {
       setLinkError(e instanceof Error ? e.message : 'No se pudo vincular el email')
@@ -116,7 +124,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-[var(--muted)]">Cargando perfil...</div>
+        <div className="text-[var(--muted)]">{t(language, 'common.loading')}</div>
       </div>
     )
   }
@@ -127,9 +135,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button onClick={() => onNavigate('home')} variant="secondary">
-            ← Back
+            ← {t(language, 'profile.back')}
           </Button>
-          <h1 className="text-3xl font-bold text-gradient">👤 Profile</h1>
+          <h1 className="text-3xl font-bold text-gradient">👤 {t(language, 'profile.title')}</h1>
           <div className="w-20" />
         </div>
 
@@ -139,14 +147,14 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
             <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div className="text-amber-600 text-sm">
-                  Tu perfil no tiene apodo todavía. Puedes seguir jugando como invitado o elegir uno para aparecer en rankings.
+                  {t(language, 'profile.needNickname')}
                 </div>
                 <div className="flex gap-2">
                   <Button variant="secondary" onClick={() => onNavigate('auth')}>
-                    Iniciar sesión
+                    {t(language, 'profile.signIn')}
                   </Button>
                   <Button variant="accent" onClick={() => setShowRegistration(true)}>
-                    Elegir apodo
+                    {t(language, 'profile.chooseNickname')}
                   </Button>
                 </div>
               </div>
@@ -166,9 +174,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
               </div>
             )}
             <div>
-              <h2 className="text-2xl font-bold text-[var(--foreground)]">{profile?.username || 'Invitado'}</h2>
+              <h2 className="text-2xl font-bold text-[var(--foreground)]">{profile?.username || t(language, 'profile.guest')}</h2>
               <p className="text-[var(--muted)]">
-                Member since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Today'}
+                {t(language, 'profile.memberSince')} {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Today'}
               </p>
             </div>
           </div>
@@ -177,47 +185,47 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-indigo-400">{profile?.total_games || 0}</div>
-              <div className="text-[var(--muted)] text-sm">Games Played</div>
+              <div className="text-[var(--muted)] text-sm">{t(language, 'profile.gamesPlayed')}</div>
             </div>
             <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-green-400">{profile?.total_wins || 0}</div>
-              <div className="text-[var(--muted)] text-sm">Wins</div>
+              <div className="text-[var(--muted)] text-sm">{t(language, 'profile.wins')}</div>
             </div>
             <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-amber-400">{profile?.best_wpm || 0}</div>
-              <div className="text-[var(--muted)] text-sm">Best WPM</div>
+              <div className="text-[var(--muted)] text-sm">{t(language, 'profile.bestWpm')}</div>
             </div>
             <div className="text-center p-4 bg-[var(--secondary)] rounded-lg">
               <div className="text-3xl font-bold text-violet-400">{profile?.best_accuracy || 0}%</div>
-              <div className="text-[var(--muted)] text-sm">Best Accuracy</div>
+              <div className="text-[var(--muted)] text-sm">{t(language, 'profile.bestAccuracy')}</div>
             </div>
           </div>
         </Card>
 
         <Card className="space-y-4">
-          <h3 className="text-xl font-bold text-[var(--foreground)]">🔐 Cuenta</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)]">🔐 {t(language, 'profile.account')}</h3>
 
           {isAnonymous ? (
             <div className="space-y-3">
               <div className="text-[var(--muted)] text-sm">
-                Estás jugando en modo anónimo. Si cambias de dispositivo o borras datos, no podrás recuperar tu progreso.
+                {t(language, 'profile.anonymousNote')}
               </div>
 
               <div className="flex flex-col md:flex-row gap-3">
                 <input
                   value={linkEmail}
                   onChange={(e) => setLinkEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder={t(language, 'profile.emailPlaceholder')}
                   className="flex-1 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
                 />
                 <Button onClick={handleLinkEmail} disabled={linking || linkSent}>
-                  {linkSent ? 'Revisa tu email' : linking ? 'Enviando…' : 'Vincular email'}
+                  {linkSent ? t(language, 'profile.checkEmail') : linking ? t(language, 'profile.sending') : t(language, 'profile.linkEmail')}
                 </Button>
               </div>
 
               {linkSent && (
                 <div className="text-emerald-300 text-sm">
-                  Te enviamos un enlace. Ábrelo para confirmar y convertir tu cuenta en recuperable.
+                  {t(language, 'profile.emailLinked')}
                 </div>
               )}
 
@@ -236,20 +244,20 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
             </div>
           ) : (
             <div className="text-[var(--muted)] text-sm">
-              Sesión activa{email ? `: ${email}` : ''}.
+              {t(language, 'profile.activeSession')}{email ? `: ${email}` : ''}.
             </div>
           )}
 
           <div className="flex justify-end">
-            <Button variant="secondary" onClick={handleSignOut}>Cerrar sesión</Button>
+            <Button variant="secondary" onClick={handleSignOut}>{t(language, 'profile.signOut')}</Button>
           </div>
         </Card>
 
         {/* Recent Games */}
         <Card>
-          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">🎮 Recent Games</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">🎮 {t(language, 'profile.recentGames')}</h3>
           {recentGames.length === 0 ? (
-            <p className="text-[var(--muted)] text-center py-8">No games played yet. Start playing!</p>
+            <p className="text-[var(--muted)] text-center py-8">{t(language, 'profile.noGamesPlayed')}</p>
           ) : (
             <div className="space-y-2">
               {recentGames.map((game, index) => (
@@ -261,10 +269,10 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                   className="flex items-center justify-between p-3 bg-[var(--secondary)] rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`text-lg ${game.language === 'en' ? '' : ''}`}>
+                    <span className="text-lg">
                       {game.language === 'en' ? '🇬🇧' : '🇪🇸'}
                     </span>
-                    <span className="text-[var(--foreground)] font-medium">Level {game.level}</span>
+                    <span className="text-[var(--foreground)] font-medium">{t(language, 'game.level')} {game.level}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-indigo-400 font-bold">{game.wpm} WPM</span>
@@ -278,9 +286,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
         {/* Missions */}
         <Card>
-          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">📋 Missions</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">📋 {t(language, 'profile.missions')}</h3>
           {missions.length === 0 ? (
-            <p className="text-[var(--muted)] text-center py-8">No active missions. Play games to get missions!</p>
+            <p className="text-[var(--muted)] text-center py-8">{t(language, 'profile.noMissions')}</p>
           ) : (
             <div className="space-y-3">
               {missions.map((mission, index) => (
@@ -311,9 +319,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
 
         {/* Achievements */}
         <Card>
-          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">🏅 Achievements</h3>
+          <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">🏅 {t(language, 'profile.achievements')}</h3>
           {achievements.length === 0 ? (
-            <p className="text-[var(--muted)] text-center py-8">No achievements yet. Keep playing!</p>
+            <p className="text-[var(--muted)] text-center py-8">{t(language, 'profile.noAchievements')}</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {achievements.map((achievement, index) => (
@@ -342,7 +350,7 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
               variant="secondary"
               className="bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400 px-8 py-4 rounded-xl flex items-center gap-3 font-black tracking-widest uppercase italic shadow-lg shadow-red-500/10"
             >
-              <span>🕹️ END SESSION</span>
+              <span>🕹️ {t(language, 'profile.endSession')}</span>
               <span className="text-[10px] opacity-50 bg-red-400/20 px-2 py-0.5 rounded">PRESS TO RESET</span>
             </Button>
           </motion.div>
@@ -368,9 +376,9 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
             >
               <div className="text-center space-y-4">
                 <div className="text-5xl mb-2">🕹️</div>
-                <h2 className="text-2xl font-bold text-[var(--foreground)]">¿END SESSION?</h2>
+                <h2 className="text-2xl font-bold text-[var(--foreground)]">{t(language, 'profile.confirmEndSession')}</h2>
                 <p className="text-[var(--muted)] text-sm">
-                  Tu progreso se guardará en el ranking, pero para volver a jugar deberás crear un nuevo apodo y avatar.
+                  {t(language, 'profile.sessionNote')}
                 </p>
 
                 <div className="flex gap-3 pt-4">
@@ -379,14 +387,14 @@ export function ProfileScreen({ onNavigate, onRegistrationComplete }: ProfileScr
                     variant="secondary"
                     className="flex-1"
                   >
-                    CANCEL
+                    {t(language, 'profile.cancel')}
                   </Button>
                   <Button
                     onClick={confirmSignOut}
                     variant="accent"
                     className="flex-1 bg-red-500 hover:bg-red-600 text-white"
                   >
-                    YES, RESET
+                    {t(language, 'profile.yesReset')}
                   </Button>
                 </div>
               </div>

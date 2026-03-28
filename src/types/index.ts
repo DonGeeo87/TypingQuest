@@ -4,6 +4,8 @@ export type Language = 'en' | 'es'
 
 export type GameLevel = 1 | 2 | 3 | 4 | 5
 
+export type WordCategory = 'general' | 'animals' | 'fruits' | 'nouns' | 'verbs' | 'technology' | 'adjectives' | 'places' | 'daily' | 'advanced' | 'parts_of_speech' | 'tenses' | 'verb_to_be' | 'abbreviations' | 'prepositions'
+
 export type GameStatus = 'idle' | 'playing' | 'paused' | 'finished'
 
 export type MatchStatus = 'waiting' | 'playing' | 'finished'
@@ -12,6 +14,8 @@ export interface WordData {
   word: string
   translation?: string
   difficulty: GameLevel
+  category?: WordCategory
+  tags?: string[]
 }
 
 export interface PhraseData {

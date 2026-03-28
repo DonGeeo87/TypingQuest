@@ -20,6 +20,7 @@ import { selectTextForLevel } from '../data/words'
 import type { MultiplayerRoom, MultiplayerRoomPlayer, MultiplayerRound, MultiplayerSubmission } from '../types'
 import { MultiplayerRoundScreen, type MultiplayerRoundResult } from './MultiplayerRoundScreen'
 import { useContentStore } from '../store/contentStore'
+import { t } from '../i18n'
 
 interface MultiplayerScreenProps {
   onNavigate: (screen: string) => void
@@ -28,8 +29,7 @@ interface MultiplayerScreenProps {
 type Mode = 'menu' | 'join' | 'host_lobby' | 'player_lobby' | 'playing' | 'results'
 
 export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
-  const { language, level, gameDuration } = useGameStore()
-  const rememberContentKey = useContentStore((s) => s.rememberKey)
+  const { language, level, gameDuration } = useGameStore()  const rememberContentKey = useContentStore((s) => s.rememberKey)
   const buildContentKey = useContentStore((s) => s.buildKey)
   const [mode, setMode] = useState<Mode>('menu')
   const [userId, setUserId] = useState<string | null>(null)
@@ -101,7 +101,7 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
 
     try {
       const profile = await getProfile(userId)
-      const username = profile?.username?.trim() || 'Anónimo'
+      const username = profile?.username?.trim() || (language === 'es' ? 'Anónimo' : 'Anonymous')
 
       const newRoom = await createMultiplayerRoom({
         hostId: userId,
@@ -124,13 +124,13 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
   const handleJoin = useCallback(async () => {
     if (!userId) return
     if (isLocalUser) {
-      setError('Multijugador requiere conexión a Supabase (no modo local).')
+      setError(t(language, 'multiplayer.requiresSupabase'))
       return
     }
 
     const normalized = pin.replace(/\D/g, '').slice(0, 6)
     if (normalized.length !== 6) {
-      setError('Ingresa un PIN de 6 dígitos.')
+      setError(t(language, 'multiplayer.enterPin'))
       return
     }
 
@@ -140,12 +140,12 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
     try {
       const found = await getMultiplayerRoomByPin(normalized)
       if (!found) {
-        setError('Sala no encontrada.')
+        setError(t(language, 'multiplayer.roomNotFound'))
         return
       }
 
       const profile = await getProfile(userId)
-      const username = profile?.username?.trim() || 'Anónimo'
+      const username = profile?.username?.trim() || (language === 'es' ? 'Anónimo' : 'Anonymous')
 
       await joinMultiplayerRoom({ roomId: found.id, userId, username })
       setRoom(found)
@@ -241,8 +241,8 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <Button variant="secondary" onClick={() => onNavigate('home')}>Volver</Button>
-          <div className="text-[var(--foreground)] font-bold text-xl">Multijugador</div>
+          <Button variant="secondary" onClick={() => onNavigate('home')}>← {t(language, 'multiplayer.back')}</Button>
+          <div className="text-[var(--foreground)] font-bold text-xl">{t(language, 'multiplayer.title')}</div>
         </div>
 
         <AnimatePresence>
@@ -261,25 +261,25 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
         {mode === 'menu' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h2 className="text-[var(--foreground)] text-lg font-bold mb-2">Crear sala</h2>
-              <p className="text-[var(--muted)] mb-4">Genera un PIN, comparte y empieza la ronda.</p>
+              <h2 className="text-[var(--foreground)] text-lg font-bold mb-2">{t(language, 'multiplayer.createRoom')}</h2>
+              <p className="text-[var(--muted)] mb-4">{t(language, 'multiplayer.createRoomDesc')}</p>
               <Button onClick={handleHostCreate} disabled={loading || !userId}>
-                {loading ? 'Creando…' : 'Hostear'}
+                {loading ? t(language, 'multiplayer.starting') : t(language, 'multiplayer.host')}
               </Button>
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-[var(--foreground)] text-lg font-bold mb-2">Unirse</h2>
-              <p className="text-[var(--muted)] mb-4">Ingresa el PIN de 6 dígitos.</p>
+              <h2 className="text-[var(--foreground)] text-lg font-bold mb-2">{t(language, 'multiplayer.join')}</h2>
+              <p className="text-[var(--muted)] mb-4">{t(language, 'multiplayer.joinRoomDesc')}</p>
               <div className="flex gap-3">
                 <input
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  placeholder="PIN (123456)"
+                  placeholder={`${t(language, 'multiplayer.pin')} (123456)`}
                   className="flex-1 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-indigo-500"
                 />
                 <Button onClick={handleJoin} disabled={loading || !userId}>
-                  {loading ? '…' : 'Entrar'}
+                  {loading ? '…' : t(language, 'multiplayer.join')}
                 </Button>
               </div>
             </Card>
@@ -290,15 +290,15 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
           <Card className="p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <div className="text-[var(--muted)] text-sm">PIN</div>
+                <div className="text-[var(--muted)] text-sm">{t(language, 'multiplayer.pin')}</div>
                 <div className="text-[var(--foreground)] text-3xl font-black tracking-widest">{room.pin}</div>
-                <div className="text-[var(--muted)] text-sm mt-1">Jugadores: {players.length}</div>
+                <div className="text-[var(--muted)] text-sm mt-1">{t(language, 'multiplayer.players')}: {players.length}</div>
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary" onClick={handleLeave}>Salir</Button>
+                <Button variant="secondary" onClick={handleLeave}>{t(language, 'multiplayer.leave')}</Button>
                 {mode === 'host_lobby' && (
                   <Button onClick={handleStartRound} disabled={loading || players.length < 1}>
-                    {loading ? 'Iniciando…' : 'Iniciar ronda'}
+                    {loading ? t(language, 'multiplayer.starting') : t(language, 'multiplayer.startRound')}
                   </Button>
                 )}
               </div>
@@ -322,14 +322,14 @@ export function MultiplayerScreen({ onNavigate }: MultiplayerScreenProps) {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="text-[var(--foreground)] text-lg font-bold">Resultados</div>
-                <div className="text-[var(--muted)] text-sm">Ronda #{round.round_number}</div>
+                <div className="text-[var(--foreground)] text-lg font-bold">{t(language, 'multiplayer.results')}</div>
+                <div className="text-[var(--muted)] text-sm">{t(language, 'multiplayer.round')} #{round.round_number}</div>
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary" onClick={handleLeave}>Salir</Button>
+                <Button variant="secondary" onClick={handleLeave}>{t(language, 'multiplayer.leave')}</Button>
                 {room.host_id === userId && (
                   <Button onClick={handleStartRound} disabled={loading}>
-                    {loading ? '…' : 'Nueva ronda'}
+                    {loading ? '…' : t(language, 'multiplayer.newRound')}
                   </Button>
                 )}
               </div>

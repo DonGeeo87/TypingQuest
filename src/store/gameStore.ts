@@ -1,10 +1,12 @@
 import { create } from 'zustand'
-import type { GameState, GameStatus, Language, GameLevel } from '../types'
+import type { GameState, GameStatus, Language, GameLevel, WordCategory } from '../types'
 
 interface GameStore extends GameState {
+  selectedCategory: WordCategory
   // Actions
   setLanguage: (language: Language) => void
   setLevel: (level: GameLevel) => void
+  setSelectedCategory: (category: WordCategory) => void
   setStatus: (status: GameStatus) => void
   setCurrentText: (text: string) => void
   setCurrentIndex: (index: number) => void
@@ -49,12 +51,19 @@ const initialState: GameState = {
   assignmentId: null,
 }
 
+const gameStoreInitialState = {
+  selectedCategory: 'general' as WordCategory,
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initialState,
+  ...gameStoreInitialState,
 
   setLanguage: (language) => set({ language }),
 
   setLevel: (level) => set({ level }),
+
+  setSelectedCategory: (category) => set({ selectedCategory: category }),
 
   setStatus: (status) => set({ status }),
 
