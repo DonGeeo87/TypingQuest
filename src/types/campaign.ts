@@ -100,7 +100,7 @@ export interface CampaignReward {
   campaign_id: string;
   stage_id: string | null;
   reward_type: 'xp' | 'badge' | 'avatar_skin' | 'unlock_level';
-  reward_value: Record<string, any>; // JSON object
+  reward_value: Record<string, unknown>; // JSON object
   unlock_condition: 'completion' | 'all_stars' | 'leaderboard_top_10';
   created_at: string;
 }

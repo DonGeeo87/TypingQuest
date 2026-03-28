@@ -280,6 +280,7 @@ export function GameScreen({ onGameEnd, onNavigate }: GameScreenProps) {
     rememberContentKey,
     incrementError,
     resetCurrentPhrase,
+    selectedCategory,
   ])
 
   // Handle game end when time runs out

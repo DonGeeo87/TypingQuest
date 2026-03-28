@@ -4,7 +4,8 @@ import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
 import { useAudioStore } from './store/audioStore'
 import { useCampaignStore } from './store/campaignStore'
-import type { Language, GameLevel, WordCategory, CampaignStage } from './types'
+import type { Language, GameLevel, WordCategory } from './types'
+import type { CampaignStage } from './types/campaign'
 import { supabase } from './lib/supabase'
 import { useUiStore } from './store/uiStore'
 import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
@@ -30,8 +31,6 @@ const PrivacyScreen = lazy(() => import('./screens/PrivacyScreen').then(m => ({ 
 const SupportScreen = lazy(() => import('./screens/SupportScreen').then(m => ({ default: m.SupportScreen })))
 const CampaignScreen = lazy(() => import('./screens/CampaignScreen').then(m => ({ default: m.CampaignScreen })))
 const CampaignGameScreen = lazy(() => import('./screens/CampaignGameScreen').then(m => ({ default: m.CampaignGameScreen })))
-const CampaignResultsScreen = lazy(() => import('./screens/CampaignResultsScreen').then(m => ({ default: m.CampaignResultsScreen })))
-
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const [selectedCampaignStage, setSelectedCampaignStage] = useState<CampaignStage | null>(null)
