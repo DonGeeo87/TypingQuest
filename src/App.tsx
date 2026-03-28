@@ -12,6 +12,7 @@ import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
 import { t } from './i18n'
 import { trackScreen } from './analytics'
 import * as campaignService from './services/campaignService'
+import { defaultCampaign, defaultStages, defaultProgress } from './data/defaultCampaign'
 import './App.css'
 
 type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher' | 'teacherGuide' | 'terms' | 'privacy' | 'support' | 'campaign' | 'campaign-game'
@@ -168,7 +169,15 @@ function App() {
         await loadCampaign(campaign.id)
         await loadProgress(campaign.id, userId)
         setCurrentScreen('campaign')
+        return
       }
+
+      // If no campaign found on Supabase (missing table/migrations), load local fallback
+      console.warn('No remote campaign available; loading local fallback campaign')
+      // Use store helper to set local campaign and stages
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(await import('./store/campaignStore')).useCampaignStore.getState().setLocalCampaign(defaultCampaign as any, defaultStages as any, defaultProgress as any)
+      setCurrentScreen('campaign')
     } catch (err) {
       console.error('Error starting campaign:', err)
     }

@@ -38,6 +38,7 @@ interface CampaignState {
   loadProgress: (campaignId: string, userId: string) => Promise<void>;
   loadStages: (campaignId: string) => Promise<void>;
   selectStage: (stageNumber: number) => void;
+  setLocalCampaign: (campaign: Campaign, stages: CampaignStage[], progress: CampaignProgress | null) => void;
 
   // Actions: Game session
   startStage: (stageNumber: number, stageId: string) => void;
@@ -104,6 +105,11 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
       const errorMsg = err instanceof Error ? err.message : 'Failed to load campaign';
       set({ error: errorMsg, isLoading: false });
     }
+  },
+
+  // Load a local campaign (fallback) directly into the store
+  setLocalCampaign: (campaign: Campaign, stages: CampaignStage[], progress: CampaignProgress | null) => {
+    set({ campaign, stages: stages || [], progress: progress || null, isLoading: false, error: null });
   },
 
   loadProgress: async (campaignId: string, userId: string) => {
