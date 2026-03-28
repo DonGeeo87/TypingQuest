@@ -4,7 +4,9 @@ import { Button, Card, AudioToggle, Confetti } from '../components'
 import { useSound } from '../hooks/useSound'
 import { selectTapTapWords } from '../data/words'
 import { useContentStore } from '../store/contentStore'
+import { useGameStore } from '../store/gameStore'
 import type { Language, GameLevel } from '../types'
+import { t } from '../i18n'
 
 interface TapTapGameProps {
   language: Language
@@ -22,6 +24,7 @@ interface WordCard {
 }
 
 export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
+  const ui = useGameStore((s) => s.language)
   const { playKeySound, playErrorSound, playCompleteSound, playVictorySound } = useSound()
   
   const [targetLetter, setTargetLetter] = useState<string>('')
@@ -164,14 +167,14 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Button onClick={onBack} variant="secondary" className="text-sm px-4 py-2">
-              ← Volver
+              ← {t(ui, 'taptap.back')}
             </Button>
             <div className="flex gap-2">
               <span className="px-3 py-1 bg-indigo-600/20 text-indigo-400 rounded-full text-sm">
                 {language === 'en' ? '🇬🇧 English' : '🇪🇸 Español'}
               </span>
               <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm">
-                Nivel {level}
+                {t(ui, 'taptap.level')} {level}
               </span>
             </div>
           </div>
@@ -180,21 +183,21 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
           <div className="grid grid-cols-4 gap-2 glass p-3 rounded-xl">
             <div className="text-center">
               <div className="text-2xl font-bold text-indigo-400">{score}</div>
-              <div className="text-xs text-[var(--muted)]">Puntos</div>
+              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.points')}</div>
             </div>
             <div className="text-center">
               <div className={`text-2xl font-bold ${timeRemaining <= 10 ? 'text-red-400 animate-pulse' : 'text-violet-400'}`}>
                 {formatTime(timeRemaining)}
               </div>
-              <div className="text-xs text-[var(--muted)]">Tiempo</div>
+              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.time')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-amber-400">{wordsMatched}/{totalWords}</div>
-              <div className="text-xs text-[var(--muted)]">Palabras</div>
+              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.words')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-400">x{combo}</div>
-              <div className="text-xs text-[var(--muted)]">Combo</div>
+              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.combo')}</div>
             </div>
           </div>
         </div>
@@ -213,7 +216,7 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
               <span className="text-5xl font-black text-white">{targetLetter.toUpperCase()}</span>
             </div>
             <div className="text-center mt-2 text-[var(--foreground)] font-bold text-sm bg-[var(--glass-bg)] px-4 py-1 rounded-full">
-              Busca palabras con esta letra
+              {t(ui, 'taptap.targetLetter')}
             </div>
           </motion.div>
 
@@ -263,30 +266,30 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
             <div className="text-center space-y-4">
               <div className="text-6xl">👆</div>
               <h1 className="text-4xl font-black text-gradient">
-                TapTap {language === 'en' ? 'English' : 'Español'}
+                {t(ui, 'taptap.title')} {language === 'en' ? 'English' : 'Español'}
               </h1>
               <p className="text-[var(--muted)]">
-                ¡Toca las palabras que comienzan con la letra mostrada!
+                {t(ui, 'taptap.targetLetter')}
               </p>
             </div>
 
             <div className="space-y-3 bg-[var(--secondary)] rounded-xl p-4">
               <div className="flex items-center gap-3 text-[var(--foreground)]">
                 <span className="text-2xl">🎯</span>
-                <span className="text-sm">Busca palabras con la letra objetivo</span>
+                <span className="text-sm">{t(ui, 'taptap.instruction1')}</span>
               </div>
               <div className="flex items-center gap-3 text-[var(--foreground)]">
                 <span className="text-2xl">⏱️</span>
-                <span className="text-sm">Tienes 60 segundos</span>
+                <span className="text-sm">{t(ui, 'taptap.instruction2')}</span>
               </div>
               <div className="flex items-center gap-3 text-[var(--foreground)]">
                 <span className="text-2xl">🔥</span>
-                <span className="text-sm">Acumula combo para más puntos</span>
+                <span className="text-sm">{t(ui, 'taptap.instruction3')}</span>
               </div>
             </div>
 
             <Button onClick={startGame} variant="accent" className="w-full py-4 text-lg font-bold">
-              ¡Jugar Ahora!
+              {t(ui, 'taptap.playNow')}
             </Button>
           </Card>
         </div>
@@ -298,34 +301,34 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
           <Card className="max-w-md w-full backdrop-blur-xl p-8 space-y-6">
             <div className="text-center space-y-4">
               <div className="text-6xl">🎉</div>
-              <h2 className="text-3xl font-bold text-gradient">¡Tiempo Terminado!</h2>
+              <h2 className="text-3xl font-bold text-gradient">{t(ui, 'taptap.gameOver')}</h2>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-[var(--secondary)] rounded-xl">
                 <div className="text-4xl font-bold text-indigo-400">{score}</div>
-                <div className="text-[var(--muted)] text-sm">Puntos</div>
+                <div className="text-[var(--muted)] text-sm">{t(ui, 'taptap.points')}</div>
               </div>
               <div className="text-center p-4 bg-[var(--secondary)] rounded-xl">
                 <div className="text-4xl font-bold text-amber-400">{wordsMatched}</div>
-                <div className="text-[var(--muted)] text-sm">Palabras</div>
+                <div className="text-[var(--muted)] text-sm">{t(ui, 'taptap.words')}</div>
               </div>
               <div className="text-center p-4 bg-[var(--secondary)] rounded-xl">
                 <div className="text-4xl font-bold text-emerald-400">x{maxCombo}</div>
-                <div className="text-[var(--muted)] text-sm">Max Combo</div>
+                <div className="text-[var(--muted)] text-sm">{t(ui, 'taptap.maxCombo')}</div>
               </div>
               <div className="text-center p-4 bg-[var(--secondary)] rounded-xl">
                 <div className="text-4xl font-bold text-red-400">{errors}</div>
-                <div className="text-[var(--muted)] text-sm">Errores</div>
+                <div className="text-[var(--muted)] text-sm">{t(ui, 'taptap.errors')}</div>
               </div>
             </div>
 
             <div className="flex gap-3">
               <Button onClick={startGame} variant="accent" className="flex-1">
-                Jugar de Nuevo
+                {t(ui, 'taptap.playAgain')}
               </Button>
               <Button onClick={onBack} variant="secondary" className="flex-1">
-                Menú Principal
+                {t(ui, 'taptap.mainMenu')}
               </Button>
             </div>
           </Card>

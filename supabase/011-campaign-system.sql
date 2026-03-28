@@ -208,8 +208,77 @@ VALUES (
   TRUE
 ) ON CONFLICT (game_id) DO NOTHING;
 
--- Note: Individual stages (levels 1-30) will be seeded via application or separate seed script
--- to maintain narrative consistency and difficulty curve
+-- ============================================
+-- SEED DATA: 30 Campaign Stages
+-- ============================================
+
+-- Get campaign ID first (assumes campaign was inserted above)
+DO $$
+DECLARE
+  campaign_uuid UUID;
+BEGIN
+  -- Get the campaign ID
+  SELECT id INTO campaign_uuid FROM campaigns WHERE game_id = 'typing-quest-v1';
+
+  IF campaign_uuid IS NULL THEN
+    RAISE NOTICE 'Campaign not found. Please ensure the campaign seed was inserted first.';
+  ELSE
+    -- ============================================
+    -- ACT I: THE BEGINNING (Levels 1-6)
+    -- ============================================
+    INSERT INTO public.campaign_stages (campaign_id, stage_number, act_number, title, description, narrative_text, difficulty_level, base_wpm_threshold, target_duration_seconds, required_wpm, required_accuracy, required_combo, base_xp_reward, star_multiplier, unlocks_next, is_checkpoint)
+    VALUES
+    (campaign_uuid, 1, 1, 'First Words', 'Begin your journey', 'You discover an ancient library filled with forgotten words. Your journey begins...', 1, 10, 30, 10, 90.00, 0, 50, 1.0, TRUE, TRUE),
+    (campaign_uuid, 2, 1, 'Growing Confidence', 'Build momentum', 'Each word learned strengthens your resolve. The library whispers ancient secrets...', 1, 12, 30, 12, 90.00, 5, 60, 1.0, TRUE, FALSE),
+    (campaign_uuid, 3, 1, 'Rhythm of Words', 'Find your flow', 'You begin to feel a rhythm in the words. Time seems to flow differently here...', 1, 15, 30, 15, 91.00, 10, 75, 1.0, TRUE, FALSE),
+    (campaign_uuid, 4, 1, 'Flowing Words', 'Smooth typing', 'Your fingers find comfort on the keys. The library begins to glow...', 2, 18, 45, 18, 92.00, 15, 90, 1.0, TRUE, FALSE),
+    (campaign_uuid, 5, 1, 'Mastering Basics', 'Foundation solid', 'The foundation is strong. You feel ready for greater challenges...', 2, 20, 45, 20, 92.00, 20, 100, 1.0, TRUE, FALSE),
+    (campaign_uuid, 6, 1, 'Act I Boss: The Gatekeeper', 'First challenge', 'The first guardian appears! Type with all your might to prove your worth!', 2, 25, 60, 25, 93.00, 25, 150, 1.0, TRUE, TRUE),
+
+    -- ============================================
+    -- ACT II: THE CHALLENGE (Levels 7-12)
+    -- ============================================
+    (campaign_uuid, 7, 2, 'New Horizons', 'Beyond the gate', 'The gate opens revealing vast new chambers of knowledge...', 2, 25, 45, 25, 93.00, 10, 100, 1.0, TRUE, TRUE),
+    (campaign_uuid, 8, 2, 'Speed Building', 'Pick up the pace', 'Words fly faster now. Keep up with the flowing text...', 3, 28, 45, 28, 93.50, 15, 110, 1.0, TRUE, FALSE),
+    (campaign_uuid, 9, 2, 'Accuracy Matters', 'Precision required', 'The ancient texts demand perfect precision. Every keystroke counts...', 3, 30, 60, 30, 94.00, 20, 120, 1.0, TRUE, FALSE),
+    (campaign_uuid, 10, 2, 'Combo Rising', 'Build your streak', 'Chain words together to unlock hidden chambers...', 3, 32, 45, 32, 94.00, 25, 130, 1.0, TRUE, FALSE),
+    (campaign_uuid, 11, 2, 'Storm of Words', 'Endure the challenge', 'A storm of letters approaches! Hold your ground!', 3, 35, 60, 35, 94.50, 30, 140, 1.0, TRUE, FALSE),
+    (campaign_uuid, 12, 2, 'Act II Boss: The Scholar', 'Knowledge test', 'The great Scholar challenges your typing prowess. Show your mastery!', 3, 40, 60, 40, 95.00, 35, 200, 1.0, TRUE, TRUE),
+
+    -- ============================================
+    -- ACT III: THE CRISIS (Levels 13-18)
+    -- ============================================
+    (campaign_uuid, 13, 3, 'Dark Chamber', 'Into the unknown', 'Shadows fall across the library. Only your typing can light the way...', 4, 40, 60, 40, 95.00, 15, 150, 1.1, TRUE, TRUE),
+    (campaign_uuid, 14, 3, 'Speed Demon', 'Embrace velocity', 'The words themselves begin to race. Can you keep up?', 4, 42, 45, 42, 95.00, 20, 160, 1.1, TRUE, FALSE),
+    (campaign_uuid, 15, 3, 'Perfect Storm', 'Ultimate focus', 'Every letter matters now. Focus your mind and type with precision...', 4, 45, 60, 45, 95.50, 25, 175, 1.1, TRUE, FALSE),
+    (campaign_uuid, 16, 3, 'Breaking Barriers', 'Push limits', '突破! New languages appear. Adapt and overcome!', 4, 48, 60, 48, 95.50, 30, 190, 1.1, TRUE, FALSE),
+    (campaign_uuid, 17, 3, 'Chaos Theory', 'Master entropy', 'The library descends into beautiful chaos. Bring order with your keyboard!', 5, 50, 60, 50, 96.00, 35, 210, 1.1, TRUE, FALSE),
+    (campaign_uuid, 18, 3, 'Act III Boss: The Phoenix', 'Rise from ashes', 'The Phoenix guardian blocks your path. Typing fire with fire!', 5, 55, 90, 55, 96.00, 40, 300, 1.1, TRUE, TRUE),
+
+    -- ============================================
+    -- ACT IV: THE RECKONING (Levels 19-24)
+    -- ============================================
+    (campaign_uuid, 19, 4, 'Final Stretch', 'Almost there', 'The end is near! Every word brings you closer to victory...', 5, 55, 60, 55, 96.00, 20, 200, 1.2, TRUE, TRUE),
+    (campaign_uuid, 20, 4, 'Velocity', 'Speed incarnate', 'Words now flow like water. Be the river!', 5, 58, 60, 58, 96.00, 25, 220, 1.2, TRUE, FALSE),
+    (campaign_uuid, 21, 4, 'Precision Master', 'Perfection achieved', '100% focus. 100% accuracy. The ultimate typing form...', 5, 60, 60, 60, 96.50, 30, 240, 1.2, TRUE, FALSE),
+    (campaign_uuid, 22, 4, 'Mind Reader', 'Anticipate thoughts', 'The texts now speak before you type. Read ahead!', 5, 62, 60, 62, 96.50, 35, 260, 1.2, TRUE, FALSE),
+    (campaign_uuid, 23, 4, 'Light Speed', 'Beyond fast', 'Approaching light speed typing! The finish line glows ahead!', 5, 65, 60, 65, 97.00, 40, 280, 1.2, TRUE, FALSE),
+    (campaign_uuid, 24, 4, 'Act IV Boss: The Dragon', 'Final guardian', 'The legendary Dragon guards the final chamber. Conquer this beast!', 5, 70, 90, 70, 97.00, 45, 400, 1.2, TRUE, TRUE),
+
+    -- ============================================
+    -- ACT V: THE TRIUMPH (Levels 25-30)
+    -- ============================================
+    (campaign_uuid, 25, 5, 'Victory Lane', 'Taste triumph', 'The end is in sight! Sprint to glory!', 5, 70, 60, 70, 97.00, 25, 300, 1.3, TRUE, TRUE),
+    (campaign_uuid, 26, 5, 'Legendary', 'Become legend', 'Your fingers dance across the keyboard like never before...', 5, 72, 60, 72, 97.00, 30, 320, 1.3, TRUE, FALSE),
+    (campaign_uuid, 27, 5, 'God Mode', 'Typing deity', 'You have transcended mortal typing. Become one with the keyboard!', 5, 75, 60, 75, 97.50, 35, 350, 1.3, TRUE, FALSE),
+    (campaign_uuid, 28, 5, 'Infinite', 'Endless mastery', 'There is no limit. Type forever!', 5, 78, 60, 78, 97.50, 40, 380, 1.3, TRUE, FALSE),
+    (campaign_uuid, 29, 5, 'Ultimate', 'Peak performance', 'This is it. The ultimate typing challenge. Give everything you have!', 5, 80, 60, 80, 98.00, 45, 420, 1.3, TRUE, FALSE),
+    (campaign_uuid, 30, 5, 'FINAL BOSS: The Typing Master', 'Prove your worth', 'The Typing Master awaits! Type faster than ever to claim victory!', 5, 100, 120, 100, 99.00, 50, 1000, 1.5, FALSE, TRUE)
+    ON CONFLICT (campaign_id, stage_number) DO NOTHING;
+
+    RAISE NOTICE 'Campaign stages seeded successfully!';
+  END IF;
+END $$;
 
 -- ============================================
 -- END MIGRATION 011
