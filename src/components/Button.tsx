@@ -7,6 +7,7 @@ interface ButtonProps {
   disabled?: boolean
   className?: string
   type?: 'button' | 'submit'
+  dataTestId?: string
 }
 
 export function Button({ 
@@ -15,7 +16,8 @@ export function Button({
   variant = 'primary', 
   disabled = false,
   className = '',
-  type = 'button'
+  type = 'button',
+  dataTestId,
 }: ButtonProps) {
   const baseStyles = 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
   
@@ -32,6 +34,7 @@ export function Button({
       whileTap={{ scale: disabled ? 1 : 0.95 }}
       onClick={onClick}
       disabled={disabled}
+      data-testid={dataTestId}
       className={`${baseStyles} ${variants[variant]} ${className}`}
     >
       {children}
