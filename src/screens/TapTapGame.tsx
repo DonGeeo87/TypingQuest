@@ -162,43 +162,37 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
       <Confetti isActive={showConfetti} />
       <AudioToggle position="top-right" compact={false} />
       
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 p-4 z-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <Button onClick={onBack} variant="secondary" className="text-sm px-4 py-2">
-              ← {t(ui, 'taptap.back')}
-            </Button>
-            <div className="flex gap-2">
-              <span className="px-3 py-1 bg-indigo-600/20 text-indigo-400 rounded-full text-sm">
-                {language === 'en' ? '🇬🇧 English' : '🇪🇸 Español'}
-              </span>
-              <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm">
-                {t(ui, 'taptap.level')} {level}
-              </span>
+      {/* Header — compact for mobile */}
+      <div className="fixed top-0 left-0 right-0 z-50 px-3 pt-3 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <Button onClick={onBack} variant="secondary" className="text-xs px-3 py-1.5">
+            ← {t(ui, 'taptap.back')}
+          </Button>
+          <div className="flex gap-2">
+            <span className="px-2 py-0.5 bg-indigo-600/20 text-indigo-400 rounded-full text-xs">
+              {language === 'en' ? '🇬🇧' : '🇪🇸'}
+            </span>
+            <span className="px-2 py-0.5 bg-violet-600/20 text-violet-400 rounded-full text-xs">
+              Lv.{level}
+            </span>
+          </div>
+        </div>
+
+        {/* Stats Bar — single row compact */}
+        <div className="flex items-center justify-between glass px-3 py-2 rounded-xl gap-2">
+          <div className="text-center flex-1">
+            <div className={`text-lg font-bold ${timeRemaining <= 10 ? 'text-red-400 animate-pulse' : 'text-violet-400'}`}>
+              {formatTime(timeRemaining)}
             </div>
           </div>
-
-          {/* Stats Bar */}
-          <div className="grid grid-cols-4 gap-2 glass p-3 rounded-xl">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-indigo-400">{score}</div>
-              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.points')}</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${timeRemaining <= 10 ? 'text-red-400 animate-pulse' : 'text-violet-400'}`}>
-                {formatTime(timeRemaining)}
-              </div>
-              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.time')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-amber-400">{wordsMatched}/{totalWords}</div>
-              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.words')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-400">x{combo}</div>
-              <div className="text-xs text-[var(--muted)]">{t(ui, 'taptap.combo')}</div>
-            </div>
+          <div className="text-center flex-1 border-x border-white/10">
+            <div className="text-lg font-bold text-amber-400">{wordsMatched}/{totalWords}</div>
+          </div>
+          <div className="text-center flex-1">
+            <div className="text-lg font-bold text-emerald-400">x{combo}</div>
+          </div>
+          <div className="text-center flex-1 border-x border-white/10">
+            <div className="text-lg font-bold text-indigo-400">{score}</div>
           </div>
         </div>
       </div>
@@ -210,50 +204,48 @@ export function TapTapGame({ language, level, onBack }: TapTapGameProps) {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="fixed top-40 left-1/2 -translate-x-1/2 z-40"
+            className="fixed left-1/2 -translate-x-1/2 z-40"
+            style={{ top: 'max(12rem, calc(80px + 1rem))' }}
           >
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-2xl shadow-amber-500/50 border-4 border-white/20">
-              <span className="text-5xl font-black text-white">{targetLetter.toUpperCase()}</span>
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-2xl shadow-amber-500/50 border-4 border-white/20">
+              <span className="text-4xl md:text-5xl font-black text-white">{targetLetter.toUpperCase()}</span>
             </div>
-            <div className="text-center mt-2 text-[var(--foreground)] font-bold text-sm bg-[var(--glass-bg)] px-4 py-1 rounded-full">
+            <div className="text-center mt-1 text-[var(--foreground)] font-bold text-xs bg-[var(--glass-bg)] px-3 py-0.5 rounded-full">
               {t(ui, 'taptap.targetLetter')}
             </div>
           </motion.div>
 
-          {/* Tarjetas de Palabras */}
-          <div className="absolute inset-0 pt-80 pb-20 px-4 overflow-y-auto">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                <AnimatePresence>
-                  {wordCards.map((card) => (
-                    !card.matched && (
-                      <motion.div
-                        key={card.id}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ scale: 1.05 }}
-                        onClick={() => handleWordClick(card.id)}
-                        className={`
-                          aspect-square rounded-2xl flex items-center justify-center
-                          cursor-pointer select-none touch-manipulation
-                          transition-all duration-200
-                          ${card.selected 
-                            ? 'bg-red-500/50 border-red-500 scale-95' 
-                            : 'bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border-white/20 hover:border-white/40'
-                          }
-                          border-2 backdrop-blur-sm shadow-xl
-                        `}
-                      >
-                        <span className="text-white font-bold text-center px-2 text-sm md:text-base">
-                          {card.word}
-                        </span>
-                      </motion.div>
-                    )
-                  ))}
-                </AnimatePresence>
-              </div>
+          {/* Tarjetas de Palabras — compact mobile layout */}
+          <div className="absolute inset-x-0 bottom-0 px-3 pb-3 pt-36 overflow-y-auto">
+            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              <AnimatePresence>
+                {wordCards.map((card) => (
+                  !card.matched && (
+                    <motion.div
+                      key={card.id}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      whileTap={{ scale: 0.92 }}
+                      onClick={() => handleWordClick(card.id)}
+                      className={`
+                        aspect-square rounded-xl flex items-center justify-center
+                        cursor-pointer select-none touch-manipulation
+                        transition-all duration-200
+                        ${card.selected
+                          ? 'bg-red-500/50 border-red-500 scale-95'
+                          : 'bg-gradient-to-br from-indigo-600/90 to-purple-600/90 border-white/20'
+                        }
+                        border-2 backdrop-blur-sm shadow-xl active:brightness-110
+                      `}
+                    >
+                      <span className="text-white font-bold text-center px-1 text-sm md:text-base leading-tight">
+                        {card.word}
+                      </span>
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
             </div>
           </div>
         </>

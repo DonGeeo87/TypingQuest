@@ -48,7 +48,7 @@ export function HomeScreen({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-5xl space-y-8 relative z-10"
+        className="w-full max-w-5xl space-y-4 md:space-y-8 relative z-10"
       >
         {isAnonymous && (
           <Card className="p-4 border-amber-500/30 bg-amber-500/10">
@@ -92,52 +92,46 @@ export function HomeScreen({
         </div>
 
         {/* Main Menu Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
-              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎮</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.play')}</h3>
-              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.playDesc')}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Card onClick={() => onNavigate('game')} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group py-4 px-3">
+              <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🎮</div>
+              <h3 className="text-sm font-black text-[var(--foreground)] mb-1">{t(ui, 'home.play')}</h3>
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('ranking')} className="cursor-pointer h-full border-amber-500/20 hover:border-amber-500/50 transition-all group">
-              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🏆</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.rankings')}</h3>
-              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.rankingsDesc')}</p>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Card onClick={() => onNavigate('ranking')} className="cursor-pointer h-full border-amber-500/20 hover:border-amber-500/50 transition-all group py-4 px-3">
+              <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🏆</div>
+              <h3 className="text-sm font-black text-[var(--foreground)] mb-1">{t(ui, 'home.rankings')}</h3>
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('multiplayer')} className="cursor-pointer h-full border-emerald-500/20 hover:border-emerald-500/50 transition-all group">
-              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🧩</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.multiplayer')}</h3>
-              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.multiplayerDesc')}</p>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Card onClick={() => onNavigate('multiplayer')} className="cursor-pointer h-full border-emerald-500/20 hover:border-emerald-500/50 transition-all group py-4 px-3">
+              <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🧩</div>
+              <h3 className="text-sm font-black text-[var(--foreground)] mb-1">{t(ui, 'home.multiplayer')}</h3>
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('profile')} className="cursor-pointer h-full border-violet-500/20 hover:border-violet-500/50 transition-all group">
-              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">👤</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.profile')}</h3>
-              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.profileDesc')}</p>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Card onClick={() => onNavigate('profile')} className="cursor-pointer h-full border-violet-500/20 hover:border-violet-500/50 transition-all group py-4 px-3">
+              <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">👤</div>
+              <h3 className="text-sm font-black text-[var(--foreground)] mb-1">{t(ui, 'home.profile')}</h3>
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => onNavigate('teacher')} className="cursor-pointer h-full border-sky-500/20 hover:border-sky-500/50 transition-all group">
-              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🎓</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'home.teacher')}</h3>
-              <p className="text-[var(--muted)] text-sm">{t(ui, 'home.teacherDesc')}</p>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Card onClick={() => onNavigate('teacher')} className="cursor-pointer h-full border-sky-500/20 hover:border-sky-500/50 transition-all group py-4 px-3">
+              <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🎓</div>
+              <h3 className="text-sm font-black text-[var(--foreground)] mb-1">{t(ui, 'home.teacher')}</h3>
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ y: -10 }} whileTap={{ scale: 0.98 }}>
-            <Card onClick={() => setTutorialOpen(true)} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group">
-              <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-300">🧑‍🏫</div>
-              <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t(ui, 'tutorial.open')}</h3>
-              <p className="text-[var(--muted)] text-sm">{t(ui, 'teacherGuide.stepsTitle')}</p>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Card onClick={() => setTutorialOpen(true)} className="cursor-pointer h-full border-indigo-500/20 hover:border-indigo-500/50 transition-all group py-4 px-3">
+              <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🧑‍🏫</div>
+              <h3 className="text-sm font-black text-[var(--foreground)] mb-1">{t(ui, 'tutorial.open')}</h3>
             </Card>
           </motion.div>
         </div>
@@ -228,44 +222,39 @@ export function HomeScreen({
               </motion.div>
             )}
 
-            {/* Campaign button */}
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
-              <Button
-                onClick={() => setCampaignModalOpen(true)}
-                variant="accent"
-                className="py-3 text-sm font-bold w-full shadow-lg shadow-purple-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 h-auto"
-              >
-                <span className="relative z-10">⚔️ {t(ui, 'home.campaign')}</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </Button>
-            </motion.div>
-
-            {/* Mobile-only TapTap tip */}
-            {isMobile && (
-              <p className="text-center text-xs text-[var(--muted)]">
-                💡 {language === 'en' ? 'Tip: TapTap is easier on mobile' : 'Tip: TapTap es más fácil en móviles'}
-              </p>
+            {/* Campaign button — hidden on mobile, desktop only */}
+            {!isMobile && (
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
+                <Button
+                  onClick={() => setCampaignModalOpen(true)}
+                  variant="accent"
+                  className="py-3 text-sm font-bold w-full shadow-lg shadow-purple-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 h-auto"
+                >
+                  <span className="relative z-10">⚔️ {t(ui, 'home.campaign')}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </Button>
+              </motion.div>
             )}
           </div>
         </Card>
 
-        {/* Features Footer */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pb-12 pt-4">
-          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
-            <div className="text-3xl mb-1">⚡</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureWpm')}</div>
+        {/* Features Footer — compact on mobile */}
+        <div className="grid grid-cols-4 md:grid-cols-4 gap-2 md:gap-4 text-center pb-8 md:pb-12 pt-2">
+          <div className="glass py-2 px-1 rounded-xl backdrop-blur-sm">
+            <div className="text-xl md:text-2xl mb-0.5">⚡</div>
+            <div className="text-[var(--foreground)] text-[10px] md:text-xs font-bold uppercase tracking-tight">{t(ui, 'home.featureWpm')}</div>
           </div>
-          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
-            <div className="text-3xl mb-1">🎯</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureAccuracy')}</div>
+          <div className="glass py-2 px-1 rounded-xl backdrop-blur-sm">
+            <div className="text-xl md:text-2xl mb-0.5">🎯</div>
+            <div className="text-[var(--foreground)] text-[10px] md:text-xs font-bold uppercase tracking-tight">{t(ui, 'home.featureAccuracy')}</div>
           </div>
-          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
-            <div className="text-3xl mb-1">🔥</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureCombo')}</div>
+          <div className="glass py-2 px-1 rounded-xl backdrop-blur-sm">
+            <div className="text-xl md:text-2xl mb-0.5">🔥</div>
+            <div className="text-[var(--foreground)] text-[10px] md:text-xs font-bold uppercase tracking-tight">{t(ui, 'home.featureCombo')}</div>
           </div>
-          <div className="glass p-4 rounded-2xl backdrop-blur-sm">
-            <div className="text-3xl mb-1">🌐</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureBilingual')}</div>
+          <div className="glass py-2 px-1 rounded-xl backdrop-blur-sm">
+            <div className="text-xl md:text-2xl mb-0.5">🌐</div>
+            <div className="text-[var(--foreground)] text-[10px] md:text-xs font-bold uppercase tracking-tight">{t(ui, 'home.featureBilingual')}</div>
           </div>
         </div>
       </motion.div>
