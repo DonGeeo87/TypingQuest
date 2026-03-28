@@ -3,15 +3,17 @@ import { ParticleBackground, FloatingWords, Topbar, AppFooter } from './componen
 import { useGameStore } from './store/gameStore'
 import { useAuthStore } from './store/authStore'
 import { useAudioStore } from './store/audioStore'
-import type { Language, GameLevel, WordCategory } from './types'
+import { useCampaignStore } from './store/campaignStore'
+import type { Language, GameLevel, WordCategory, CampaignStage } from './types'
 import { supabase } from './lib/supabase'
 import { useUiStore } from './store/uiStore'
 import { resumeAudio, syncBackgroundMusic } from './audio/backgroundMusic'
 import { t } from './i18n'
 import { trackScreen } from './analytics'
+import * as campaignService from './services/campaignService'
 import './App.css'
 
-type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher' | 'teacherGuide' | 'terms' | 'privacy' | 'support'
+type Screen = 'auth' | 'home' | 'game' | 'ranking' | 'profile' | 'registration' | 'taptap' | 'multiplayer' | 'teacher' | 'teacherGuide' | 'terms' | 'privacy' | 'support' | 'campaign' | 'campaign-game'
 
 const HomeScreen = lazy(() => import('./screens/HomeScreen').then(m => ({ default: m.HomeScreen })))
 const GameScreen = lazy(() => import('./screens/GameScreen').then(m => ({ default: m.GameScreen })))
@@ -26,13 +28,22 @@ const TeacherGuideScreen = lazy(() => import('./screens/TeacherGuideScreen').the
 const TermsScreen = lazy(() => import('./screens/TermsScreen').then(m => ({ default: m.TermsScreen })))
 const PrivacyScreen = lazy(() => import('./screens/PrivacyScreen').then(m => ({ default: m.PrivacyScreen })))
 const SupportScreen = lazy(() => import('./screens/SupportScreen').then(m => ({ default: m.SupportScreen })))
+const CampaignScreen = lazy(() => import('./screens/CampaignScreen').then(m => ({ default: m.CampaignScreen })))
+const CampaignGameScreen = lazy(() => import('./screens/CampaignGameScreen').then(m => ({ default: m.CampaignGameScreen })))
+const CampaignResultsScreen = lazy(() => import('./screens/CampaignResultsScreen').then(m => ({ default: m.CampaignResultsScreen })))
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
+  const [selectedCampaignStage, setSelectedCampaignStage] = useState<CampaignStage | null>(null)
   const { language, level, gameDuration, selectedCategory, setLanguage, setLevel, setGameDuration, setSelectedCategory, resetGame } = useGameStore()
   const ui = language
   const { theme } = useUiStore()
   const { enabled: audioEnabled, muted: audioMuted, volume: audioVolume } = useAudioStore()
+  const { 
+    loadCampaign, 
+    loadProgress,
+    setGameContext 
+  } = useCampaignStore()
   const {
     userId,
     hasRegisteredUsername,
@@ -150,6 +161,37 @@ function App() {
     setCurrentScreen('home')
   }
 
+  const handleStartCampaign = async () => {
+    if (!userId) return
+    try {
+      const campaign = await campaignService.getMainCampaign()
+      if (campaign) {
+        await loadCampaign(campaign.id)
+        await loadProgress(campaign.id, userId)
+        setCurrentScreen('campaign')
+      }
+    } catch (err) {
+      console.error('Error starting campaign:', err)
+    }
+  }
+
+  const handleSelectCampaignStage = (stage: CampaignStage) => {
+    setSelectedCampaignStage(stage)
+    setGameContext({
+      campaignId: stage.campaign_id,
+      stageId: stage.id,
+      stageNumber: stage.stage_number,
+      targetWpm: stage.required_wpm,
+      targetAccuracy: stage.required_accuracy,
+    })
+    setCurrentScreen('campaign-game')
+  }
+
+  const handleCampaignComplete = () => {
+    setSelectedCampaignStage(null)
+    setCurrentScreen('campaign')
+  }
+
   // Mostrar pantalla de carga mientras se inicializa la autenticación
   if (authLoading) {
     return (
@@ -201,6 +243,7 @@ function App() {
               onCategoryChange={handleCategoryChange}
               onStartGame={handleStartGame}
               onStartTapTap={handleStartTapTap}
+              onStartCampaign={handleStartCampaign}
               onNavigate={handleNavigate}
             />
           )}
@@ -209,6 +252,22 @@ function App() {
             <GameScreen
               onGameEnd={handleGameEnd}
               onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentScreen === 'campaign' && (
+            <CampaignScreen
+              userId={userId || ''}
+              onSelectStage={handleSelectCampaignStage}
+              onBack={() => setCurrentScreen('home')}
+            />
+          )}
+
+          {currentScreen === 'campaign-game' && selectedCampaignStage && (
+            <CampaignGameScreen
+              stage={selectedCampaignStage}
+              onComplete={handleCampaignComplete}
+              onBack={() => setCurrentScreen('campaign')}
             />
           )}
 

@@ -17,6 +17,7 @@ interface HomeScreenProps {
   onCategoryChange: (category: WordCategory) => void
   onStartGame: () => void
   onStartTapTap: () => void
+  onStartCampaign: () => void
   onNavigate: (screen: string) => void
 }
 
@@ -31,6 +32,7 @@ export function HomeScreen({
   onCategoryChange,
   onStartGame,
   onStartTapTap,
+  onStartCampaign,
   onNavigate,
 }: HomeScreenProps) {
   const { isAnonymous } = useAuthStore()
@@ -187,6 +189,18 @@ export function HomeScreen({
 
           {/* Start Button */}
           <div className="space-y-4 pt-4">
+            {/* Botón Campaign */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
+              <Button
+                onClick={onStartCampaign}
+                variant="accent"
+                className="px-20 py-5 text-xl font-black w-full shadow-2xl shadow-purple-500/30 rounded-2xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600"
+              >
+                <span className="relative z-10">🎮 The Typing Quest</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </Button>
+            </motion.div>
+
             {/* Botón TapTap para móviles */}
             {isMobile && (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
