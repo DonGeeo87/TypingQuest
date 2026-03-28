@@ -41,6 +41,14 @@ const testimonials = [
   { nameKey: 't3Name', roleKey: 't3Role', quoteKey: 't3Quote' },
 ] as const
 
+const faqItems = [
+  { qKey: 'q1Q', aKey: 'q1A' },
+  { qKey: 'q2Q', aKey: 'q2A' },
+  { qKey: 'q3Q', aKey: 'q3A' },
+  { qKey: 'q4Q', aKey: 'q4A' },
+  { qKey: 'q5Q', aKey: 'q5A' },
+] as const
+
 export function AuthScreen({ onContinue }: AuthScreenProps) {
   const { signInAnonymously } = useAuthStore()
   const ui = useGameStore((s) => s.language)
@@ -54,6 +62,7 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
   const [error, setError] = useState<string | null>(null)
   const [leadError, setLeadError] = useState<string | null>(null)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
   const leadRef = useRef<HTMLDivElement | null>(null)
 
   const redirectTo = useMemo(() => getAuthEmailRedirectOrigin(), [])
@@ -367,6 +376,53 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
           </div>
         </section>
 
+        <section id="faq" className="border-t border-[var(--card-border)]">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
+            <div className="text-left max-w-3xl">
+              <h2 className="text-3xl md:text-4xl font-black text-[var(--foreground)]">{t(ui, 'landing.faqTitle')}</h2>
+              <p className="text-[var(--muted)] mt-3">{t(ui, 'landing.faqSubtitle')}</p>
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {faqItems.map((item, idx) => (
+                <motion.div
+                  key={item.qKey}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ delay: idx * 0.04 }}
+                >
+                  <Card
+                    className="p-5 text-left cursor-pointer hover:border-indigo-500/30 transition-colors"
+                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="text-[var(--foreground)] font-bold text-sm">{t(ui, `landing.faq.${item.qKey}`)}</div>
+                      <div className={`text-indigo-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`}>
+                        ▼
+                      </div>
+                    </div>
+                    <AnimatePresence>
+                      {openFaq === idx && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="text-[var(--muted)] text-sm mt-3 pt-3 border-t border-[var(--card-border)]">
+                            {t(ui, `landing.faq.${item.aKey}`)}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="cta" className="border-t border-[var(--card-border)]">
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -438,6 +494,7 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
             </div>
             <div className="flex gap-2">
               <a className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500" href="#features">{t(ui, 'landing.navFeatures')}</a>
+              <a className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500" href="#faq">FAQ</a>
               <a className="px-3 py-2 rounded-lg text-sm text-[var(--muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500" href="#cta">{t(ui, 'landing.navStart')}</a>
             </div>
           </div>
