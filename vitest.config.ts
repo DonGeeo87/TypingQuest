@@ -7,7 +7,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    exclude: ['tests/smoke.spec.ts'],
+    exclude: ['tests/smoke.spec.ts', 'node_modules'],
+    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   },
 })
 
