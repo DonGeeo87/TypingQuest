@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LanguageSelector, LevelSelector, CategorySelector, TimeSelector, Button, Card, TeacherTutorialModal } from '../components'
+import { LanguageSelector, LevelSelector, CategorySelector, TimeSelector, Button, Card, TeacherTutorialModal, CampaignInfoModal } from '../components'
 import { useAuthStore } from '../store/authStore'
 import { useMobile } from '../hooks/useMobile'
 import type { Language, GameLevel, WordCategory } from '../types'
@@ -39,6 +39,7 @@ export function HomeScreen({
   const isMobile = useMobile()
   const ui = language
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [campaignModalOpen, setCampaignModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
@@ -190,45 +191,45 @@ export function HomeScreen({
           {/* Start Button */}
           <div className="space-y-4 pt-4">
             {/* Botón Campaign */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
               <Button
-                onClick={onStartCampaign}
+                onClick={() => setCampaignModalOpen(true)}
                 variant="accent"
-                className="px-20 py-5 text-xl font-black w-full shadow-2xl shadow-purple-500/30 rounded-2xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600"
+                className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-purple-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 h-auto"
               >
-                <span className="relative z-10">🎮 The Typing Quest</span>
+                <span className="relative z-10">{t(ui, 'home.campaign')}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Button>
             </motion.div>
 
             {/* Botón TapTap para móviles */}
             {isMobile && (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
                 <Button
                   onClick={onStartTapTap}
                   variant="accent"
-                  className="px-20 py-5 text-xl font-black w-full shadow-2xl shadow-amber-500/30 rounded-2xl relative overflow-hidden group bg-gradient-to-r from-amber-600 to-orange-600"
+                  className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-amber-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-amber-600 to-orange-600 h-auto"
                 >
-                  <span className="relative z-10">👆 TapTap {language === 'en' ? 'English' : 'Español'}</span>
+                  <span className="relative z-10">👆 TapTap ({language === 'en' ? 'English' : 'Español'})</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </Button>
               </motion.div>
             )}
 
             {/* Botón Clásico */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full md:w-auto">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
               <Button
                 onClick={onStartGame}
                 variant="accent"
-                className="px-20 py-5 text-xl font-black w-full shadow-2xl shadow-indigo-500/30 rounded-2xl relative overflow-hidden group"
+                className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-indigo-500/20 rounded-xl relative overflow-hidden group h-auto"
               >
-                <span className="relative z-10">⌨️ {isMobile ? 'Modo Clásico (Teclado)' : '¡EMPEZAR A TIPEAR!'}</span>
+                <span className="relative z-10">⌨️ {isMobile ? t(ui, 'home.mobileClassic') : t(ui, 'home.startTyping')}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Button>
             </motion.div>
 
             {isMobile && (
-              <p className="text-center text-xs text-[var(--muted)]">
+              <p className="text-center text-xs text-[var(--muted)] mt-2">
                 💡 Tip: TapTap es más fácil de usar en móviles
               </p>
             )}
@@ -239,19 +240,19 @@ export function HomeScreen({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pb-12 pt-4">
           <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">⚡</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">WPM Tracking</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureWpm')}</div>
           </div>
           <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">🎯</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">Accuracy</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureAccuracy')}</div>
           </div>
           <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">🔥</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">Combos</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureCombo')}</div>
           </div>
           <div className="glass p-4 rounded-2xl backdrop-blur-sm">
             <div className="text-3xl mb-1">🌐</div>
-            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">Bilingual</div>
+            <div className="text-[var(--foreground)] text-xs font-black uppercase tracking-tighter">{t(ui, 'home.featureBilingual')}</div>
           </div>
         </div>
       </motion.div>
@@ -262,6 +263,16 @@ export function HomeScreen({
         onOpenGuide={() => {
           setTutorialOpen(false)
           onNavigate('teacherGuide')
+        }}
+      />
+
+      <CampaignInfoModal
+        open={campaignModalOpen}
+        language={language}
+        onClose={() => setCampaignModalOpen(false)}
+        onStart={() => {
+          setCampaignModalOpen(false)
+          onStartCampaign()
         }}
       />
     </div>

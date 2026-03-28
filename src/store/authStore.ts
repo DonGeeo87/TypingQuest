@@ -17,6 +17,7 @@ interface AuthState {
   // Actions
   initializeAuth: () => Promise<void>
   signInAnonymously: () => Promise<void>
+  signInWithEmailInstant: (email: string) => Promise<void>
   setProfile: (profile: Profile | null) => void
   setHasRegisteredUsername: (hasUsername: boolean) => void
   refreshProfile: () => Promise<void>
@@ -106,6 +107,54 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           log.error('Error signing in anonymously:', error)
+          set({ isLoading: false })
+        }
+      },
+
+      signInWithEmailInstant: async (email: string) => {
+        set({ isLoading: true })
+
+        try {
+          // Check if a profile already exists with this email
+          const existingProfile = await getProfile(email)
+          if (existingProfile) {
+            // User already has a profile, link to existing account
+            const userHasUsername = await hasUsername(existingProfile.id)
+            set({
+              userId: existingProfile.id,
+              profile: existingProfile,
+              hasRegisteredUsername: userHasUsername,
+              isAuthenticated: true,
+              email,
+              isAnonymous: false,
+              isLoading: false
+            })
+            return
+          }
+
+          // Create/get anonymous user
+          const userId = await signInAnonymously()
+
+          if (userId) {
+            // Email is stored in auth state, not in profile table
+
+            const [profile, userHasUsername] = await Promise.all([
+              getProfile(userId),
+              hasUsername(userId)
+            ])
+
+            set({
+              userId,
+              profile,
+              hasRegisteredUsername: userHasUsername,
+              isAuthenticated: true,
+              email,
+              isAnonymous: true,
+              isLoading: false
+            })
+          }
+        } catch (error) {
+          log.error('Error signing in with instant email:', error)
           set({ isLoading: false })
         }
       },

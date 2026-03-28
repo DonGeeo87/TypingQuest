@@ -92,6 +92,14 @@ export const en = {
   home: {
     title: 'TypingQuest',
     subtitle: 'Master units of speed & precision 🚀',
+    startTyping: 'Start Typing',
+    mobileClassic: 'Classic Mode (Keyboard)',
+    featureWpm: 'WPM Tracking',
+    featureAccuracy: 'Accuracy',
+    featureCombo: 'Combos',
+    featureBilingual: 'Bilingual',
+    campaign: '🎮 The Typing Quest',
+    campaignDesc: 'Complete stages with story and rewards',
     play: 'Play',
     playDesc: 'Improve your speed and accuracy',
     rankings: 'Rankings',
@@ -147,6 +155,7 @@ export const en = {
     accountDesc: 'We’ll email you a magic link. If you already have an account, you’ll recover your profile.',
     emailPlaceholder: 'you@email.com',
     sendLink: 'Send link',
+      instantContinue: 'Continue',
     deviceNote: 'Anonymous play is tied to this device.',
   },
   teacher: {

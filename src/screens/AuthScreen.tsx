@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Card } from '../components'
-import { signInWithEmailMagicLink } from '../lib/supabase'
+// Instant email sign-in handled via auth store (no magic link)
 import { useAuthStore } from '../store/authStore'
 import { useGameStore } from '../store/gameStore'
 import { t } from '../i18n'
 import { trackEvent } from '../analytics'
-import { getAuthEmailRedirectOrigin } from '../utils/authRedirect'
 
 interface AuthScreenProps {
   onContinue: () => void
@@ -50,14 +49,14 @@ const faqItems = [
 ] as const
 
 export function AuthScreen({ onContinue }: AuthScreenProps) {
-  const { signInAnonymously } = useAuthStore()
+  const { signInAnonymously, signInWithEmailInstant } = useAuthStore()
   const ui = useGameStore((s) => s.language)
   const [email, setEmail] = useState('')
   const [leadEmail, setLeadEmail] = useState('')
   const [loadingAnon, setLoadingAnon] = useState(false)
   const [loadingEmail, setLoadingEmail] = useState(false)
   const [loadingLead, setLoadingLead] = useState(false)
-  const [sent, setSent] = useState(false)
+  
   const [leadSent, setLeadSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [leadError, setLeadError] = useState<string | null>(null)
@@ -65,7 +64,7 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const leadRef = useRef<HTMLDivElement | null>(null)
 
-  const redirectTo = useMemo(() => getAuthEmailRedirectOrigin(), [])
+  // No redirect needed for instant email flow
 
   const handleAnonymous = useCallback(async () => {
     setError(null)
@@ -91,15 +90,20 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
     setError(null)
     setLoadingEmail(true)
     try {
-      trackEvent('auth_magic_link_request')
-      await signInWithEmailMagicLink(clean, redirectTo)
-      setSent(true)
+      trackEvent('auth_instant_email')
+      // Intento de inicio inmediato: crea/obtiene usuario anónimo y guarda email en perfil
+      if (signInWithEmailInstant) {
+        await signInWithEmailInstant(clean)
+        onContinue()
+      } else {
+        setError(t(ui, 'common.errorGeneric'))
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t(ui, 'common.errorGeneric'))
     } finally {
       setLoadingEmail(false)
     }
-  }, [email, redirectTo, ui])
+  }, [email, ui])
 
   const scrollToLead = useCallback(() => {
     trackEvent('cta_get_updates')
@@ -223,7 +227,7 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
                         <div className="text-2xl" aria-hidden="true">🕹️</div>
                       </div>
                       <div className="mt-4">
-                        <Button onClick={handleAnonymous} disabled={loadingAnon} className="w-full">
+                        <Button dataTestId="btn-anon" onClick={handleAnonymous} disabled={loadingAnon} className="w-full">
                           {loadingAnon ? t(ui, 'common.loading') : t(ui, 'auth.anonContinue')}
                         </Button>
                       </div>
@@ -250,15 +254,9 @@ export function AuthScreen({ onContinue }: AuthScreenProps) {
                           className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         />
 
-                        <Button onClick={handleEmail} disabled={loadingEmail || sent} className="w-full">
-                          {sent ? t(ui, 'landing.magicLinkSent') : loadingEmail ? t(ui, 'common.loading') : t(ui, 'auth.sendLink')}
+                        <Button dataTestId="btn-email" onClick={handleEmail} disabled={loadingEmail} className="w-full">
+                          {loadingEmail ? t(ui, 'common.loading') : t(ui, 'auth.instantContinue')}
                         </Button>
-
-                        {sent && (
-                          <div className="text-emerald-300 text-sm">
-                            {t(ui, 'landing.magicLinkHelp')}
-                          </div>
-                        )}
                       </div>
                     </Card>
                   </div>
