@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
       localStorage.removeItem('typingquest-auth')
       sessionStorage.removeItem('typingquest-local-userid')
       localStorage.removeItem('typingquest-local-profile')
-    } catch (e) {
+    } catch {
       // ignore
     }
   })
