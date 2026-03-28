@@ -328,6 +328,29 @@ body {
 
 /* Card styles */
 .card {
-  @apply glass-card p-6 transition-all duration-200 
+  @apply glass-card p-6 transition-all duration-200
          hover:shadow-lg hover:shadow-indigo-500/10;
+}
+
+/* Mobile touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .no-touch-hover:hover {
+    transform: none !important;
+  }
+}
+
+/* Prevent pull-to-refresh on game screens */
+.game-screen {
+  overscroll-behavior: none;
+}
+
+/* Disable text selection during gameplay */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* iOS safe area for virtual keyboard */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

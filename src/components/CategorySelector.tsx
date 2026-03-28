@@ -39,7 +39,9 @@ export function CategorySelector({ selectedCategory, onCategoryChange, language 
       <div className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wider">
         {t(language, 'home.learningTheme')}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+
+      {/* Desktop grid */}
+      <div className="hidden sm:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {categories.map((category) => {
           const info = categoryData[category]
           return (
@@ -56,11 +58,36 @@ export function CategorySelector({ selectedCategory, onCategoryChange, language 
             >
               <div className="text-xl mb-1">{categoryIcons[category]}</div>
               <div className="font-semibold text-xs text-[var(--foreground)] leading-tight">{info.name}</div>
-              <div className="text-2xs text-[var(--muted)] mt-0.5 leading-tight">{info.description}</div>
+              <div className="text-[10px] text-[var(--muted)] leading-tight">{info.description}</div>
             </motion.button>
           )
         })}
       </div>
+
+      {/* Mobile: horizontal scroll chips */}
+      <div className="sm:hidden overflow-x-auto pb-2 -mx-2 px-2">
+        <div className="flex gap-2 min-w-max">
+          {categories.map((category) => {
+            const info = categoryData[category]
+            return (
+              <motion.button
+                key={category}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => onCategoryChange(category)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full border-2 transition-all flex flex-col items-center gap-1 min-w-[72px] ${
+                  selectedCategory === category
+                    ? 'border-emerald-500 bg-emerald-500/20 shadow-lg shadow-emerald-500/20'
+                    : 'border-[var(--card-border)] bg-[var(--secondary)]'
+                }`}
+              >
+                <span className="text-xl">{categoryIcons[category]}</span>
+                <span className="font-semibold text-[var(--foreground)] text-xs whitespace-nowrap">{info.name}</span>
+              </motion.button>
+            )
+          })}
+        </div>
+      </div>
+
       <div className="text-xs text-[var(--muted)] italic">
         {t(language, 'home.learningThemeDesc')}
       </div>

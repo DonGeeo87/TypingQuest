@@ -43,7 +43,7 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
             isTimeLow ? 'text-red-500' : 'text-violet-400'
           }`}
         >
-          <div className={`text-5xl md:text-6xl font-bold ${isTimeLow ? 'animate-pulse' : ''}`}>
+          <div className={`text-4xl md:text-6xl font-bold ${isTimeLow ? 'animate-pulse' : ''}`}>
             {formatTime(timeRemaining)}
           </div>
           <div className="text-[var(--muted)] text-sm mt-1">
@@ -55,7 +55,7 @@ export function TypingArea({ text, currentIndex, typedChars, isPlaying, timeRema
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-8 min-h-[200px] flex flex-wrap content-start gap-1 text-2xl md:text-3xl font-mono leading-relaxed text-[var(--foreground)]"
+        className="glass-card p-4 md:p-8 min-h-[160px] md:min-h-[200px] flex flex-wrap break-words gap-1 text-xl md:text-3xl font-mono leading-relaxed text-[var(--foreground)]"
       >
         {text.split('').map((char, index) => {
           // Determine the style for each character

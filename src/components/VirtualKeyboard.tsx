@@ -23,17 +23,15 @@ export function VirtualKeyboard({ onKeyPress, disabled = false }: VirtualKeyboar
         {rows.map((row, rowIndex) => (
           <div
             key={rowIndex}
-            className="flex justify-center gap-1"
-            style={{ paddingLeft: rowIndex === 1 ? '1rem' : rowIndex === 2 ? '2rem' : '0' }}
+            className={`flex justify-center gap-2 ${rowIndex === 1 ? 'pl-4' : rowIndex === 2 ? 'pl-8' : ''}`}
           >
             {row.map((key) => (
               <motion.button
                 key={key}
                 whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.05 }}
                 onClick={() => handleKeyPress(key)}
                 className="
-                  flex-1 max-w-[2.5rem] h-12 rounded-lg
+                  flex-1 min-w-[2.75rem] h-14 rounded-lg
                   bg-[var(--secondary)]
                   text-[var(--foreground)] font-bold text-lg
                   border border-[var(--card-border)]
@@ -48,16 +46,32 @@ export function VirtualKeyboard({ onKeyPress, disabled = false }: VirtualKeyboar
             ))}
           </div>
         ))}
-        
-        {/* Fila de espacio y enter */}
+
+        {/* Backspace + Space row */}
         <div className="flex justify-center gap-2">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleKeyPress('\b')}
+            className="
+              min-w-[4rem] h-14 rounded-lg
+              bg-[var(--secondary)]
+              text-[var(--foreground)] font-bold text-xl
+              border border-[var(--card-border)]
+              shadow-lg shadow-black/10
+              active:opacity-90
+              touch-manipulation select-none
+            "
+          >
+            ⌫
+          </motion.button>
+
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => onKeyPress(' ')}
             className="
-              flex-1 max-w-[12rem] h-12 rounded-lg
+              flex-1 max-w-[14rem] h-14 rounded-lg
               bg-[var(--secondary)]
-              text-[var(--foreground)] font-bold
+              text-[var(--foreground)] font-bold text-sm
               border border-[var(--card-border)]
               shadow-lg shadow-black/10
               active:opacity-90

@@ -143,16 +143,16 @@ export function HomeScreen({
         </div>
 
         {/* Game Setup Section - Full Width Refactor */}
-        <Card className="p-8 space-y-8 backdrop-blur-md relative overflow-hidden shadow-2xl">
+        <Card className="p-4 md:p-6 space-y-6 backdrop-blur-md relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none text-9xl font-black italic">CONFIG</div>
-          <h2 className="text-3xl font-black text-[var(--foreground)] flex items-center gap-3">
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)] flex items-center gap-3">
             <span className="w-8 h-1 bg-indigo-500 inline-block"></span>
             {t(ui, 'home.gameSetup')}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Language Selection */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">{t(ui, 'home.practiceLanguage')}</label>
               <LanguageSelector
                 selectedLanguage={language}
@@ -161,7 +161,7 @@ export function HomeScreen({
             </div>
 
             {/* Time Selection */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">{t(ui, 'home.challengeDuration')}</label>
               <TimeSelector
                 selectedTime={gameDuration}
@@ -171,7 +171,7 @@ export function HomeScreen({
           </div>
 
           {/* Level Selection - FULL WIDTH */}
-          <div className="space-y-4 border-t border-[var(--card-border)] pt-8">
+          <div className="space-y-3 border-t border-[var(--card-border)] pt-6">
             <label className="text-indigo-400 text-xs font-black uppercase tracking-widest">{t(ui, 'home.difficultyLevel')}</label>
             <LevelSelector
               selectedLevel={level}
@@ -180,7 +180,7 @@ export function HomeScreen({
           </div>
 
           {/* Category Selection - FULL WIDTH */}
-          <div className="space-y-4 border-t border-[var(--card-border)] pt-8">
+          <div className="space-y-3 border-t border-[var(--card-border)] pt-6">
             <CategorySelector
               selectedCategory={selectedCategory}
               onCategoryChange={onCategoryChange}
@@ -188,49 +188,62 @@ export function HomeScreen({
             />
           </div>
 
-          {/* Start Button */}
-          <div className="space-y-4 pt-4">
-            {/* Botón Campaign */}
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
-              <Button
-                onClick={() => setCampaignModalOpen(true)}
-                variant="accent"
-                className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-purple-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 h-auto"
-              >
-                <span className="relative z-10">{t(ui, 'home.campaign')}</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </Button>
-            </motion.div>
-
-            {/* Botón TapTap para móviles */}
-            {isMobile && (
+          {/* Action Buttons */}
+          <div className="space-y-3 pt-2">
+            {/* Mobile: Classic + TapTap on same row */}
+            {isMobile ? (
+              <div className="flex gap-2">
+                <motion.div whileTap={{ scale: 0.98 }} className="flex-1">
+                  <Button
+                    onClick={onStartGame}
+                    variant="accent"
+                    className="py-3 text-sm font-bold w-full shadow-lg shadow-indigo-500/20 rounded-xl relative overflow-hidden group h-auto"
+                  >
+                    <span className="relative z-10">⌨️ {t(ui, 'home.mobileClassic')}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </Button>
+                </motion.div>
+                <motion.div whileTap={{ scale: 0.98 }} className="flex-1">
+                  <Button
+                    onClick={onStartTapTap}
+                    variant="accent"
+                    className="py-3 text-sm font-bold w-full shadow-lg shadow-amber-500/20 rounded-xl relative overflow-hidden group h-auto bg-gradient-to-r from-amber-600 to-orange-600"
+                  >
+                    <span className="relative z-10">👆 TapTap</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </Button>
+                </motion.div>
+              </div>
+            ) : (
+              /* Desktop: Classic full width, TapTap hidden */
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
                 <Button
-                  onClick={onStartTapTap}
+                  onClick={onStartGame}
                   variant="accent"
-                  className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-amber-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-amber-600 to-orange-600 h-auto"
+                  className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-indigo-500/20 rounded-xl relative overflow-hidden group h-auto"
                 >
-                  <span className="relative z-10">👆 TapTap ({language === 'en' ? 'English' : 'Español'})</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <span className="relative z-10">⌨️ {t(ui, 'home.startTyping')}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </Button>
               </motion.div>
             )}
 
-            {/* Botón Clásico */}
+            {/* Campaign button */}
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
               <Button
-                onClick={onStartGame}
+                onClick={() => setCampaignModalOpen(true)}
                 variant="accent"
-                className="px-8 py-4 text-base font-bold w-full shadow-lg shadow-indigo-500/20 rounded-xl relative overflow-hidden group h-auto"
+                className="py-3 text-sm font-bold w-full shadow-lg shadow-purple-500/20 rounded-xl relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 h-auto"
               >
-                <span className="relative z-10">⌨️ {isMobile ? t(ui, 'home.mobileClassic') : t(ui, 'home.startTyping')}</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span className="relative z-10">⚔️ {t(ui, 'home.campaign')}</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Button>
             </motion.div>
 
+            {/* Mobile-only TapTap tip */}
             {isMobile && (
-              <p className="text-center text-xs text-[var(--muted)] mt-2">
-                💡 Tip: TapTap es más fácil de usar en móviles
+              <p className="text-center text-xs text-[var(--muted)]">
+                💡 {language === 'en' ? 'Tip: TapTap is easier on mobile' : 'Tip: TapTap es más fácil en móviles'}
               </p>
             )}
           </div>
