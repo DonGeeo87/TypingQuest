@@ -1,0 +1,28 @@
+name: Publicar demo
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Construir para /typingquest/
+        run: npm run build -- --base=/typingquest/
+
+      - name: Copiar a /srv/demos
+        run: |
+          DEST=/srv/demos/typingquest
+          test -f dist/index.html || { echo "no se genero dist/index.html"; exit 1; }
+          mkdir -p "$DEST"
+          find "$DEST" -mindepth 1 -delete
+          tar -cf - -C dist . | tar -xf - -C "$DEST"
+          ls -A "$DEST"
+          echo "listo: https://aio.tail427c88.ts.net:10000/typingquest/"
